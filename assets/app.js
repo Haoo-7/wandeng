@@ -173,7 +173,7 @@
     $("diceLine").textContent =
       state.heat === 2
         ? "这一档不再是亲亲锁骨。掷出来，就按最直接的那句做。"
-        : "点下面，掷出这一轮要做的事。";
+        : "点下面，掷出这一轮。";
   }
 
   function rollDice() {
