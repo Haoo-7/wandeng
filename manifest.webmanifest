@@ -1,0 +1,17 @@
+{
+  "name": "晚灯",
+  "short_name": "晚灯",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#14090D",
+  "theme_color": "#14090D",
+  "lang": "zh-CN",
+  "icons": [
+    {
+      "src": "./assets/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}
