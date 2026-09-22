@@ -1,17 +1,32 @@
 (() => {
-  const KEY = "wandeng-state-v2";
+  const KEY = "wandeng-state-v3";
+  const LEGACY_KEYS = ["wandeng-state-v2"];
   const data = window.WANDENG;
+  const logic = window.WANDENG_LOGIC;
   const $ = (id) => document.getElementById(id);
   const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+
+  // 界面态（当前屏 / 计时器 / 临时结果）刻意不持久化，每次开屏重来。
+  const persistedDefaults = {
+    names: ["", ""],
+    heat: 1,
+    safeWord: "暂停",
+    turn: 0,
+    used: {},
+    boundary: {},
+    customPrompts: [],
+  };
 
   const state = {
     names: ["", ""],
     heat: 1,
     safeWord: "暂停",
     turn: 0,
+    used: {},
+    boundary: {},
+    customPrompts: [],
     screen: "setup",
     afterPass: "tod",
-    used: { truth: [], dare: [], scene: [], choice: [], timer: [], wheel: [], combo: [], penalty: [] },
     currentCombo: null,
     currentPenalty: "",
     diceSpin: [0, 0],
@@ -20,6 +35,13 @@
     timerLeft: 0,
     currentChoice: null,
     currentTimer: null,
+    planPile: "room",
+    planCard: null,
+    boardPos: [0, 0],
+    boardTheme: "mix",
+    boardFace: [1, 1],
+    boardRoll: 0,
+    boardWinner: -1,
   };
 
   const faces = [
@@ -31,30 +53,37 @@
     { rx: 90, ry: 0 },
   ];
 
+  function esc(value) {
+    const map = { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" };
+    return String(value == null ? "" : value).replace(/[&<>"']/g, (ch) => map[ch]);
+  }
+
   function load() {
+    let raw = null;
     try {
-      const raw = localStorage.getItem(KEY);
-      if (!raw) return;
-      const saved = JSON.parse(raw);
-      state.names = saved.names || state.names;
-      state.heat = saved.heat ?? state.heat;
-      state.safeWord = saved.safeWord || state.safeWord;
-      state.turn = saved.turn || 0;
+      const text =
+        localStorage.getItem(KEY) ||
+        LEGACY_KEYS.map((k) => localStorage.getItem(k)).find(Boolean);
+      if (text) raw = JSON.parse(text);
     } catch {
-      /* keep defaults */
+      raw = null;
     }
+    const migrated = logic.migrateState(raw, persistedDefaults);
+    Object.keys(persistedDefaults).forEach((field) => {
+      state[field] = migrated.state[field];
+    });
   }
 
   function save() {
-    localStorage.setItem(
-      KEY,
-      JSON.stringify({
-        names: state.names,
-        heat: state.heat,
-        safeWord: state.safeWord,
-        turn: state.turn,
-      })
-    );
+    const payload = {};
+    Object.keys(persistedDefaults).forEach((field) => {
+      payload[field] = state[field];
+    });
+    try {
+      localStorage.setItem(KEY, JSON.stringify(payload));
+    } catch {
+      /* 隐私模式写不进去就放弃这次保存，不影响这一局 */
+    }
   }
 
   function who() {
@@ -83,11 +112,7 @@
   }
 
   function packOf(kind) {
-    const pack = data && data[kind];
-    const raw = pack && pack[state.heat];
-    if (!raw) return [];
-    if (Array.isArray(raw)) return raw;
-    return [...(raw.both || []), ...(raw[genderKey()] || [])];
+    return logic.poolFor(kind, state.heat, genderKey(), data, state.customPrompts);
   }
 
   function dicePack() {
@@ -105,14 +130,12 @@
     if (name === "setup") positionHeatInd();
   }
 
+  // save() 刻意留在这里：pick 是唯一改动「不重复」记忆的入口，只有此处落盘才能保证记忆与存档不分叉。
   function pick(list, usedKey) {
-    const used = state.used[usedKey] || [];
-    const pool = list.filter((item) => !used.includes(item));
-    const source = pool.length ? pool : list;
-    if (!pool.length) state.used[usedKey] = [];
-    const item = source[Math.floor(Math.random() * source.length)];
-    state.used[usedKey] = (state.used[usedKey] || []).concat(item);
-    return item;
+    const outcome = logic.pickFrom(list, state.used[usedKey], Math.random);
+    state.used[usedKey] = outcome.used;
+    save();
+    return outcome.item;
   }
 
   function renderHeatButtons() {
@@ -162,6 +185,42 @@
     document.querySelectorAll("[data-safe-hint]").forEach((el) => {
       el.textContent = text;
     });
+  }
+
+  // 刻意的不对称：tod 只换胶囊不发牌（尚未选真心话还是大冒险），其余屏一律重抽。
+  function refreshScreen() {
+    renderHome();
+    const screen = state.screen;
+    if (screen === "dice") {
+      prepDice();
+    } else if (screen === "wheel") {
+      renderWheel();
+    } else if (screen === "tod") {
+      $("todWho").textContent = `${who()} 的回合`;
+      $("todHeat").textContent = heat().name;
+    } else if (screen === "combo") {
+      resetCombo();
+    } else if (screen === "scene") {
+      resetScene();
+    } else if (screen === "choice") {
+      $("btnChoiceDraw").textContent = "抽一道";
+      resetChoice();
+    } else if (screen === "timer") {
+      resetTimerView();
+      drawTimer();
+    } else if (screen === "plan") {
+      resetPlan();
+    } else if (screen === "board") {
+      renderBoard();
+    }
+  }
+
+  function shiftHeat(delta) {
+    const next = Math.min(2, Math.max(0, state.heat + delta));
+    if (next === state.heat) return;
+    state.heat = next;
+    save();
+    refreshScreen();
   }
 
   function repop(el) {
@@ -650,6 +709,7 @@
       const btn = e.target.closest("[data-heat]");
       if (!btn) return;
       state.heat = Number(btn.dataset.heat);
+      save();
       renderHeatButtons();
     });
 
@@ -763,23 +823,10 @@
     });
     $("safeClose").addEventListener("click", closeSafeModal);
     $("coolDown").addEventListener("click", () => {
+      closeSafeModal();
       state.heat = Math.max(0, state.heat - 1);
       save();
-      closeSafeModal();
-      renderHome();
-      if (state.screen === "dice") prepDice();
-      if (state.screen === "wheel") renderWheel();
-      if (state.screen === "tod") $("todHeat").textContent = heat().name;
-      if (state.screen === "combo") resetCombo();
-      if (state.screen === "scene") resetScene();
-      if (state.screen === "choice") {
-        $("btnChoiceDraw").textContent = "抽一道";
-        resetChoice();
-      }
-      if (state.screen === "timer") {
-        resetTimerView();
-        drawTimer();
-      }
+      refreshScreen();
     });
 
     $("safeModal").addEventListener("click", (e) => {
