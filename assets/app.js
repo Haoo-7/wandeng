@@ -130,12 +130,31 @@
     $("homeHero").textContent = "今晚只属于你们";
   }
 
+  function renderSafeHints() {
+    const text = `安全词：${state.safeWord || "暂停"}`;
+    document.querySelectorAll("[data-safe-hint]").forEach((el) => {
+      el.textContent = text;
+    });
+  }
+
+  function repop(el) {
+    if (!el) return;
+    el.classList.remove("repick");
+    void el.offsetWidth;
+    el.classList.add("repick");
+  }
+
+  function repopBox(el, selector) {
+    repop(el && el.closest(selector));
+  }
+
   function drawCard(kind) {
     const text = pick(packOf(kind), `${kind}-${genderKey()}`);
     $("todKind").textContent = kind === "truth" ? "真心话" : "大冒险";
     $("todText").textContent = fill(text);
     $("todWho").textContent = `${who()} 的回合`;
     $("todHeat").textContent = heat().name;
+    repopBox($("todText"), ".play-card");
   }
 
   function buildDie(el, labels, wine) {
@@ -193,6 +212,7 @@
     setDie($("dieBody"), b, state.diceSpin[1]);
     $("diceTitle").textContent = `${action} × ${body}`;
     $("diceLine").textContent = lineFor(action, body);
+    repopBox($("diceLine"), ".result");
     if (navigator.vibrate) navigator.vibrate([12, 40, 18]);
   }
 
@@ -215,6 +235,7 @@
     window.setTimeout(() => {
       $("wheelTitle").textContent = fill(text);
       $("wheelLine").textContent = `${who()} 来做。${other()} 看着，也可以帮忙。`;
+      repopBox($("wheelLine"), ".result");
     }, 3200);
     if (navigator.vibrate) navigator.vibrate(18);
   }
@@ -241,6 +262,7 @@
     $("btnComboDraw").classList.add("hidden");
     $("btnComboGo").classList.remove("hidden");
     $("comboWho").textContent = who();
+    repopBox($("comboQ"), ".play-card");
   }
 
   function revealCombo() {
@@ -252,6 +274,7 @@
     $("btnComboGo").classList.add("hidden");
     $("btnComboDraw").classList.remove("hidden");
     $("btnComboDraw").textContent = "再抽一题";
+    repopBox($("comboQ"), ".play-card");
   }
 
   function resetScene() {
@@ -269,6 +292,7 @@
     $("sceneSetup").textContent = fill(card.setup);
     $("sceneDo").textContent = fill(card.do);
     $("sceneWho").textContent = who();
+    repopBox($("sceneTitle"), ".play-card");
   }
 
   function resetChoice() {
@@ -290,6 +314,7 @@
     $("choiceBtns").classList.remove("hidden");
     $("btnChoiceDraw").classList.add("hidden");
     $("choiceWho").textContent = who();
+    repopBox($("choiceQ"), ".play-card");
   }
 
   function pickChoice(side) {
@@ -299,6 +324,7 @@
     $("choiceBtns").classList.add("hidden");
     $("btnChoiceDraw").classList.remove("hidden");
     $("btnChoiceDraw").textContent = "再抽一道";
+    repopBox($("choiceDo"), ".play-card");
   }
 
   function formatTime(sec) {
@@ -337,6 +363,7 @@
     $("btnTimerStart").textContent = "开始";
     $("btnTimerStart").disabled = false;
     $("timerWho").textContent = who();
+    repopBox($("timerText"), ".play-card");
   }
 
   function startTimer() {
@@ -361,6 +388,27 @@
     }, 1000);
   }
 
+  let safeTrigger = null;
+
+  function focusableSheetButtons() {
+    return [...$("safeModal").querySelectorAll("button")].filter(
+      (b) => !b.classList.contains("hidden") && !b.disabled && b.offsetParent !== null
+    );
+  }
+
+  function openSafeModal() {
+    safeTrigger = document.activeElement;
+    $("safeModal").classList.add("active");
+    $("safeClose").focus();
+  }
+
+  function closeSafeModal() {
+    const wasOpen = $("safeModal").classList.contains("active");
+    $("safeModal").classList.remove("active");
+    if (wasOpen && safeTrigger && document.contains(safeTrigger)) safeTrigger.focus();
+    safeTrigger = null;
+  }
+
   function openCost() {
     stopTimer();
     const item = pick(packOf("penalties"), `penalty-${genderKey()}`);
@@ -368,7 +416,7 @@
     $("safeTitle").textContent = state.safeWord || "过";
     $("safeLead").textContent = `${who()}过了这题。代价：`;
     $("safeCost").textContent = state.currentPenalty;
-    $("safeModal").classList.add("active");
+    openSafeModal();
   }
 
   function applyPenalty(text) {
@@ -459,6 +507,7 @@
   function boot() {
     load();
     fillSetup();
+    renderSafeHints();
     if (state.names[0] && state.names[1]) {
       renderHome();
       show("home");
@@ -476,6 +525,7 @@
       state.safeWord = $("safeWord").value.trim() || "暂停";
       state.turn = 0;
       save();
+      renderSafeHints();
       renderHome();
       show("home");
     });
@@ -557,14 +607,15 @@
       btn.addEventListener("click", openCost);
     });
     $("safeAccept").addEventListener("click", () => {
-      $("safeModal").classList.remove("active");
-      if (state.currentPenalty) applyPenalty(state.currentPenalty);
+      const penalty = state.currentPenalty;
+      closeSafeModal();
+      if (penalty) applyPenalty(penalty);
     });
-    $("safeClose").addEventListener("click", () => $("safeModal").classList.remove("active"));
+    $("safeClose").addEventListener("click", closeSafeModal);
     $("coolDown").addEventListener("click", () => {
       state.heat = Math.max(0, state.heat - 1);
       save();
-      $("safeModal").classList.remove("active");
+      closeSafeModal();
       renderHome();
       if (state.screen === "dice") prepDice();
       if (state.screen === "wheel") renderWheel();
@@ -578,6 +629,30 @@
       if (state.screen === "timer") {
         resetTimerView();
         drawTimer();
+      }
+    });
+
+    $("safeModal").addEventListener("click", (e) => {
+      if (e.target === e.currentTarget) closeSafeModal();
+    });
+
+    $("safeModal").addEventListener("keydown", (e) => {
+      if (e.key === "Escape") {
+        e.preventDefault();
+        closeSafeModal();
+        return;
+      }
+      if (e.key !== "Tab") return;
+      const list = focusableSheetButtons();
+      if (!list.length) return;
+      const first = list[0];
+      const last = list[list.length - 1];
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
       }
     });
 
