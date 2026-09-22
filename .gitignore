@@ -2,3 +2,4 @@
 .omo/
 .codegraph
 __pycache__/
+.playwright-mcp/

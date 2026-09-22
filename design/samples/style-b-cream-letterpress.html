@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>样张 · B 奶油纸笺 Cream Letterpress · 晚灯 AFTER HOURS</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet" />
+<style>
+  /* ============ 样张令牌（仅供本文件；不动任何 app 代码） ============ */
+  :root {
+    --paper:      #F3EBDD;  /* 奶油纸底 */
+    --paper-2:    #F8F1E5;  /* 题卡表面，稍亮一档 */
+    --ink:        #2B2118;  /* 浓墨 / 咖啡黑 */
+    --ink-60:     rgba(43, 33, 24, .60);
+    --ink-45:     rgba(43, 33, 24, .45);
+    --hair:       rgba(43, 33, 24, .72);
+    --wine:       #7E2E3C;  /* 唯一强调色：酒红 */
+    --board:      #17171B;  /* 样张画布：中性炭黑 */
+    --r:          4px;      /* 印刷切角，2–6px 系统 */
+
+    --songti: "Songti SC", "Noto Serif SC", "STSong", "SimSun", serif;
+    --latin:  "EB Garamond", "Libre Baskerville", Georgia, "Times New Roman", serif;
+    --body:   var(--latin), var(--songti);
+    --zh:     var(--songti);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { -webkit-font-smoothing: antialiased; }
+  body {
+    background: var(--board);
+    font-family: var(--zh);
+    color: var(--paper);
+    min-height: 100vh;
+    padding: 72px 24px 96px;
+  }
+  .artboard { max-width: 1440px; margin: 0 auto; }
+
+  .kicker {
+    font-family: var(--latin);
+    font-variant: small-caps;
+    letter-spacing: .28em;
+    text-transform: lowercase;
+    font-size: 11px;
+    color: rgba(243, 235, 221, .55);
+  }
+
+  /* ============ 样张页眉 ============ */
+  .sheet-head { text-align: center; margin-bottom: 64px; }
+  .sheet-head .rule { width: 96px; margin: 18px auto; border-top: 3px double rgba(243,235,221,.5); }
+  .sheet-title {
+    font-size: 34px;
+    font-weight: 700;
+    letter-spacing: .06em;
+  }
+  .sheet-title .latin-name { font-family: var(--latin); font-style: italic; font-weight: 400; letter-spacing: .02em; }
+  .sheet-concept { font-size: 15px; line-height: 1.8; color: rgba(243,235,221,.66); margin-top: 2px; }
+
+  /* ============ 手机画框 ============ */
+  .frames { display: flex; justify-content: center; gap: 88px; flex-wrap: wrap; margin-bottom: 88px; }
+  figure { text-align: center; }
+  figcaption { margin-bottom: 18px; }
+  figcaption b { display: block; font-size: 17px; font-weight: 700; letter-spacing: .3em; text-indent: .3em; }
+
+  .device {
+    width: 412px; height: 866px;
+    padding: 10px;
+    background: #202026;
+    border: 1px solid #383841;
+    border-radius: 54px;
+    box-shadow: 0 0 0 1px #0E0E12;
+    display: inline-block;
+  }
+  .screen {
+    position: relative;
+    width: 390px; height: 844px;
+    border-radius: 44px;
+    overflow: hidden;
+    background: var(--paper);
+    color: var(--ink);
+    text-align: left;
+    display: flex; flex-direction: column;
+    padding: 54px 18px 34px;
+    isolation: isolate;
+  }
+  /* 极淡纸纹（whisper-quiet grain） */
+  .screen::after {
+    content: ""; position: absolute; inset: 0; z-index: 9; pointer-events: none;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='140' height='140'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/></filter><rect width='140' height='140' filter='url(%23n)' opacity='0.5'/></svg>");
+    opacity: .045; mix-blend-mode: multiply;
+  }
+
+  /* 状态栏（OS 外观，非产品功能） */
+  .statusbar {
+    position: absolute; top: 16px; left: 24px; right: 24px; z-index: 8;
+    display: flex; justify-content: space-between; align-items: center;
+    font-family: var(--latin); font-size: 13px; letter-spacing: .04em; color: var(--ink);
+  }
+  .statusbar svg { display: block; }
+
+  /* ============ 屏幕一 · 首页 ============ */
+  .masthead { text-align: center; margin-bottom: 20px; }
+  .masthead .brand-zh { font-size: 40px; font-weight: 700; letter-spacing: .18em; text-indent: .18em; }
+  .menu-fork {
+    display: flex; align-items: center; gap: 14px;
+    margin: 8px 6px 0; color: var(--ink-60);
+  }
+  .menu-fork::before, .menu-fork::after { content: ""; flex: 1; border-top: 1px solid var(--hair); }
+  .menu-fork span { font-family: var(--latin); font-variant: small-caps; letter-spacing: .3em; font-size: 10px; text-indent: .3em; }
+
+  .menu { border: 1px solid var(--hair); border-radius: var(--r); background: var(--paper-2); }
+  .menu + .menu-divider { /* nothing */ }
+  .menu-row {
+    display: flex; align-items: center; gap: 14px;
+    min-height: 64px; padding: 10px 16px;
+  }
+  .menu-row + .menu-row { border-top: 3px double var(--hair); }
+  .menu-num {
+    font-family: var(--latin); font-style: italic;
+    font-size: 17px; color: var(--ink-45); width: 24px; flex: none; text-align: center;
+  }
+  .menu-body { flex: 1; min-width: 0; }
+  .menu-body h3 { font-size: 17px; font-weight: 700; letter-spacing: .04em; }
+  .menu-body p { font-size: 12.5px; color: var(--ink-60); margin-top: 3px; letter-spacing: .02em; }
+  .menu-arrow { font-family: var(--latin); font-size: 20px; color: var(--ink-45); line-height: 1; }
+
+  .tiles-label { margin: 22px 2px 10px; display: flex; justify-content: space-between; align-items: baseline; }
+  .tiles-label b { font-size: 14px; font-weight: 700; letter-spacing: .2em; }
+  .tiles { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .tile {
+    border: 1px solid var(--hair); border-radius: var(--r);
+    padding: 12px 14px; min-height: 58px; background: var(--paper);
+  }
+  .tile small {
+    display: block; font-family: var(--latin); font-variant: small-caps;
+    letter-spacing: .22em; font-size: 9px; color: var(--ink-45); margin-bottom: 5px;
+  }
+  .tile span { font-size: 15px; font-weight: 700; letter-spacing: .05em; }
+
+  .heat { margin-top: 22px; }
+  .heat-caption { display: flex; justify-content: space-between; align-items: baseline; margin: 0 2px 8px; }
+  .heat-caption b { font-size: 14px; font-weight: 700; letter-spacing: .2em; }
+  .heat-grid { display: flex; border: 1px solid var(--hair); border-radius: var(--r); background: var(--paper-2); overflow: hidden; }
+  .heat-cell {
+    flex: 1; min-height: 48px; text-align: center; padding: 8px 0 6px;
+    position: relative;
+  }
+  .heat-cell + .heat-cell { border-left: 1px solid var(--hair); }
+  .heat-cell i {
+    display: block; font-style: normal; font-size: 14.5px; font-weight: 700; letter-spacing: .12em;
+    color: var(--ink);
+  }
+  .heat-cell em {
+    display: block; font-family: var(--latin); font-variant: small-caps; font-style: normal;
+    font-size: 8.5px; letter-spacing: .24em; color: var(--ink-45); margin-top: 2px;
+  }
+  .heat-cell.on i { color: var(--wine); }
+  .heat-cell.on::before {
+    content: ""; position: absolute; top: 6px; left: 50%; transform: translateX(-50%);
+    width: 4px; height: 4px; border-radius: 2px; background: var(--wine);
+  }
+  .heat-cell.on { padding-top: 15px; }
+
+  .home-foot { margin-top: auto; text-align: center; border-top: 1px solid var(--hair); padding-top: 12px; }
+  .home-foot p { font-size: 12px; color: var(--ink-60); letter-spacing: .03em; }
+  .home-foot .w { color: var(--wine); font-weight: 700; }
+
+  /* ============ 屏幕二 · 真心话大冒险 ============ */
+  .topbar { display: grid; grid-template-columns: 44px 1fr 52px; align-items: center; margin-bottom: 4px; }
+  .icon-btn {
+    width: 44px; height: 44px; display: flex; align-items: center; justify-content: center;
+    color: var(--ink);
+  }
+  .topbar h2 {
+    font-size: 16.5px; font-weight: 700; letter-spacing: .14em; text-align: center; text-indent: .14em;
+    white-space: nowrap;
+  }
+  .switch { font-size: 14px; color: var(--ink); text-decoration: underline; text-underline-offset: 4px; text-align: right; letter-spacing: .08em; }
+
+  .who-line {
+    display: flex; align-items: center; gap: 8px;
+    margin: 10px 2px 16px; padding-bottom: 14px;
+    border-bottom: 3px double var(--hair);
+    font-size: 13px; color: var(--ink-60); letter-spacing: .06em;
+  }
+  .who-line::before { content: ""; width: 5px; height: 5px; background: var(--wine); border-radius: 1px; flex: none; }
+  .who-line b { color: var(--ink); font-size: 14px; letter-spacing: .1em; }
+
+  .play-card {
+    position: relative;
+    border: 1px solid var(--hair); border-radius: var(--r);
+    background: var(--paper-2);
+    padding: 30px 26px 64px;
+  }
+  .play-card .pc-kicker {
+    font-family: var(--latin); font-variant: small-caps; letter-spacing: .3em; font-size: 10px;
+    color: var(--ink-45); margin-bottom: 18px;
+  }
+  .question {
+    font-size: 20px; line-height: 1.8; font-weight: 700; letter-spacing: .02em;
+    text-indent: 0; min-height: 156px;
+  }
+  .question::first-letter {
+    float: left; font-size: 3em; line-height: .92;
+    padding: 8px 10px 0 0; color: var(--wine); font-weight: 700;
+  }
+  .pc-foot { margin-top: 18px; border-top: 1px solid var(--hair); padding-top: 10px;
+    font-family: var(--latin); font-variant: small-caps; letter-spacing: .26em; font-size: 9px; color: var(--ink-45); }
+
+  /* 邮戳感的印刷标记（非亮面胶囊） */
+  .stamp {
+    position: absolute; right: 18px; bottom: 16px;
+    transform: rotate(-4deg);
+    border: 1px solid var(--wine);
+    outline: 1px solid var(--wine); outline-offset: -4px;
+    border-radius: 2px;
+    color: var(--wine);
+    font-size: 10.5px; font-weight: 700; letter-spacing: .14em;
+    padding: 6px 10px;
+    opacity: .85;
+  }
+
+  .actions { margin-top: auto; padding-top: 24px; }
+  .btn-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .btn {
+    display: flex; align-items: center; justify-content: center;
+    height: 52px; border-radius: var(--r);
+    font-family: var(--zh); font-size: 16px; font-weight: 700; letter-spacing: .3em; text-indent: .3em;
+  }
+  .btn-primary {
+    background: var(--wine); color: var(--paper); border: 1px solid var(--wine);
+    box-shadow: 1px 1px 0 rgba(43, 33, 24, .22); /* 至多 1px 硬偏移 */
+  }
+  .btn-secondary {
+    background: transparent; color: var(--ink); border: 1px solid var(--hair);
+  }
+  .pass-line { text-align: center; margin-top: 14px; min-height: 44px; display: flex; align-items: center; justify-content: center; }
+  .btn-tertiary {
+    font-size: 14px; color: var(--ink-60); text-decoration: underline; text-underline-offset: 5px;
+    letter-spacing: .3em; text-indent: .3em;
+  }
+
+  /* ============ 令牌图例 ============ */
+  .legend-wrap { max-width: 1180px; margin: 0 auto; }
+  .legend-label { text-align: center; margin-bottom: 16px; }
+  .legend {
+    background: var(--paper); color: var(--ink);
+    border: 1px solid var(--hair); border-radius: 6px;
+    display: grid; grid-template-columns: 1.15fr 1.1fr .62fr .83fr;
+    padding: 30px 0;
+  }
+  .lg { padding: 4px 34px; }
+  .lg + .lg { border-left: 3px double var(--hair); }
+  .lg h4 {
+    font-family: var(--latin); font-variant: small-caps; font-size: 10.5px; font-weight: 500;
+    letter-spacing: .3em; color: var(--ink-45); margin-bottom: 18px;
+  }
+  .lg h4 b { font-family: var(--zh); font-size: 11px; letter-spacing: .22em; color: var(--ink-60); margin-left: 8px; }
+
+  .swatches { display: flex; flex-direction: column; gap: 14px; }
+  .swatch { display: flex; align-items: center; gap: 12px; }
+  .swatch i {
+    width: 34px; height: 34px; border-radius: 2px; flex: none;
+    border: 1px solid rgba(43,33,24,.35);
+  }
+  .swatch code { font-family: var(--latin); font-size: 13.5px; letter-spacing: .06em; }
+  .swatch small { font-size: 11px; color: var(--ink-60); margin-left: 2px; letter-spacing: .08em; }
+
+  .spec-display { font-size: 24px; font-weight: 700; letter-spacing: .05em; margin-bottom: 4px; }
+  .spec-display .latin-name { font-family: var(--latin); font-style: italic; font-weight: 400; }
+  .spec-body { font-size: 15px; line-height: 1.8; color: var(--ink); margin: 8px 0 10px; }
+  .spec-note { font-family: var(--latin); font-size: 11.5px; letter-spacing: .05em; color: var(--ink-60); line-height: 1.7; }
+  .spec-note b { font-family: var(--zh); font-weight: 700; }
+
+  .radius-row { display: flex; gap: 20px; align-items: flex-end; margin-bottom: 12px; }
+  .radius-box { width: 44px; height: 44px; border: 1px solid var(--hair); background: var(--paper-2); }
+  .radius-row .r4 { border-radius: 4px; }
+  .radius-row .r2 { border-radius: 2px; }
+  .legend .spec-note.tight { margin-top: 6px; }
+
+  .rule-sample { margin-bottom: 22px; }
+  .rule-sample .r1 { border-top: 1px solid var(--hair); margin-bottom: 8px; }
+  .rule-sample .r3 { border-top: 3px double var(--hair); }
+  .rule-note { font-family: var(--latin); font-size: 11.5px; letter-spacing: .05em; color: var(--ink-60); line-height: 2.1; }
+  .rule-note b { font-family: var(--zh); font-weight: 700; }
+
+  .sheet-foot { text-align: center; margin-top: 56px; }
+</style>
+</head>
+<body>
+<div class="artboard">
+
+  <!-- 页眉 -->
+  <header class="sheet-head">
+    <p class="kicker">Style Sample &nbsp;·&nbsp; 视觉方向样张 &nbsp;·&nbsp; No. 02</p>
+    <div class="rule"></div>
+    <h1 class="sheet-title">B · 奶油纸笺 <span class="latin-name">Cream Letterpress</span></h1>
+    <p class="sheet-concept">酒店信笺与旧书页：奶油纸底、墨色宋体、细双线分栏</p>
+  </header>
+
+  <!-- 两块手机画框 -->
+  <div class="frames">
+
+    <!-- ========== 屏幕一 · 首页 ========== -->
+    <figure>
+      <figcaption>
+        <b>首页</b>
+        <span class="kicker">Home</span>
+      </figcaption>
+      <div class="device">
+        <div class="screen">
+          <div class="statusbar">
+            <span>23:47</span>
+            <svg width="52" height="12" viewBox="0 0 52 12" fill="none" stroke="#2B2118" stroke-width="1.1">
+              <path d="M1 10 L4 6 L7 10" />
+              <path d="M10 10 L14 3.5 L18 10" />
+              <path d="M21 10 L26.5 2 L32 10" fill="none" />
+              <rect x="37" y="2.5" width="12" height="7" rx="1" />
+              <path d="M49.5 4.5 v3" />
+              <rect x="38.5" y="4" width="7" height="4" fill="#2B2118" stroke="none" />
+            </svg>
+          </div>
+
+          <div class="masthead">
+            <p class="brand-zh">晚 灯</p>
+            <div class="menu-fork"><span>AFTER HOURS</span></div>
+          </div>
+
+          <div class="menu">
+            <div class="menu-row">
+              <span class="menu-num">I</span>
+              <div class="menu-body">
+                <h3>真心话大冒险</h3>
+                <p>抽题、表态、执行</p>
+              </div>
+              <span class="menu-arrow">›</span>
+            </div>
+            <div class="menu-row">
+              <span class="menu-num">II</span>
+              <div class="menu-body">
+                <h3>情趣骰子</h3>
+                <p>两颗骰，决定动作与部位</p>
+              </div>
+              <span class="menu-arrow">›</span>
+            </div>
+            <div class="menu-row">
+              <span class="menu-num">III</span>
+              <div class="menu-body">
+                <h3>命运轮盘</h3>
+                <p>转到什么就做什么</p>
+              </div>
+              <span class="menu-arrow">›</span>
+            </div>
+          </div>
+
+          <div class="tiles-label">
+            <b>更多玩法</b>
+            <span class="kicker" style="color: var(--ink-45);">Also at the desk</span>
+          </div>
+          <div class="tiles">
+            <div class="tile"><small>No. 04</small><span>连招</span></div>
+            <div class="tile"><small>No. 05</small><span>今晚剧本</span></div>
+            <div class="tile"><small>No. 06</small><span>二选一</span></div>
+            <div class="tile"><small>No. 07</small><span>倒计时</span></div>
+          </div>
+
+          <div class="heat">
+            <div class="heat-caption">
+              <b>今晚热度</b>
+              <span class="kicker" style="color: var(--ink-45);">Tonight&rsquo;s heat</span>
+            </div>
+            <div class="heat-grid">
+              <div class="heat-cell"><i>烛光</i><em>Candle</em></div>
+              <div class="heat-cell on"><i>微醺</i><em>Tipsy</em></div>
+              <div class="heat-cell"><i>深夜</i><em>Midnight</em></div>
+            </div>
+          </div>
+
+          <div class="home-foot">
+            <p>安全词：<span class="w">暂停</span> · 随时可降一档</p>
+          </div>
+        </div>
+      </div>
+    </figure>
+
+    <!-- ========== 屏幕二 · 真心话大冒险 ========== -->
+    <figure>
+      <figcaption>
+        <b>真心话大冒险</b>
+        <span class="kicker">Truth or Dare &nbsp;·&nbsp; In play</span>
+      </figcaption>
+      <div class="device">
+        <div class="screen">
+          <div class="statusbar">
+            <span>23:47</span>
+            <svg width="52" height="12" viewBox="0 0 52 12" fill="none" stroke="#2B2118" stroke-width="1.1">
+              <path d="M1 10 L4 6 L7 10" />
+              <path d="M10 10 L14 3.5 L18 10" />
+              <path d="M21 10 L26.5 2 L32 10" fill="none" />
+              <rect x="37" y="2.5" width="12" height="7" rx="1" />
+              <path d="M49.5 4.5 v3" />
+              <rect x="38.5" y="4" width="7" height="4" fill="#2B2118" stroke="none" />
+            </svg>
+          </div>
+
+          <div class="topbar">
+            <span class="icon-btn">
+              <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="#2B2118" stroke-width="1.4">
+                <path d="M11.5 2.5 L4.5 9 L11.5 15.5" />
+              </svg>
+            </span>
+            <h2>真心话大冒险</h2>
+            <span class="switch">换人</span>
+          </div>
+
+          <div class="who-line"><b>他 · 第 3 轮</b></div>
+
+          <article class="play-card">
+            <p class="pc-kicker">The Question</p>
+            <p class="question">上一次我让你心动，是什么时候？</p>
+            <p class="pc-foot">Turn &nbsp;·&nbsp; III &nbsp;— &nbsp;Answer honestly, or dare instead</p>
+            <span class="stamp">微醺 · 跳过 2/3</span>
+          </article>
+
+          <div class="actions">
+            <div class="btn-row">
+              <span class="btn btn-secondary">真心话</span>
+              <span class="btn btn-primary">大冒险</span>
+            </div>
+            <div class="pass-line"><span class="btn-tertiary">过</span></div>
+          </div>
+        </div>
+      </div>
+    </figure>
+
+  </div>
+
+  <!-- ========== 令牌图例 ========== -->
+  <div class="legend-wrap">
+    <p class="legend-label kicker">Design Tokens &nbsp;·&nbsp; 令牌对照</p>
+    <div class="legend">
+
+      <div class="lg">
+        <h4>Palette<b>色板</b></h4>
+        <div class="swatches">
+          <div class="swatch"><i style="background:#F3EBDD;"></i><code>#F3EBDD</code><small>奶油纸底</small></div>
+          <div class="swatch"><i style="background:#F8F1E5;"></i><code>#F8F1E5</code><small>题卡纸面</small></div>
+          <div class="swatch"><i style="background:#2B2118;"></i><code>#2B2118</code><small>浓墨</small></div>
+          <div class="swatch"><i style="background:#7E2E3C;"></i><code>#7E2E3C</code><small>酒红（唯一强调）</small></div>
+          <div class="swatch"><i style="background:#17171B;"></i><code>#17171B</code><small>样张底（非界面色）</small></div>
+        </div>
+      </div>
+
+      <div class="lg">
+        <h4>Type<b>字体</b></h4>
+        <p class="spec-display">晚灯 <span class="latin-name">AFTER HOURS</span></p>
+        <p class="spec-body">奶油纸上的宋体，像旧书正文——标题与内文同族，只分大小与粗细。</p>
+        <p class="spec-note">
+          <b>Display / 正文中文</b><br />
+          Songti SC → Noto Serif SC → STSong, serif<br />
+          <b>Latin display</b><br />
+          EB Garamond (italic 迎宾) → Georgia, serif<br />
+          正文 15–16px · 行高 1.8 · 题问 20px
+        </p>
+      </div>
+
+      <div class="lg">
+        <h4>Radius<b>切角</b></h4>
+        <div class="radius-row">
+          <div class="radius-box r4"></div>
+          <div class="radius-box r2"></div>
+        </div>
+        <p class="spec-note tight">
+          <b>2–6px 印刷切角</b><br />
+          界面统一 4px，标记 2px；<br />
+          圆角矩形即纸片，无胶囊。
+        </p>
+      </div>
+
+      <div class="lg">
+        <h4>Rules<b>线条</b></h4>
+        <div class="rule-sample">
+          <div class="r1"></div>
+          <div class="r3"></div>
+        </div>
+        <p class="rule-note">
+          <b>1px 细线</b> — 卡缘、分栏、按钮描边<br />
+          <b>3px double 双线</b> — 乐谱式栏目分隔<br />
+          墨色 72% 透明度，压印而非描影。
+        </p>
+      </div>
+
+    </div>
+    <p class="sheet-foot kicker">晚灯 AFTER HOURS &nbsp;·&nbsp; 390 × 844 &nbsp;·&nbsp; Cream Letterpress direction &nbsp;·&nbsp; 2026.09</p>
+  </div>
+
+</div>
+</body>
+</html>
