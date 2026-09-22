@@ -21,7 +21,7 @@
       href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,400;1,9..144,600&family=Noto+Sans+SC:wght@300;400;500;700&family=Noto+Serif+SC:wght@500;600&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="./assets/app.css?v=10" />
+    <link rel="stylesheet" href="./assets/app.css?v=12" />
   </head>
   <body>
     <div id="app">
@@ -57,7 +57,7 @@
 
       <section class="screen screen-home" data-screen="home" id="screen-home">
         <header class="hero-photo">
-          <img src="./assets/img/hotel.jpg" alt="" />
+          <img src="./assets/img/hotel.jpg" alt="" loading="eager" decoding="async" class="img-reveal" />
           <div class="hero-shade"></div>
         </header>
         <div class="hero-copy">
@@ -67,7 +67,7 @@
         </div>
         <div class="stack home-stack">
           <button class="row-card" data-open="tod">
-            <img src="./assets/img/game-tod.png" alt="" />
+            <img src="./assets/img/game-tod.png" alt="" loading="lazy" decoding="async" class="img-reveal" />
             <div>
               <h2>真心话大冒险</h2>
               <p>轮到谁，谁就答</p>
@@ -75,7 +75,7 @@
             <span>›</span>
           </button>
           <button class="row-card" data-open="dice">
-            <img src="./assets/img/game-dice.png" alt="" />
+            <img src="./assets/img/game-dice.png" alt="" loading="lazy" decoding="async" class="img-reveal" />
             <div>
               <h2>情趣骰子</h2>
               <p>掷出这一下要做什么</p>
@@ -83,7 +83,7 @@
             <span>›</span>
           </button>
           <button class="row-card" data-open="wheel">
-            <img src="./assets/img/game-wheel.png" alt="" />
+            <img src="./assets/img/game-wheel.png" alt="" loading="lazy" decoding="async" class="img-reveal" />
             <div>
               <h2>命运轮盘</h2>
               <p>转到哪句，就按哪句做</p>
@@ -93,25 +93,25 @@
         </div>
         <div class="more-grid">
           <button type="button" data-open="combo" onclick="window.wandengOpen && window.wandengOpen('combo')">
-            <img class="tile-ico" src="./assets/img/tile-combo.png" alt="" />
+            <img class="tile-ico img-reveal" src="./assets/img/tile-combo.png" alt="" loading="lazy" decoding="async" />
             <small>04</small>
             <b>连招</b>
             <span>答完，立刻按这个做</span>
           </button>
           <button type="button" data-open="scene">
-            <img class="tile-ico" src="./assets/img/tile-scene.png" alt="" />
+            <img class="tile-ico img-reveal" src="./assets/img/tile-scene.png" alt="" loading="lazy" decoding="async" />
             <small>05</small>
             <b>今晚剧本</b>
             <span>抽一幕，按场景演</span>
           </button>
           <button type="button" data-open="choice">
-            <img class="tile-ico" src="./assets/img/tile-choice.png" alt="" />
+            <img class="tile-ico img-reveal" src="./assets/img/tile-choice.png" alt="" loading="lazy" decoding="async" />
             <small>06</small>
             <b>二选一</b>
             <span>选了就不能反悔</span>
           </button>
           <button type="button" data-open="timer">
-            <img class="tile-ico" src="./assets/img/tile-timer.png" alt="" />
+            <img class="tile-ico img-reveal" src="./assets/img/tile-timer.png" alt="" loading="lazy" decoding="async" />
             <small>07</small>
             <b>倒计时</b>
             <span>铃响之前不许停</span>
@@ -321,7 +321,7 @@
       手机还在用旧版，连招会打不开。请关掉这个标签，再打开一次。
     </div>
     <script src="./assets/data.js?v=8"></script>
-    <script src="./assets/app.js?v=10"></script>
+    <script src="./assets/app.js?v=12"></script>
     <script>
       (function () {
         if (!window.WANDENG || !window.WANDENG.combo) {

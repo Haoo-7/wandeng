@@ -93,6 +93,13 @@
   --transition-ui: transform var(--motion-fast) ease, opacity var(--motion-fast) ease,
     box-shadow var(--motion-med) ease, filter var(--motion-fast) ease,
     background var(--motion-med) ease, border-color var(--motion-med) ease;
+  /* v2 动效带：press 160ms · 选中/指示滑动 280ms · 弹层开 420ms/关 300ms · reveal 520ms
+     · ripple 380ms · 图片入场 500ms · 蓄力 240ms（硬上限，只走 transform/opacity + 特许例外） */
+  --motion-slow: 0.38s;
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+  --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
   --safe-top: max(18px, env(safe-area-inset-top));
   --tap-pad: max(env(safe-area-inset-bottom), 12px);
 
@@ -528,6 +535,9 @@ h1,
   line-height: 1.35;
   letter-spacing: 0.04em;
   font-size: 14px;
+  /* 选中/变暗 280ms 带、按压 filter 160ms 带；缓动随状态切换（见动效 v2 段） */
+  transition: transform 280ms var(--ease-out), opacity 280ms var(--ease-out),
+    box-shadow 280ms var(--ease-out), filter 160ms var(--ease-out);
 }
 
 /* 主 CTA：晚霞胶囊（柔光 + 墨紫文字） */
@@ -619,17 +629,7 @@ input[type="text"]:focus-visible {
   outline-offset: 2px;
 }
 
-.btn:not(:disabled):active,
-.row-card:active,
-.more-grid button:active,
-.heat-btn:active,
-.icon-btn:active,
-.linkish:active {
-  transform: translateY(1px);
-  filter: brightness(0.96);
-}
-
-@media (min-width: 720px) {
+@media (hover: hover) and (pointer: fine) {
   .btn:not(:disabled):hover,
   .row-card:hover,
   .more-grid button:hover,
@@ -648,6 +648,221 @@ input[type="text"]:focus-visible {
   .linkish:hover {
     background: var(--glass-fill);
   }
+}
+
+.btn:not(:disabled):active,
+.row-card:active,
+.more-grid button:active,
+.heat-btn:active,
+.icon-btn:active,
+.linkish:active {
+  transform: scale(0.95);
+  filter: brightness(0.94);
+}
+
+/* ==========================================================================
+   动效 v2 — 按压波纹 / 选择态 / 热度胶囊 / 图片入场 / 结果揭示 / 蓄力 / 计时脉冲
+   时长全部走 :root 注释里的硬上限带；仅 transform·opacity + 特许例外
+   （clip 例外仅 gloss 的 translateX、standalone scale/rotate 仅 B3 三件套与 timerPulse、
+   heat-ind 的 left/width 由 JS 写 inline，CSS 只声明过渡）
+   ========================================================================== */
+
+/* A1 · 可点按面统一基座：position 供 ripple 定位，overflow 裁圆角 */
+.btn,
+.row-card,
+.more-grid button,
+.icon-btn {
+  position: relative;
+  overflow: hidden;
+  transition: var(--transition-ui), transform 160ms var(--ease-out), filter 160ms var(--ease-out);
+}
+
+/* A1 · 波纹：JS 注入 span.ripple 并设定 left/top/width/height，单次播放后移除 */
+span.ripple {
+  position: absolute;
+  border-radius: 50%;
+  transform: scale(0);
+  opacity: 0.9;
+  background: rgba(255, 255, 255, 0.30);
+  pointer-events: none;
+  animation: ripple var(--motion-slow) var(--ease-out);
+}
+
+@keyframes ripple {
+  to {
+    transform: scale(4);
+    opacity: 0;
+  }
+}
+
+/* A2 · 二选一：选中=弹簧微放大+琥珀描边环，落选=压暗。环色走 --dusk-amber token */
+#choiceA.is-selected,
+#choiceB.is-selected {
+  transform: scale(1.04);
+  box-shadow: 0 0 0 2px var(--dusk-amber), 0 8px 24px rgba(0, 0, 0, 0.28), var(--cta-topline-soft);
+  transition: transform 280ms var(--ease-spring), opacity 280ms var(--ease-spring),
+    box-shadow 280ms var(--ease-spring), filter 160ms var(--ease-out);
+}
+
+#choiceA.is-dimmed,
+#choiceB.is-dimmed {
+  opacity: 0.45;
+  transform: scale(0.97);
+  transition: transform 280ms var(--ease-out), opacity 280ms var(--ease-out),
+    box-shadow 280ms var(--ease-out), filter 160ms var(--ease-out);
+}
+
+/* A3 · 热度指示胶囊：垫在 .heat-btn（z-index:1）之下，滑动/伸缩由 JS 写 inline left·width */
+span.heat-ind {
+  position: absolute;
+  top: 4px;
+  bottom: 4px;
+  left: 0;
+  width: 0;
+  border-radius: 999px;
+  background: var(--cta-grad-primary);
+  transition: transform 280ms var(--ease-in-out), width 280ms var(--ease-in-out);
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* B1 · 照片渐进：模糊+微放大 → 落定。transition 而非 keyframes（load 时机不定，需可重定向） */
+img.img-reveal {
+  opacity: 0;
+  filter: blur(10px);
+  transform: scale(1.02);
+  transition: opacity 500ms var(--ease-out), filter 500ms var(--ease-out),
+    transform 500ms var(--ease-out);
+}
+
+img.img-reveal.is-loaded {
+  opacity: 1;
+  filter: blur(0);
+  transform: scale(1);
+}
+
+/* 英雄区溶解 mask 与 blur/scale 相撞：hero 图退化为纯 opacity，mask 溶解效果原样保留 */
+.hero-photo img.img-reveal {
+  filter: none;
+  transform: none;
+  transition: opacity 500ms var(--ease-out);
+}
+
+/* C2 · 倒计时节拍：standalone scale 属性，不碰 transform */
+.timer-num.pulse {
+  animation: timerPulse 600ms var(--ease-spring);
+}
+
+@keyframes timerPulse {
+  0% {
+    scale: 1;
+  }
+  40% {
+    scale: 1.18;
+  }
+  70% {
+    scale: 0.96;
+  }
+  100% {
+    scale: 1;
+  }
+}
+
+/* C4 · 结果揭示：reveal=入场缩放+光泽扫掠。
+   与 .repick 同标时用逗号列表合并双动画（.reveal.repick），两个都能播 */
+.reveal {
+  position: relative;
+  overflow: hidden;
+  animation: reveal 520ms var(--ease-out);
+}
+
+@keyframes reveal {
+  0% {
+    opacity: 0;
+    transform: scale(0.94);
+  }
+  60% {
+    opacity: 1;
+    transform: scale(1.015);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* 减少动态时 reveal 的仅-opacity 温和变体（第 8 个新 keyframe） */
+@keyframes revealFade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.reveal::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(105deg, transparent 30%, rgba(255, 255, 255, 0.28) 50%, transparent 70%);
+  transform: translateX(-120%);
+  animation: gloss 520ms var(--ease-out);
+  pointer-events: none;
+}
+
+@keyframes gloss {
+  to {
+    transform: translateX(120%);
+  }
+}
+
+.reveal.repick {
+  animation: repick 0.32s ease, reveal 520ms var(--ease-out);
+}
+
+/* B3 · 蓄力回拉：骰子/轮盘的 transform 已被 JS inline 3D 姿态与旋转占用，
+   风箱动画走 standalone scale / rotate 属性，与 transform 链式复合、互不覆盖 */
+@keyframes dieWindup {
+  0%,
+  100% {
+    scale: 1;
+  }
+  45% {
+    scale: 0.9;
+  }
+}
+
+@keyframes wheelWindup {
+  0%,
+  100% {
+    rotate: 0deg;
+  }
+  45% {
+    rotate: -4deg;
+  }
+}
+
+@keyframes windup {
+  0%,
+  100% {
+    scale: 1;
+  }
+  45% {
+    scale: 0.94;
+  }
+}
+
+.die.anticipate {
+  animation: dieWindup 240ms var(--ease-out);
+}
+
+.wheel.anticipate {
+  animation: wheelWindup 240ms var(--ease-out);
+}
+
+#btnRoll.windup,
+#btnSpin.windup {
+  animation: windup 240ms var(--ease-out);
 }
 
 /* ==========================================================================
@@ -849,6 +1064,7 @@ input[type="text"]::placeholder {
 
 /* 热度分段控件（样张 .heat-seg：玻璃槽 + 渐变选中胶囊） */
 .heat-grid {
+  position: relative; /* A3 · span.heat-ind 的定位锚 */
   display: flex;
   gap: 4px;
   padding: 4px;
@@ -861,6 +1077,8 @@ input[type="text"]::placeholder {
 }
 
 .heat-btn {
+  position: relative; /* A3 · 抬到 heat-ind 胶囊之上 */
+  z-index: 1;
   flex: 1;
   min-height: 48px;
   text-align: center;
@@ -1077,6 +1295,8 @@ input[type="text"]::placeholder {
   letter-spacing: 0.06em;
   color: var(--dusk-amber);
   margin: 8px 0 18px;
+  /* C2 · .done 换色 300ms 渐变；脉冲本体走 animation（standalone scale） */
+  transition: color 300ms var(--ease-out);
 }
 
 /* I · 倒计时四排操作行：拉开行距留出呼吸，仍单屏不溢出 */
@@ -1122,21 +1342,29 @@ input[type="text"]::placeholder {
    安全词面板 / 旧版提示条：玻璃面板 radius 32
    ========================================================================== */
 
+/* C1 · 常驻 flex + opacity/visibility 过渡（不再 display:none 硬切）；关时 pointer-events 放行 */
 .modal {
   position: fixed;
   inset: 0;
   background: var(--veil);
   -webkit-backdrop-filter: blur(8px);
   backdrop-filter: blur(8px);
-  display: none;
+  display: flex;
   align-items: flex-end;
   justify-content: center;
   z-index: 20;
   padding: 18px;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 320ms var(--ease-out), visibility 0s linear 320ms;
 }
 
 .modal.active {
-  display: flex;
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transition: opacity 320ms var(--ease-out), visibility 0s;
 }
 
 .sheet {
@@ -1150,6 +1378,17 @@ input[type="text"]::placeholder {
   box-shadow: var(--glass-lift-deep), var(--glass-topline-hi);
   color: var(--text-1);
   padding: 24px 20px calc(var(--tap-pad) + 16px);
+  /* C1 · 底部抽屉：开 420ms / 关 300ms（关快于开），玻璃质感规则原样保留 */
+  transform: translateY(100%);
+  transition: transform 420ms var(--ease-drawer);
+}
+
+.modal.active .sheet {
+  transform: translateY(0);
+}
+
+.modal:not(.active) .sheet {
+  transition-duration: 300ms;
 }
 
 .sheet h3 {
@@ -1310,11 +1549,7 @@ input[type="text"]::placeholder {
 
 @media (prefers-reduced-motion: reduce) {
   .screen.active {
-    animation: none;
-  }
-
-  .repick {
-    animation: none;
+    animation: revealFade 0.3s var(--ease-out);
   }
 
   .btn,
@@ -1334,6 +1569,58 @@ input[type="text"]::placeholder {
   .heat-btn:active,
   .icon-btn:active,
   .linkish:active {
+    transform: scale(0.98); /* 按压保留但减半：0.95 → 0.98 */
+  }
+
+  /* —— 动效 v2 温和变体：降为 opacity/短过渡，去 transform、blur、过冲，不清零 —— */
+  span.ripple,
+  .die.anticipate,
+  .wheel.anticipate,
+  #btnRoll.windup,
+  #btnSpin.windup {
+    animation: none; /* 一次性装饰/蓄力弹跳整体停播 */
+  }
+
+  #choiceA.is-selected,
+  #choiceB.is-selected,
+  #choiceA.is-dimmed,
+  #choiceB.is-dimmed {
+    transform: none; /* 只留描边环与压暗的 opacity/box-shadow 渐变，去缩放与弹簧 */
+    transition: opacity 280ms var(--ease-out), box-shadow 280ms var(--ease-out);
+  }
+
+  span.heat-ind {
+    transition: transform 150ms var(--ease-out), width 150ms var(--ease-out); /* 更短、无对称缓动过冲 */
+  }
+
+  img.img-reveal {
+    filter: none;
     transform: none;
+    transition: opacity 500ms var(--ease-out); /* 只淡入，去 blur 与缩放 */
+  }
+
+  .sheet {
+    transform: none; /* 弹层留 opacity/遮罩淡变，抽屉位移归零 */
+    transition: none;
+  }
+
+  .timer-num {
+    transition: color 300ms var(--ease-out); /* 留换色，去 transform 弹簧带 */
+  }
+
+  .timer-num.pulse {
+    animation: none;
+  }
+
+  .reveal {
+    animation: revealFade 520ms var(--ease-out); /* 缩放揭示 → 纯 opacity 揭示 */
+  }
+
+  .reveal.repick {
+    animation: revealFade 520ms var(--ease-out); /* 合并态同样去位移、去缩放 */
+  }
+
+  .reveal::after {
+    content: none; /* 光泽扫掠整体撤下 */
   }
 }

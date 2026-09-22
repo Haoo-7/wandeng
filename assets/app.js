@@ -2,6 +2,7 @@
   const KEY = "wandeng-state-v2";
   const data = window.WANDENG;
   const $ = (id) => document.getElementById(id);
+  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
 
   const state = {
     names: ["", ""],
@@ -101,6 +102,7 @@
     document.querySelectorAll(".screen").forEach((el) => {
       el.classList.toggle("active", el.dataset.screen === name);
     });
+    if (name === "setup") positionHeatInd();
   }
 
   function pick(list, usedKey) {
@@ -114,7 +116,9 @@
   }
 
   function renderHeatButtons() {
-    $("heatGrid").innerHTML = data.heats
+    const grid = $("heatGrid");
+    const prevInd = grid.querySelector(".heat-ind");
+    grid.innerHTML = data.heats
       .map(
         (h) => `
       <button type="button" class="heat-btn ${h.id === state.heat ? "active" : ""}" data-heat="${h.id}">
@@ -123,6 +127,29 @@
       </button>`
       )
       .join("");
+    if (!grid.querySelector(".heat-ind")) {
+      if (prevInd) {
+        grid.prepend(prevInd);
+      } else {
+        const ind = document.createElement("span");
+        ind.className = "heat-ind";
+        grid.prepend(ind);
+      }
+    }
+    moveHeatInd(grid.querySelector(".heat-btn.active"));
+  }
+
+  function moveHeatInd(btn) {
+    const ind = $("heatGrid").querySelector(".heat-ind");
+    if (!ind || !btn) return;
+    ind.style.width = btn.offsetWidth + "px";
+    ind.style.transform = "translateX(" + btn.offsetLeft + "px)";
+  }
+
+  function positionHeatInd() {
+    const grid = $("heatGrid");
+    if (!grid) return;
+    moveHeatInd(grid.querySelector(".heat-btn.active"));
   }
 
   function renderHome() {
@@ -139,9 +166,22 @@
 
   function repop(el) {
     if (!el) return;
-    el.classList.remove("repick");
+    if (el.classList.contains("reveal")) return;
+    el.classList.remove("repick", "reveal");
+    // 先藏住再强制重排：否则 WebKit 会把「未加动画的新文案 + opacity 1」提交成一帧，闪一下再淡入
+    el.style.opacity = "0";
     void el.offsetWidth;
-    el.classList.add("repick");
+    el.style.opacity = "";
+    el.classList.add("repick", "reveal");
+    const onEnd = (e) => {
+      if (/repick/i.test(e.animationName)) {
+        el.addEventListener("animationend", onEnd, { once: true });
+        return;
+      }
+      // 两个类一起摘：只摘 reveal 会让 animation 简写退化成 repick，WebKit 把它当新动画从 0% 重启（多闪一次）
+      el.classList.remove("reveal", "repick");
+    };
+    el.addEventListener("animationend", onEnd, { once: true });
   }
 
   function repopBox(el, selector) {
@@ -195,7 +235,10 @@
         : "点下面，掷出这一轮。";
   }
 
+  let diceBusy = false;
+
   function rollDice() {
+    if (diceBusy) return;
     const pack = dicePack();
     const a = Math.floor(Math.random() * pack.actions.length);
     const action = pack.actions[a];
@@ -206,6 +249,18 @@
     if (b < 0) b = Math.floor(Math.random() * pack.bodies.length);
     state.diceSpin[0] += 1;
     state.diceSpin[1] += 1;
+    if (!reduceMotion.matches) {
+      diceBusy = true;
+      $("dieAction").classList.add("anticipate");
+      $("dieBody").classList.add("anticipate");
+      $("btnRoll").classList.add("windup");
+      window.setTimeout(() => {
+        diceBusy = false;
+        $("dieAction").classList.remove("anticipate");
+        $("dieBody").classList.remove("anticipate");
+        $("btnRoll").classList.remove("windup");
+      }, 240);
+    }
     $("dieAction").classList.add("rolling");
     $("dieBody").classList.add("rolling");
     setDie($("dieAction"), a, state.diceSpin[0]);
@@ -228,9 +283,22 @@
     $("wheelLine").textContent = "指针停下后，按出现的那一句做。";
   }
 
+  let wheelBusy = false;
+
   function spinWheel() {
+    if (wheelBusy) return;
     const text = pick(packOf("wheel"), `wheel-${genderKey()}`);
     state.wheelAngle += 360 * 6 + Math.floor(Math.random() * 360);
+    if (!reduceMotion.matches) {
+      wheelBusy = true;
+      $("wheel").classList.add("anticipate");
+      $("btnSpin").classList.add("windup");
+      window.setTimeout(() => {
+        wheelBusy = false;
+        $("wheel").classList.remove("anticipate");
+        $("btnSpin").classList.remove("windup");
+      }, 240);
+    }
     $("wheel").style.transform = `rotate(${state.wheelAngle}deg)`;
     window.setTimeout(() => {
       $("wheelTitle").textContent = fill(text);
@@ -296,6 +364,7 @@
   }
 
   function resetChoice() {
+    clearChoiceState();
     state.currentChoice = null;
     $("choiceWho").textContent = who();
     $("choiceQ").textContent = "点下面，抽出一道必须选的题。";
@@ -305,6 +374,7 @@
   }
 
   function drawChoice() {
+    clearChoiceState();
     const card = pick(packOf("choices"), `choice-${genderKey()}`);
     state.currentChoice = card;
     $("choiceQ").textContent = fill(card.q);
@@ -317,14 +387,35 @@
     repopBox($("choiceQ"), ".play-card");
   }
 
+  function clearChoiceState() {
+    window.clearTimeout(pickChoice.timer);
+    pickChoice.timer = 0;
+    $("choiceA").classList.remove("is-selected", "is-dimmed");
+    $("choiceB").classList.remove("is-selected", "is-dimmed");
+  }
+
+  function markChoice(side) {
+    if (pickChoice.timer) return;
+    const picked = side === "a" ? $("choiceA") : $("choiceB");
+    const sibling = side === "a" ? $("choiceB") : $("choiceA");
+    picked.classList.remove("is-dimmed");
+    picked.classList.add("is-selected");
+    sibling.classList.remove("is-selected");
+    sibling.classList.add("is-dimmed");
+  }
+
   function pickChoice(side) {
     const card = state.currentChoice;
-    if (!card) return;
-    $("choiceDo").textContent = fill(side === "a" ? card.doA : card.doB);
-    $("choiceBtns").classList.add("hidden");
-    $("btnChoiceDraw").classList.remove("hidden");
-    $("btnChoiceDraw").textContent = "再抽一道";
-    repopBox($("choiceDo"), ".play-card");
+    if (!card || pickChoice.timer) return;
+    // 300ms = .is-selected 的 280ms 过渡 + 余量；display:none 会在同一帧取消过渡，故必须延后收起/揭晓
+    pickChoice.timer = window.setTimeout(() => {
+      pickChoice.timer = 0;
+      $("choiceDo").textContent = fill(side === "a" ? card.doA : card.doB);
+      $("choiceBtns").classList.add("hidden");
+      $("btnChoiceDraw").classList.remove("hidden");
+      $("btnChoiceDraw").textContent = "再抽一道";
+      repopBox($("choiceDo"), ".play-card");
+    }, 300);
   }
 
   function formatTime(sec) {
@@ -380,6 +471,8 @@
         stopTimer();
         $("timerNum").textContent = "00";
         $("timerNum").classList.add("done");
+        $("timerNum").classList.add("pulse");
+        window.setTimeout(() => $("timerNum").classList.remove("pulse"), 600);
         $("timerKicker").textContent = "时间到";
         $("btnTimerStart").textContent = "再来一次";
         $("btnTimerStart").disabled = false;
@@ -404,9 +497,14 @@
 
   function closeSafeModal() {
     const wasOpen = $("safeModal").classList.contains("active");
-    $("safeModal").classList.remove("active");
-    if (wasOpen && safeTrigger && document.contains(safeTrigger)) safeTrigger.focus();
+    const trigger = safeTrigger;
     safeTrigger = null;
+    $("safeModal").classList.remove("active");
+    if (wasOpen && trigger && document.contains(trigger)) {
+      window.setTimeout(() => {
+        if (document.contains(trigger)) trigger.focus();
+      }, 320);
+    }
   }
 
   function openCost() {
@@ -504,10 +602,45 @@
     renderHeatButtons();
   }
 
+  const RIPPLE_TARGETS = ".btn, .row-card, .more-grid button, .icon-btn";
+
+  function ripple(e) {
+    if (reduceMotion.matches) return;
+    const target = e.target && e.target.closest ? e.target.closest(RIPPLE_TARGETS) : null;
+    if (!target) return;
+    const rect = target.getBoundingClientRect();
+    const size = 2 * Math.max(target.offsetWidth, target.offsetHeight);
+    const span = document.createElement("span");
+    span.className = "ripple";
+    span.style.width = size + "px";
+    span.style.height = size + "px";
+    span.style.left = `${e.clientX - rect.left - size / 2}px`;
+    span.style.top = `${e.clientY - rect.top - size / 2}px`;
+    target.appendChild(span);
+    span.addEventListener("animationend", () => span.remove(), { once: true });
+  }
+
+  function revealImages() {
+    document.querySelectorAll("img.img-reveal").forEach((img) => {
+      const done = () => img.classList.add("is-loaded");
+      const ready = () => {
+        if (img.decode) img.decode().then(done).catch(() => {});
+        else done();
+      };
+      if (img.complete) {
+        ready();
+      } else {
+        img.addEventListener("load", ready, { once: true });
+        img.addEventListener("error", done, { once: true });
+      }
+    });
+  }
+
   function boot() {
     load();
     fillSetup();
     renderSafeHints();
+    revealImages();
     if (state.names[0] && state.names[1]) {
       renderHome();
       show("home");
@@ -519,6 +652,14 @@
       state.heat = Number(btn.dataset.heat);
       renderHeatButtons();
     });
+
+    let heatResizeId = null;
+    window.addEventListener("resize", () => {
+      clearTimeout(heatResizeId);
+      heatResizeId = setTimeout(positionHeatInd, 150);
+    });
+
+    document.addEventListener("pointerdown", ripple);
 
     $("startBtn").addEventListener("click", () => {
       state.names = [$("nameA").value.trim() || "他", $("nameB").value.trim() || "她"];
@@ -565,9 +706,18 @@
     $("btnSceneNext").addEventListener("click", () => passTo("scene"));
 
     $("btnChoiceDraw").addEventListener("click", drawChoice);
-    $("choiceA").addEventListener("click", () => pickChoice("a"));
-    $("choiceB").addEventListener("click", () => pickChoice("b"));
-    $("btnChoiceNext").addEventListener("click", () => passTo("choice"));
+    $("choiceA").addEventListener("click", () => {
+      markChoice("a");
+      pickChoice("a");
+    });
+    $("choiceB").addEventListener("click", () => {
+      markChoice("b");
+      pickChoice("b");
+    });
+    $("btnChoiceNext").addEventListener("click", () => {
+      clearChoiceState();
+      passTo("choice");
+    });
 
     $("btnTimerStart").addEventListener("click", () => {
       if ($("btnTimerStart").textContent === "再来一次" && state.currentTimer) {
