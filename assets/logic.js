@@ -112,6 +112,28 @@
     return { item: item, used: next };
   }
 
+  function looksKeyed(value) {
+    if (value.slice(0, 2) === "s:") return true;
+    if (value.slice(0, 2) === "n:") {
+      const rest = value.slice(2);
+      return rest !== "" && isFinite(Number(rest));
+    }
+    if (value.slice(0, 2) === "o:") {
+      try {
+        JSON.parse(value.slice(2));
+        return true;
+      } catch {
+        return false;
+      }
+    }
+    return false;
+  }
+
+  function asKey(entry) {
+    if (typeof entry !== "string") return keyOf(entry);
+    return looksKeyed(entry) ? entry : keyOf(entry);
+  }
+
   // 迁移历史 used：只认 <kind>-<gender> 键、数组值、字符串条目；去重取最近一次；从尾部截断。
   function migrateUsed(rawUsed) {
     if (!isPlainObject(rawUsed)) return {};
@@ -130,7 +152,7 @@
       for (var j = value.length - 1; j >= 0; j--) {
         var entry = value[j];
         if (typeof entry !== "string") continue;
-        var entryKey = keyOf(entry);
+        var entryKey = asKey(entry);
         if (seen[entryKey]) continue;
         seen[entryKey] = true;
         kept.push(entryKey);

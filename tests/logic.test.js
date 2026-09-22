@@ -168,6 +168,28 @@ test("migrateUsed: a poisoned 10k-entry blob returns a bounded, string-only resu
   assert.deepEqual(out["truth-m"], [], "object entries are not strings and must be dropped");
 });
 
+test("migrateUsed: keys produced by keyOf survive migration unchanged, and migration is idempotent", () => {
+  const stored = {
+    "scene-m": [keyOf({ title: "a", setup: "b", do: "c" }), "s:plain", "n:7"],
+  };
+  const once = migrateUsed(stored);
+  assert.deepEqual(once, stored, "already-keyed entries must not be re-prefixed");
+  assert.deepEqual(migrateUsed(once), once, "migrating twice must equal migrating once");
+});
+
+test("migrateUsed: a raw legacy string is still keyed", () => {
+  assert.deepEqual(migrateUsed({ "truth-m": ["raw item"] })["truth-m"], ["s:raw item"]);
+});
+
+test("round trip: a persisted used list still blocks the same items after storage + migration", () => {
+  const list = [{ q: "one" }, { q: "two" }, { q: "three" }];
+  const drawn = pickFrom(list, [], () => 0);
+  const reloadedList = JSON.parse(JSON.stringify(list));
+  const restored = migrateUsed({ "combo-m": drawn.used })["combo-m"];
+  const next = pickFrom(reloadedList, restored, () => 0);
+  assert.notDeepEqual(next.item, drawn.item, "the reloaded pool must exclude what was already drawn");
+});
+
 /* ----------------------------------------------------------- migrateState */
 
 test("migrateState: never throws on hostile input", () => {
