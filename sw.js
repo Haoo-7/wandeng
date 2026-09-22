@@ -1,10 +1,10 @@
-const CACHE = "wandeng-v7";
+const CACHE = "wandeng-v10";
 const FILES = [
   "./",
   "./index.html",
-  "./assets/app.css?v=7",
-  "./assets/app.js?v=7",
-  "./assets/data.js?v=7",
+  "./assets/app.css?v=10",
+  "./assets/app.js?v=10",
+  "./assets/data.js?v=8",
   "./assets/favicon.svg",
   "./assets/img/hotel.jpg",
   "./assets/img/thumb-tod.png",

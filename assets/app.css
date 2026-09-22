@@ -95,6 +95,11 @@
     background var(--motion-med) ease, border-color var(--motion-med) ease;
   --safe-top: max(18px, env(safe-area-inset-top));
   --tap-pad: max(env(safe-area-inset-bottom), 12px);
+
+  /* —— 响应式尺寸系统（v10）：流式外壳 / 霞光场满屏 / 英雄区溶解 / 底部锚定 —— */
+  --gutter: max(24px, calc((100vw - 640px) / 2)); /* 内容列 = min(100% - 48px, 640px) */
+  --safe-bottom: calc(env(safe-area-inset-bottom, 0px) + 12px); /* 末行基线以下为安全区 + 12px */
+  --hero-dissolve: linear-gradient(180deg, #000 0%, #000 52%, rgba(0, 0, 0, 0) 98%); /* 照片带溶解，无硬边 */
 }
 
 * {
@@ -112,21 +117,23 @@ body {
 }
 
 body {
+  min-height: 100vh;
   min-height: 100dvh;
   overflow: hidden;
+  background: var(--dusk-field-full);
 }
 
 /* ==========================================================================
-   骨架：#app 承载满屏霞光场；每块 .screen 底部叠压暗层保文字对比度
+   骨架：body 承载满屏霞光场（任何宽度顶到视口边缘）；
+   #app 为透明 100dvh 外壳；每块 .screen 底部叠压暗层保文字对比度
    ========================================================================== */
 
 #app {
   position: relative;
   z-index: 1;
+  height: 100vh;
   height: 100dvh;
-  max-width: 430px;
-  margin: 0 auto;
-  background: var(--dusk-field-full);
+  width: 100%;
 }
 
 .screen {
@@ -135,7 +142,7 @@ body {
   flex-direction: column;
   height: 100%;
   overflow: auto;
-  padding: calc(var(--safe-top) + 8px) 22px calc(var(--tap-pad) + 10px);
+  padding: calc(var(--safe-top) + 8px) var(--gutter) var(--safe-bottom);
 }
 
 .screen::after {
@@ -231,8 +238,8 @@ h1,
 }
 
 .hero {
-  margin: 24px 0 14px;
-  font-size: 30px;
+  margin: clamp(16px, 2.9dvh, 24px) 0 clamp(10px, 1.7dvh, 14px);
+  font-size: clamp(26px, 3.6dvh, 30px);
   text-align: center;
   color: var(--text-1);
 }
@@ -260,17 +267,13 @@ h1,
    首页：照片头图 / 游戏卡行 / 玩法宫格 / 底部热度
    ========================================================================== */
 
-.screen-home {
-  padding-left: 18px;
-  padding-right: 18px;
-}
-
+/* B · 英雄区溶解：照片带沉浸式延伸到状态栏下，底部经 mask 溶进霞光场，无硬圆角接缝。
+   首页与其余屏共用 .screen 的 --gutter；照片带负 margin 顶到视口左右边缘 */
 .hero-photo {
   position: relative;
-  margin: calc(-1 * var(--safe-top) - 8px) -18px 8px;
-  height: 216px;
-  overflow: hidden;
-  border-radius: 0 0 var(--radius-card) var(--radius-card);
+  flex: 0 0 auto;
+  margin: calc(-1 * var(--safe-top) - 8px) calc(-1 * var(--gutter)) 0;
+  height: clamp(160px, 21dvh, 300px);
 }
 
 .hero-photo img {
@@ -278,26 +281,35 @@ h1,
   height: 100%;
   object-fit: cover;
   object-position: 50% 6%;
+  -webkit-mask-image: var(--hero-dissolve);
+  mask-image: var(--hero-dissolve);
 }
 
 .hero-shade {
   position: absolute;
   inset: 0;
   background: var(--photo-veil);
+  -webkit-mask-image: var(--hero-dissolve);
+  mask-image: var(--hero-dissolve);
 }
 
+/* 品牌 + 标题落在溶解区之下（-10px 咬进溶解尾端），任何屏高都不与照片硬边相撞 */
 .hero-copy {
-  position: absolute;
-  inset: 0;
+  position: relative;
+  z-index: 2;
+  flex: 0 0 auto;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: flex-end;
-  padding: 0 22px 6px;
+  margin-top: -10px;
+}
+
+.hero-copy .brand {
+  margin-bottom: 0;
 }
 
 .hero-copy .hero {
-  margin: 14px 0 6px;
+  margin: clamp(12px, 2.4dvh, 20px) 0 0;
 }
 
 .mini-hero {
@@ -310,16 +322,16 @@ h1,
   justify-content: flex-start;
 }
 
-/* A · 首页纵向节奏：三段 auto margin 把剩余空间均分给 标题→卡行→宫格→底栏，无空段 */
+/* A+C · 首页纵向节奏：组间 gap 走 clamp（高度 667→1366 压缩/舒展），剩余空间全部让给底部锚定 */
 .screen-home .home-stack {
   flex: 0 0 auto;
-  margin-top: auto;
+  margin-top: clamp(14px, 3.2dvh, 52px);
 }
 
 .stack {
   display: flex;
   flex-direction: column;
-  gap: 11px;
+  gap: clamp(9px, 1.8dvh, 11px);
   flex: 1;
 }
 
@@ -330,8 +342,8 @@ h1,
   gap: 13px;
   align-items: center;
   width: 100%;
-  min-height: 62px;
-  padding: 9px 16px 9px 9px;
+  min-height: clamp(56px, 8dvh, 64px);
+  padding: clamp(7px, 1.15dvh, 9px) 16px clamp(7px, 1.15dvh, 9px) 9px;
   border: 1px solid var(--glass-line);
   border-radius: var(--radius-card);
   background: var(--glass-fill);
@@ -379,19 +391,20 @@ h1,
   text-align: center;
 }
 
-/* 玩法宫格（样张 .tile）：右上角 30px 圆图标，不读作独立按钮 */
+/* 玩法宫格（样张 .tile）：右上角 30px 圆图标，不读作独立按钮。任何宽度保持 2 列 */
 .more-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 11px;
-  margin-top: auto;
+  gap: clamp(9px, 1.8dvh, 11px);
+  margin-top: clamp(14px, 3.2dvh, 52px);
+  flex: 0 0 auto;
 }
 
 .more-grid button {
   position: relative;
   text-align: left;
-  padding: 12px 14px 12px;
-  min-height: 72px;
+  padding: clamp(8px, 1.4dvh, 12px) 14px;
+  min-height: clamp(62px, 8.5dvh, 78px);
   border-radius: var(--radius-tile);
   border: 1px solid var(--glass-line);
   background: var(--glass-fill);
@@ -553,11 +566,11 @@ h1,
 }
 
 .actions {
-  margin-top: 16px;
+  margin-top: clamp(12px, 2.2dvh, 18px);
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  padding-bottom: var(--tap-pad);
+  gap: clamp(8px, 1.6dvh, 10px);
+  flex: 0 0 auto;
 }
 
 /* C · 常驻安全词微提示：安静脚注，压在底部压暗层上，不与会操作控件相撞 */
@@ -574,7 +587,7 @@ h1,
 }
 
 .screen-home .safe-hint {
-  margin-top: 8px;
+  margin-top: clamp(8px, 1.6dvh, 14px);
   flex: 0 0 auto;
 }
 
@@ -646,7 +659,8 @@ input[type="text"]:focus-visible {
   grid-template-columns: 44px 1fr auto;
   align-items: center;
   gap: 10px;
-  margin-bottom: 14px;
+  margin-bottom: clamp(10px, 2dvh, 16px);
+  flex: 0 0 auto;
 }
 
 .topbar .pill {
@@ -683,8 +697,8 @@ input[type="text"]:focus-visible {
 
 .play-card {
   flex: 1;
-  min-height: 280px;
-  padding: 28px 24px;
+  min-height: clamp(200px, 31dvh, 330px);
+  padding: clamp(20px, 3.6dvh, 30px) clamp(18px, 4.5vw, 26px);
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -898,11 +912,12 @@ input[type="text"]::placeholder {
 
 .dice-stage {
   flex: 1;
+  min-height: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 28px;
+  gap: clamp(18px, 4dvh, 30px);
   border-radius: var(--radius-card);
   border: 1px solid var(--glass-line);
   background: var(--dice-stage), var(--glass-fill-soft);
@@ -999,6 +1014,8 @@ input[type="text"]::placeholder {
   display: grid;
   place-items: center;
   position: relative;
+  overflow-x: clip;
+  overflow-y: visible;
 }
 
 .wheel {
@@ -1064,7 +1081,7 @@ input[type="text"]::placeholder {
 
 /* I · 倒计时四排操作行：拉开行距留出呼吸，仍单屏不溢出 */
 #screen-timer .actions {
-  gap: 12px;
+  gap: clamp(9px, 1.8dvh, 12px);
 }
 
 #screen-timer .linkish {
@@ -1168,25 +1185,122 @@ input[type="text"]::placeholder {
 }
 
 /* ==========================================================================
-   桌面 ≥720px：只加设备框与留白，不做桌面版重排
+   D · 全宽度满屏：霞光场由 body 铺满视口，内容列 min(100% - 48px, 640px) 居中。
+   设备框（≥720px 样张画板）已整体移除，不再有任何手机外壳模拟。
+   E · 矮屏两档收紧：≤800 高（iPad 横屏 768）轻收；≤720 高（375×667 SE）重收。
+   纵向节奏全部 clamp(dvh)，两档只压上下限，667→1366 连续压缩/舒展。
    ========================================================================== */
 
-@media (min-width: 720px) {
-  body {
-    display: grid;
-    place-items: center;
-    background: var(--artboard);
+@media (max-height: 800px) {
+  .hero-photo {
+    height: clamp(140px, 18dvh, 168px);
   }
 
-  #app {
-    height: min(100dvh - 48px, 864px);
-    border-radius: 44px;
-    overflow: hidden;
-    box-shadow:
-      inset 0 0 0 1px var(--frame-line),
-      inset 0 0 0 4px var(--frame-edge),
-      0 50px 120px var(--frame-far),
-      0 0 90px var(--frame-glow);
+  .hero-copy {
+    margin-top: -14px;
+  }
+
+  .screen-home .hero-copy .brand {
+    font-size: 22px;
+    line-height: 1.3;
+  }
+
+  .screen-home .hero-copy .hero {
+    font-size: 26px;
+    margin: 10px 0 4px;
+  }
+
+  .screen-home .home-stack,
+  .more-grid {
+    margin-top: clamp(12px, 2.2dvh, 22px);
+  }
+
+  .more-grid button {
+    padding: 9px 13px;
+  }
+
+  .play-card {
+    min-height: clamp(180px, 26dvh, 240px);
+  }
+}
+
+@media (max-height: 720px) {
+  .hero-photo {
+    height: clamp(126px, 17.5dvh, 148px);
+  }
+
+  .hero-copy {
+    margin-top: -16px;
+  }
+
+  .screen-home .hero-copy .brand {
+    font-size: 20px;
+    line-height: 1.25;
+  }
+
+  .screen-home .hero-copy .brand-en {
+    margin-top: 4px;
+  }
+
+  .screen-home .hero-copy .gold-line {
+    margin-top: 5px;
+  }
+
+  .screen-home .hero-copy .hero {
+    font-size: 23px;
+    margin: 6px 0 0;
+  }
+
+  .screen-home .home-stack,
+  .more-grid {
+    margin-top: 10px;
+  }
+
+  .screen-home .safe-hint {
+    margin-top: 6px;
+  }
+
+  .row-card {
+    padding: 5px 14px 5px 5px;
+  }
+
+  .more-grid button {
+    min-height: 56px;
+    padding: 7px 12px;
+  }
+
+  .more-grid b {
+    margin-top: 2px;
+  }
+
+  .play-card {
+    min-height: clamp(150px, 24dvh, 230px);
+  }
+
+  .btn {
+    height: 52px;
+  }
+
+  #choiceA,
+  #choiceB {
+    min-height: 52px;
+  }
+
+  .actions {
+    margin-top: 10px;
+  }
+
+  .timer-num {
+    font-size: 56px;
+    margin: 6px 0 12px;
+  }
+
+  .dice-row {
+    gap: 20px;
+  }
+
+  .footnote {
+    margin-top: 10px;
   }
 }
 
