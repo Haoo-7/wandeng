@@ -253,8 +253,8 @@
         const cls =
           row.verdict === "both-yes" ? " has-both-yes" : row.verdict === "any-no" ? " has-any-no" : "";
         return (
-          `<div class="bd-row${cls}">` +
-          `<div class="bd-head"><b>${esc(item.zh)}</b><span>${esc(tier)}</span></div>` +
+          `<div class="glass-row${cls}">` +
+          `<div class="glass-row-head"><b>${esc(item.zh)}</b><span>${esc(tier)}</span></div>` +
           bdPlayerRow("a", state.names[0] || "他", row.levels[0], item.id) +
           bdPlayerRow("b", state.names[1] || "她", row.levels[1], item.id) +
           `</div>`
@@ -276,6 +276,146 @@
     state.boundary[itemId] = pair;
     save();
     renderBoundary();
+  }
+
+  /* 自定义题库的导入格式（对外契约，用户要能手写）：
+     [{
+       kind:   "truth" | "dare" | "wheel" | "penalties"   -> payload 是字符串，也可直接给 text
+             | "scenes"  -> {title, setup, do}
+             | "choices" -> {q, a, b, doA, doB}
+             | "timers"  -> {text, sec}
+             | "combo"   -> {q, dare}
+       heat:   0 | 1 | 2
+       gender: "both" | "m" | "f"
+       payload: 该 kind 对应的内容（对象类也可把字段平铺在条目上，省掉 payload 这一层）
+     }]
+     字段缺失或类型不符的条目会被跳过，不会中断整次导入。 */
+  const CUSTOM_SHAPES = {
+    truth: (p) => typeof p === "string" && p.trim() !== "",
+    dare: (p) => typeof p === "string" && p.trim() !== "",
+    wheel: (p) => typeof p === "string" && p.trim() !== "",
+    penalties: (p) => typeof p === "string" && p.trim() !== "",
+    scenes: (p) => hasStringFields(p, ["title", "setup", "do"]),
+    choices: (p) => hasStringFields(p, ["q", "a", "b", "doA", "doB"]),
+    combo: (p) => hasStringFields(p, ["q", "dare"]),
+    timers: (p) =>
+      isPlainish(p) && typeof p.text === "string" && p.text.trim() !== "" && typeof p.sec === "number" && p.sec > 0,
+  };
+
+  const CUSTOM_KINDS = Object.keys(CUSTOM_SHAPES);
+
+  function isPlainish(value) {
+    return value !== null && typeof value === "object" && !Array.isArray(value);
+  }
+
+  function hasStringFields(value, fields) {
+    if (!isPlainish(value)) return false;
+    return fields.every((f) => typeof value[f] === "string" && value[f].trim() !== "");
+  }
+
+  function normalizeCustomEntry(entry) {
+    if (!isPlainish(entry)) return null;
+    const shape = CUSTOM_SHAPES[entry.kind];
+    if (!shape) return null;
+    if (entry.heat !== 0 && entry.heat !== 1 && entry.heat !== 2) return null;
+    if (entry.gender !== "both" && entry.gender !== "m" && entry.gender !== "f") return null;
+
+    let payload = entry.payload;
+    if (payload === undefined) {
+      if (typeof entry.text === "string") {
+        payload = entry.text;
+      } else {
+        payload = {};
+        Object.keys(entry).forEach((key) => {
+          if (key !== "kind" && key !== "heat" && key !== "gender") payload[key] = entry[key];
+        });
+      }
+    }
+    if (!shape(payload)) return null;
+    return { kind: entry.kind, heat: entry.heat, gender: entry.gender, payload: payload };
+  }
+
+  function setSettingsStatus(text) {
+    const el = $("settingsStatus");
+    if (!el) return;
+    el.textContent = text || "";
+    window.clearTimeout(setSettingsStatus.timer);
+    if (text) {
+      setSettingsStatus.timer = window.setTimeout(() => {
+        el.textContent = "";
+      }, 5000);
+    }
+  }
+
+  function exportBackup() {
+    const payload = { app: "wandeng", version: 3, savedAt: new Date().toISOString(), state: {} };
+    Object.keys(persistedDefaults).forEach((field) => {
+      payload.state[field] = state[field];
+    });
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `wandeng-backup-${Date.now()}.json`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+    setSettingsStatus("已导出备份文件");
+  }
+
+  function applyIncoming(incoming) {
+    const migrated = logic.migrateState(incoming, persistedDefaults);
+    Object.keys(persistedDefaults).forEach((field) => {
+      state[field] = migrated.state[field];
+    });
+    save();
+  }
+
+  function importBackup(file) {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const parsed = logic.sanitizeBackup(String(reader.result));
+      if (!parsed.ok) {
+        setSettingsStatus("这个文件读不了，什么都没改");
+        return;
+      }
+      applyIncoming(parsed.value.state || parsed.value);
+      setSettingsStatus("已导入备份");
+      renderSafeHints();
+      fillSetup();
+      renderHome();
+      show("home");
+    };
+    reader.onerror = () => setSettingsStatus("这个文件读不了，什么都没改");
+    reader.readAsText(file);
+  }
+
+  function importCustomPrompts(file) {
+    const reader = new FileReader();
+    reader.onload = () => {
+      let raw = null;
+      try {
+        raw = JSON.parse(String(reader.result));
+      } catch {
+        raw = null;
+      }
+      const list = Array.isArray(raw) ? raw : isPlainish(raw) && Array.isArray(raw.prompts) ? raw.prompts : null;
+      if (!list) {
+        setSettingsStatus("这个文件读不了，什么都没改");
+        return;
+      }
+      const accepted = list.map(normalizeCustomEntry).filter(Boolean);
+      if (!accepted.length) {
+        setSettingsStatus("没有可用的题目，检查格式");
+        return;
+      }
+      state.customPrompts = state.customPrompts.concat(accepted);
+      save();
+      setSettingsStatus(`已加入 ${accepted.length} 道自定义题`);
+    };
+    reader.onerror = () => setSettingsStatus("这个文件读不了，什么都没改");
+    reader.readAsText(file);
   }
 
   function repop(el) {
@@ -709,6 +849,9 @@
     } else if (game === "boundary") {
       renderBoundary();
       show("boundary");
+    } else if (game === "settings") {
+      setSettingsStatus("");
+      show("settings");
     }
   }
 
@@ -808,6 +951,20 @@
       state.boundary = {};
       save();
       renderBoundary();
+    });
+
+    $("btnExport").addEventListener("click", exportBackup);
+
+    $("importBackup").addEventListener("change", (e) => {
+      const file = e.currentTarget.files && e.currentTarget.files[0];
+      if (file) importBackup(file);
+      e.currentTarget.value = "";
+    });
+
+    $("importCustom").addEventListener("change", (e) => {
+      const file = e.currentTarget.files && e.currentTarget.files[0];
+      if (file) importCustomPrompts(file);
+      e.currentTarget.value = "";
     });
 
     document.querySelectorAll("[data-heat-step]").forEach((btn) => {

@@ -1425,6 +1425,70 @@ input[type="text"]::placeholder {
 }
 
 /* ==========================================================================
+   设置：备份与自定义题库，复用 .glass-row 的玻璃行
+   ========================================================================== */
+
+.settings-list {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  flex: 0 0 auto;
+}
+
+.glass-row .field-note {
+  margin: 0 0 10px;
+}
+
+.set-status {
+  margin: clamp(10px, 2dvh, 14px) 0 0;
+  min-height: 17px;
+  text-align: center;
+  font-size: 12px;
+  font-weight: 300;
+  letter-spacing: 0.06em;
+  line-height: 1.5;
+  color: var(--cta-honey);
+  flex: 0 0 auto;
+}
+
+.file-btn {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 52px;
+  margin: 0;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--btn-ghost-line);
+  background: var(--btn-ghost-fill);
+  color: var(--text-1);
+  font-family: var(--font-body);
+  font-size: 15px;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  cursor: pointer;
+  overflow: hidden;
+  transition: var(--transition-ui), transform 160ms var(--ease-out), filter 160ms var(--ease-out);
+}
+
+.file-btn input[type="file"] {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.file-btn:focus-within {
+  outline: var(--focus-ring);
+  outline-offset: 2px;
+}
+
+.file-btn:active {
+  transform: scale(0.95);
+  filter: brightness(0.94);
+}
+
+/* ==========================================================================
    热度加减：游戏屏内直接升降一档
    ========================================================================== */
 
@@ -1464,7 +1528,7 @@ input[type="text"]::placeholder {
   flex: 0 0 auto;
 }
 
-.bd-row {
+.glass-row {
   padding: 11px 13px;
   border-radius: var(--radius-tile);
   border: 1px solid var(--glass-line);
@@ -1476,15 +1540,15 @@ input[type="text"]::placeholder {
 }
 
 /* 灯金描边 = 双方都 Yes；酒红描边 = 任一方 No */
-.bd-row.has-both-yes {
+.glass-row.has-both-yes {
   border-color: rgba(232, 168, 124, 0.55);
 }
 
-.bd-row.has-any-no {
+.glass-row.has-any-no {
   border-color: rgba(198, 94, 134, 0.5);
 }
 
-.bd-head {
+.glass-row-head {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
@@ -1492,7 +1556,7 @@ input[type="text"]::placeholder {
   margin-bottom: 9px;
 }
 
-.bd-head b {
+.glass-row-head b {
   font-size: 14px;
   font-weight: 500;
   letter-spacing: 0.06em;
@@ -1500,7 +1564,7 @@ input[type="text"]::placeholder {
   color: var(--text-1);
 }
 
-.bd-head span {
+.glass-row-head span {
   flex: 0 0 auto;
   font-family: var(--font-display);
   font-style: italic;
