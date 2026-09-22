@@ -623,6 +623,7 @@ h1,
 .row-card:focus-visible,
 .more-grid button:focus-visible,
 .heat-btn:focus-visible,
+.bd-opt:focus-visible,
 .linkish:focus-visible,
 input[type="text"]:focus-visible {
   outline: var(--focus-ring);
@@ -1424,6 +1425,148 @@ input[type="text"]::placeholder {
 }
 
 /* ==========================================================================
+   边界清单：每人一行 Yes / Maybe / No，双方都点头的才进今晚
+   ========================================================================== */
+
+.bd-lead {
+  margin: 0 0 clamp(10px, 2dvh, 14px);
+  text-align: center;
+}
+
+.bd-summary {
+  display: flex;
+  gap: 7px;
+  justify-content: center;
+  margin-bottom: clamp(10px, 2dvh, 14px);
+  flex: 0 0 auto;
+}
+
+.bd-summary .pill {
+  height: 28px;
+  padding: 0 11px;
+  font-size: 10px;
+}
+
+.boundary-list {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  flex: 0 0 auto;
+}
+
+.bd-row {
+  padding: 11px 13px;
+  border-radius: var(--radius-tile);
+  border: 1px solid var(--glass-line);
+  background: var(--glass-fill);
+  -webkit-backdrop-filter: var(--glass-backdrop);
+  backdrop-filter: var(--glass-backdrop);
+  box-shadow: var(--glass-lift), var(--glass-topline);
+  transition: var(--transition-ui);
+}
+
+/* 灯金描边 = 双方都 Yes；酒红描边 = 任一方 No */
+.bd-row.has-both-yes {
+  border-color: rgba(232, 168, 124, 0.55);
+}
+
+.bd-row.has-any-no {
+  border-color: rgba(198, 94, 134, 0.5);
+}
+
+.bd-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 9px;
+}
+
+.bd-head b {
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  line-height: 1.45;
+  color: var(--text-1);
+}
+
+.bd-head span {
+  flex: 0 0 auto;
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  color: var(--text-3);
+}
+
+.bd-player {
+  display: grid;
+  grid-template-columns: 52px 1fr;
+  align-items: center;
+  gap: 9px;
+}
+
+.bd-player + .bd-player {
+  margin-top: 6px;
+}
+
+.bd-player > span {
+  font-size: 11px;
+  font-weight: 300;
+  letter-spacing: 0.06em;
+  color: var(--text-2);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.bd-seg {
+  display: flex;
+  gap: 4px;
+  padding: 3px;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--glass-line);
+  background: var(--glass-fill-soft);
+}
+
+.bd-opt {
+  position: relative;
+  overflow: hidden;
+  flex: 1;
+  min-height: 30px;
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: none;
+  color: var(--text-3);
+  font-family: var(--font-body);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+  transition: var(--transition-ui), transform 160ms var(--ease-out), filter 160ms var(--ease-out);
+}
+
+.bd-opt.on-yes {
+  background: var(--cta-grad-honey);
+  color: var(--ink-amber);
+  font-weight: 500;
+  box-shadow: var(--cta-topline-soft);
+}
+
+.bd-opt.on-maybe {
+  background: var(--glass-fill-strong);
+  color: var(--text-1);
+  font-weight: 500;
+  box-shadow: var(--glass-topline);
+}
+
+.bd-opt.on-no {
+  background: var(--cta-grad-rose);
+  color: var(--ink-plum);
+  font-weight: 500;
+  box-shadow: var(--cta-topline-soft);
+}
+
+/* ==========================================================================
    D · 全宽度满屏：霞光场由 body 铺满视口，内容列 min(100% - 48px, 640px) 居中。
    设备框（≥720px 样张画板）已整体移除，不再有任何手机外壳模拟。
    E · 矮屏两档收紧：≤800 高（iPad 横屏 768）轻收；≤720 高（375×667 SE）重收。
@@ -1559,6 +1702,7 @@ input[type="text"]::placeholder {
   .icon-btn,
   .linkish,
   .heat-btn,
+  .bd-opt,
   input[type="text"] {
     transition: none;
   }

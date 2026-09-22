@@ -119,6 +119,7 @@
         </div>
         <div class="bottom-row">
           <span class="pill pill-wine" id="heatPill">热度  微醺</span>
+          <button class="linkish" data-open="boundary">边界清单</button>
           <button class="linkish" id="resetBtn">重新设置</button>
         </div>
         <p class="safe-hint" data-safe-hint>安全词：暂停</p>
@@ -300,6 +301,21 @@
           <p class="sub">确认是你，再看下一题。</p>
         </div>
         <button class="btn btn-gold" id="passConfirm">是我</button>
+      </section>
+
+      <section class="screen" data-screen="boundary" id="screen-boundary">
+        <div class="topbar">
+          <button class="icon-btn" data-back>←</button>
+          <div class="who">边界清单</div>
+          <span class="pill" id="boundaryPill">共同 0</span>
+        </div>
+        <p class="field-note bd-lead">两个人各自点一遍。今晚真正要玩的，只留都点了 Yes 的。</p>
+        <div class="bd-summary" id="boundarySummary"></div>
+        <div class="boundary-list" id="boundaryList"></div>
+        <div class="actions">
+          <button class="btn btn-outline" id="boundaryClear">清空这一页</button>
+          <p class="safe-hint" data-safe-hint>安全词：暂停</p>
+        </div>
       </section>
 
     </div>

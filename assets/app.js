@@ -223,6 +223,54 @@
     refreshScreen();
   }
 
+  const BD_LEVELS = ["no", "maybe", "yes"];
+  const BD_LABELS = ["No", "Maybe", "Yes"];
+
+  function bdPlayerRow(side, name, level, itemId) {
+    const opts = BD_LABELS.map(
+      (label, value) =>
+        `<button type="button" class="bd-opt${level === value ? " on-" + BD_LEVELS[value] : ""}"` +
+        ` data-bd-id="${itemId}" data-bd-side="${side}" data-bd-value="${value}">${label}</button>`
+    ).join("");
+    return `<div class="bd-player"><span>${esc(name)}</span><div class="bd-seg">${opts}</div></div>`;
+  }
+
+  function renderBoundary() {
+    const items = Array.isArray(data.boundary) ? data.boundary : [];
+    const status = logic.boundaryStatus(state.boundary, items);
+
+    $("boundaryList").innerHTML = status.items
+      .map((row, i) => {
+        const item = items[i];
+        const tier = (data.heats[item.level - 1] || {}).name || "";
+        const cls =
+          row.verdict === "both-yes" ? " has-both-yes" : row.verdict === "any-no" ? " has-any-no" : "";
+        return (
+          `<div class="bd-row${cls}">` +
+          `<div class="bd-head"><b>${esc(item.zh)}</b><span>${esc(tier)}</span></div>` +
+          bdPlayerRow("a", state.names[0] || "他", row.levels[0], item.id) +
+          bdPlayerRow("b", state.names[1] || "她", row.levels[1], item.id) +
+          `</div>`
+        );
+      })
+      .join("");
+
+    $("boundarySummary").innerHTML =
+      `<span class="pill">共同 Yes ${status.counts.bothYes}</span>` +
+      `<span class="pill">有 Maybe ${status.counts.hasMaybe}</span>` +
+      `<span class="pill">存在 No ${status.counts.anyNo}</span>`;
+    $("boundaryPill").textContent = `共同 ${status.counts.bothYes}`;
+  }
+
+  function setBoundary(itemId, side, level) {
+    const pair = Array.isArray(state.boundary[itemId]) ? state.boundary[itemId].slice() : [null, null];
+    const index = side === "a" ? 0 : 1;
+    pair[index] = pair[index] === level ? null : level;
+    state.boundary[itemId] = pair;
+    save();
+    renderBoundary();
+  }
+
   function repop(el) {
     if (!el) return;
     if (el.classList.contains("reveal")) return;
@@ -651,6 +699,9 @@
       resetTimerView();
       drawTimer();
       show("timer");
+    } else if (game === "boundary") {
+      renderBoundary();
+      show("boundary");
     }
   }
 
@@ -661,7 +712,7 @@
     renderHeatButtons();
   }
 
-  const RIPPLE_TARGETS = ".btn, .row-card, .more-grid button, .icon-btn";
+  const RIPPLE_TARGETS = ".btn, .row-card, .more-grid button, .icon-btn, .bd-opt";
 
   function ripple(e) {
     if (reduceMotion.matches) return;
@@ -738,6 +789,18 @@
 
     $("resetBtn").addEventListener("click", () => {
       show("setup");
+    });
+
+    $("boundaryList").addEventListener("click", (e) => {
+      const btn = e.target.closest("[data-bd-value]");
+      if (!btn) return;
+      setBoundary(btn.dataset.bdId, btn.dataset.bdSide, Number(btn.dataset.bdValue));
+    });
+
+    $("boundaryClear").addEventListener("click", () => {
+      state.boundary = {};
+      save();
+      renderBoundary();
     });
 
     document.querySelectorAll("[data-back]").forEach((btn) => {
