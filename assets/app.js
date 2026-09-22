@@ -127,7 +127,8 @@
     document.querySelectorAll(".screen").forEach((el) => {
       el.classList.toggle("active", el.dataset.screen === name);
     });
-    if (name === "setup") positionHeatInd();
+    syncHeatSteps();
+    if (name === "setup") renderHeatButtons();
   }
 
   // save() 刻意留在这里：pick 是唯一改动「不重复」记忆的入口，只有此处落盘才能保证记忆与存档不分叉。
@@ -187,29 +188,29 @@
     });
   }
 
-  // 刻意的不对称：tod 只换胶囊不发牌（尚未选真心话还是大冒险），其余屏一律重抽。
+  // 三档行为刻意不同：tod 只换胶囊；骰子与轮盘只换题目池并清掉旧结果（结果随机，要等用户自己掷）；
+  // 其余屏按新档重抽，让「换一档」当场看得见。
   function refreshScreen() {
     renderHome();
+    syncHeatSteps();
     const screen = state.screen;
-    if (screen === "dice") {
+    if (screen === "tod") {
+      $("todWho").textContent = `${who()} 的回合`;
+      $("todHeat").textContent = heat().name;
+    } else if (screen === "dice") {
       prepDice();
     } else if (screen === "wheel") {
       renderWheel();
-    } else if (screen === "tod") {
-      $("todWho").textContent = `${who()} 的回合`;
-      $("todHeat").textContent = heat().name;
     } else if (screen === "combo") {
-      resetCombo();
+      drawCombo();
     } else if (screen === "scene") {
-      resetScene();
+      drawScene();
     } else if (screen === "choice") {
-      $("btnChoiceDraw").textContent = "抽一道";
-      resetChoice();
+      drawChoice();
     } else if (screen === "timer") {
-      resetTimerView();
       drawTimer();
     } else if (screen === "plan") {
-      resetPlan();
+      drawPlan();
     } else if (screen === "board") {
       renderBoard();
     }
@@ -221,6 +222,12 @@
     state.heat = next;
     save();
     refreshScreen();
+  }
+
+  function syncHeatSteps() {
+    document.querySelectorAll("[data-heat-step]").forEach((btn) => {
+      btn.disabled = Number(btn.dataset.heatStep) < 0 ? state.heat === 0 : state.heat === 2;
+    });
   }
 
   const BD_LEVELS = ["no", "maybe", "yes"];
@@ -801,6 +808,10 @@
       state.boundary = {};
       save();
       renderBoundary();
+    });
+
+    document.querySelectorAll("[data-heat-step]").forEach((btn) => {
+      btn.addEventListener("click", () => shiftHeat(Number(btn.dataset.heatStep)));
     });
 
     document.querySelectorAll("[data-back]").forEach((btn) => {
