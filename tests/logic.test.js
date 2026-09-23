@@ -285,12 +285,50 @@ test("migrateState: the board field is validated and falls back when malformed",
     { pos: [1, 2], theme: 7, winner: -1 },
     { pos: [1, 2], theme: "mix", winner: "x" },
     { pos: [-1, 2], theme: "mix", winner: -1 },
+    { pos: [1.5, 2], theme: "mix", winner: -1 },
+    { pos: [1, 2], theme: "mix", winner: 0.5 },
+    { pos: [1, 2], theme: "mix", winner: 5 },
     "nope",
     [],
   ]) {
     const out = migrateState({ board: bad }, defaults);
     assert.deepEqual(out.state.board, { pos: [0, 0], theme: "mix", winner: -1 }, `board ${JSON.stringify(bad)} should fall back`);
   }
+});
+
+test("migrateState: a __proto__ key in imported data cannot retarget a value's prototype", () => {
+  const defaults = {
+    names: ["他", "她"], heat: 0, safeWord: "暂停", turn: 0,
+    used: {}, boundary: {}, customPrompts: [],
+    board: { pos: [0, 0], theme: "mix", winner: -1 }, planPile: "room",
+  };
+  const raw = JSON.parse('{"boundary":{"kiss":[2,2],"__proto__":{"polluted":1}}}');
+  const out = migrateState(raw, defaults);
+  assert.equal(Object.getPrototypeOf(out.state.boundary), Object.prototype);
+  assert.equal(out.state.boundary.polluted, undefined);
+  assert.equal({}.polluted, undefined, "Object.prototype must stay untouched");
+});
+
+test("migrateState: truncation counts code points, so emoji are not split in half", () => {
+  const defaults = {
+    names: ["他", "她"], heat: 0, safeWord: "暂停", turn: 0,
+    used: {}, boundary: {}, customPrompts: [],
+    board: { pos: [0, 0], theme: "mix", winner: -1 }, planPile: "room",
+  };
+  const emoji = "😀".repeat(40);
+  const out = migrateState({ names: [emoji, "b"], safeWord: emoji }, defaults);
+  assert.equal(out.state.names[0], "😀".repeat(32));
+  assert.equal(Array.from(out.state.names[0]).length, 32);
+  assert.equal(out.state.safeWord, "😀".repeat(32));
+});
+
+test("pickFrom: the used list stays bounded by MAX_USED_PER_KEY even in a long session", () => {
+  const list = Array.from({ length: MAX_USED_PER_KEY + 30 }, (_, i) => `item-${i}`);
+  let used = [];
+  let last = null;
+  for (let i = 0; i < list.length; i++) last = pickFrom(list, used, () => 0), (used = last.used);
+  assert.equal(used.length, MAX_USED_PER_KEY);
+  assert.equal(used[used.length - 1], keyOf(last.item), "the newest pick survives the trim");
 });
 
 test("migrateState: fields without a specific rule keep a type-matching value and reset a mismatched one", () => {
@@ -430,6 +468,30 @@ test("stepTile: terminates on a forward/back/forward cycle", () => {
   });
   assert.ok(Number.isInteger(out.to));
   assert.ok(out.path.length <= tiles.length * 2);
+});
+
+test("stepTile: a full cycle lands on the revisited tile, not one step short", () => {
+  // 0 →(1) 1 →(forward 1) 2 →(back 1) 1：1 是起点，也是这一圈的终点
+  const tiles = [{ kind: "start" }, { kind: "forward", by: 1 }, { kind: "back", by: 1 }];
+  const out = stepTile(tiles, 0, 1);
+  assert.equal(out.to, 1, "must land on the revisited tile so the landed tile's action is not swallowed");
+  assert.equal(out.kind, "forward");
+  assert.deepEqual(out.path, [0, 1, 2], "the repeated tile is a destination, not a new path entry");
+});
+
+test("stepTile: on the shipped board, the 11 → 13 → 10 → 11 cycle returns to its origin", () => {
+  const fs = require("node:fs");
+  const path = require("node:path");
+  const src = fs.readFileSync(path.join(__dirname, "..", "assets", "data.js"), "utf8");
+  const sandbox = {};
+  new Function("window", src)(sandbox);
+  const tiles = sandbox.WANDENG.board.tiles;
+  assert.equal(tiles[11].kind, "together");
+  assert.equal(tiles[13].kind, "back");
+  assert.equal(tiles[10].kind, "forward");
+  const out = stepTile(tiles, 11, 2);
+  assert.equal(out.to, 11, "11 →13(back 3)→10(forward 1)→11 must end on 11");
+  assert.equal(out.kind, "together");
 });
 
 test("stepTile: terminates on a board where every tile is a forward", () => {

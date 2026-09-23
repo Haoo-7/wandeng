@@ -8,13 +8,26 @@
 })(typeof window !== "undefined" ? window : null, function () {
   "use strict";
 
-  // 单个 kind-gender 键下最多保留的去重键数，防止 used 随版本变更无限膨胀
-  var MAX_USED_PER_KEY = 64;
+  // 取 192 而非 64：跨三档热度共用同一键时，truth-m 的并集约 136，截到 64 会让题目提前复现。
+  var MAX_USED_PER_KEY = 192;
   // used 的键是「一到两段小写」：truth-m / scene-f / plan-room
   var USED_KEY_RE = /^[a-z]+-[a-z]+$/;
 
   function isPlainObject(value) {
     return value !== null && typeof value === "object" && !Array.isArray(value);
+  }
+
+  // 写入与迁移共用同一处裁剪，记忆和存档才不会分叉。
+  function trimUsed(keys) {
+    if (keys.length > MAX_USED_PER_KEY) return keys.slice(keys.length - MAX_USED_PER_KEY);
+    return keys;
+  }
+
+  // 按码位截断：slice 会把代理对（emoji）劈成孤立半字。
+  function capChars(value, max) {
+    var text = String(value);
+    var chars = Array.from(text);
+    return chars.length > max ? chars.slice(0, max).join("") : text;
   }
 
   // 规范序列化：对象键递归排序，数组保持位置序。用于把结构相同的对象折成同一个键。
@@ -55,7 +68,11 @@
     if (isPlainObject(value)) {
       var copy = {};
       var keys = Object.keys(value);
-      for (var i = 0; i < keys.length; i++) copy[keys[i]] = deepCopy(value[keys[i]]);
+      for (var i = 0; i < keys.length; i++) {
+        // 从 JSON.parse 来的 __proto__ 是自有属性，直接赋值会去改 copy 的原型而不是建属性
+        if (keys[i] === "__proto__") continue;
+        copy[keys[i]] = deepCopy(value[keys[i]]);
+      }
       return copy;
     }
     return value;
@@ -109,7 +126,7 @@
 
     var item = source[index];
     next.push(keyOf(item));
-    return { item: item, used: next };
+    return { item: item, used: trimUsed(next) };
   }
 
   function looksKeyed(value) {
@@ -159,8 +176,7 @@
       }
 
       kept.reverse();
-      if (kept.length > MAX_USED_PER_KEY) kept = kept.slice(kept.length - MAX_USED_PER_KEY);
-      out[key] = kept;
+      out[key] = trimUsed(kept);
     }
 
     return out;
@@ -190,7 +206,7 @@
           state[key] = deepCopy(defaultValue);
           break;
         }
-        state[key] = [rawValue[0].trim().slice(0, 32), rawValue[1].trim().slice(0, 32)];
+        state[key] = [capChars(rawValue[0].trim(), 32), capChars(rawValue[1].trim(), 32)];
         break;
       }
       case "heat": {
@@ -208,7 +224,7 @@
           state[key] = deepCopy(defaultValue);
           break;
         }
-        state[key] = rawValue.trim().slice(0, 32);
+        state[key] = capChars(rawValue.trim(), 32);
         break;
       }
       case "turn": {
@@ -252,10 +268,10 @@
         const valid =
           Array.isArray(pos) &&
           pos.length === 2 &&
-          pos.every((p) => typeof p === "number" && isFinite(p) && p >= 0) &&
+          pos.every((p) => Number.isInteger(p) && p >= 0) &&
           typeof rawValue.theme === "string" &&
-          typeof rawValue.winner === "number" &&
-          isFinite(rawValue.winner);
+          Number.isInteger(rawValue.winner) &&
+          (rawValue.winner === -1 || rawValue.winner === 0 || rawValue.winner === 1);
         if (!valid) {
           warnings.push('"board" 形状不符');
           state[key] = deepCopy(defaultValue);
@@ -381,7 +397,11 @@
 
       var next = clampIndex(index + delta, last);
       if (next !== index) {
-        if (visited[next]) break;
+        if (visited[next]) {
+          // 环：走上去再停。停在"差一步"的格子上会吞掉那格的动作，还会报出没发生的移动。
+          index = next;
+          break;
+        }
         index = next;
         visited[index] = true;
         path.push(index);
