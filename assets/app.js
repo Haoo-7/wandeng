@@ -258,13 +258,13 @@
     } else if (screen === "wheel") {
       renderWheel();
     } else if (screen === "combo") {
-      drawCombo();
+      drawCombo({ flip: false });
     } else if (screen === "scene") {
-      drawScene();
+      drawScene({ flip: false });
     } else if (screen === "choice") {
-      drawChoice();
+      drawChoice({ flip: false });
     } else if (screen === "timer") {
-      drawTimer();
+      drawTimer({ flip: false });
     } else if (screen === "board") {
       renderBoard();
     }
@@ -682,11 +682,55 @@
     repop(el && el.closest(selector));
   }
 
-  function drawCard(kind) {
+  /* 统一翻卡：已翻面则先翻回正面，在翻转中点（约 260ms）换文案，再翻到背面出结果。
+     中点换文案保证用户看不到文字跳变；reduceMotion 下直接换字不翻面。 */
+  function flipTo(cardEl, renderFn) {
+    if (!cardEl) {
+      renderFn();
+      return;
+    }
+    const apply = () => {
+      renderFn();
+      repop(cardEl);
+    };
+    if (reduceMotion.matches) {
+      cardEl.classList.remove("is-flipped");
+      apply();
+      return;
+    }
+    const goBack = () => {
+      window.setTimeout(() => {
+        apply();
+        cardEl.classList.add("is-flipped");
+      }, 260);
+    };
+    if (cardEl.classList.contains("is-flipped")) {
+      cardEl.classList.remove("is-flipped");
+      goBack();
+    } else {
+      goBack();
+    }
+  }
+
+  function flipCardOf(el) {
+    return el && el.closest(".flip-card");
+  }
+
+  function drawCard(kind, opts) {
     const text = pick(packOf(kind), `${kind}-${genderKey()}`);
-    $("todKind").textContent = kind === "truth" ? "真心话" : "大冒险";
-    $("todText").textContent = fill(text);
-    repopBox($("todText"), ".play-card");
+    const render = () => {
+      $("todKind").textContent = kind === "truth" ? "真心话" : "大冒险";
+      $("todText").textContent = fill(text);
+    };
+    // heat 切换只静默换文案不翻卡（A 节约束）；抽取按钮才翻面。
+    if (opts && opts.flip === false) {
+      const wasFlipped = $("todCard").classList.contains("is-flipped");
+      render();
+      if (!wasFlipped) $("todCard").classList.add("is-flipped");
+      repop($("todCard"));
+      return;
+    }
+    flipTo($("todCard"), render);
   }
 
   function buildDie(el, labels, wine) {
@@ -758,9 +802,10 @@
     $("dieBody").classList.add("rolling");
     setDie($("dieAction"), a, state.diceSpin[0]);
     setDie($("dieBody"), b, state.diceSpin[1]);
-    $("diceTitle").textContent = `${action} × ${body}`;
-    $("diceLine").textContent = lineFor(action, body);
-    repopBox($("diceLine"), ".result");
+    flipTo($("diceCard"), () => {
+      $("diceTitle").textContent = `${action} × ${body}`;
+      $("diceLine").textContent = lineFor(action, body);
+    });
     if (navigator.vibrate) navigator.vibrate([12, 40, 18]);
   }
 
@@ -793,15 +838,17 @@
     }
     $("wheel").style.transform = `rotate(${state.wheelAngle}deg)`;
     window.setTimeout(() => {
-      $("wheelTitle").textContent = fill(text);
-      $("wheelLine").textContent = `${who()} 来做。${other()} 看着，也可以帮忙。`;
-      repopBox($("wheelLine"), ".result");
+      flipTo($("wheelCard"), () => {
+        $("wheelTitle").textContent = fill(text);
+        $("wheelLine").textContent = `${who()} 来做。${other()} 看着，也可以帮忙。`;
+      });
     }, 3200);
     if (navigator.vibrate) navigator.vibrate(18);
   }
 
   function resetCombo() {
     state.currentCombo = null;
+    $("comboCard").classList.remove("is-flipped");
     $("comboKicker").textContent = "先答";
     $("comboQ").textContent = "点下面，抽出一道。先认真答。";
     $("comboDare").textContent = "";
@@ -811,66 +858,93 @@
     $("btnComboGo").classList.add("hidden");
   }
 
-  function drawCombo() {
+  function drawCombo(opts) {
     const card = pick(packOf("combo"), `combo-${genderKey()}`);
     state.currentCombo = card;
-    $("comboKicker").textContent = "先认真答";
-    $("comboQ").textContent = fill(card.q);
-    $("comboDare").textContent = "";
-    $("comboHint").textContent = "说完再点下面。规则允许你现在按答案做。";
+    const render = () => {
+      $("comboKicker").textContent = "先认真答";
+      $("comboQ").textContent = fill(card.q);
+      $("comboDare").textContent = "";
+      $("comboHint").textContent = "说完再点下面。规则允许你现在按答案做。";
+    };
     $("btnComboDraw").classList.add("hidden");
     $("btnComboGo").classList.remove("hidden");
-    repopBox($("comboQ"), ".play-card");
+    if (opts && opts.flip === false) {
+      render();
+      $("comboCard").classList.add("is-flipped");
+      repop($("comboCard"));
+      return;
+    }
+    flipTo($("comboCard"), render);
   }
 
   function revealCombo() {
     const card = state.currentCombo;
     if (!card) return;
-    $("comboKicker").textContent = "现在做";
-    $("comboDare").textContent = fill(card.dare);
-    $("comboHint").textContent = "现在按这个做。";
+    flipTo($("comboCard"), () => {
+      $("comboKicker").textContent = "现在做";
+      $("comboDare").textContent = fill(card.dare);
+      $("comboHint").textContent = "现在按这个做。";
+    });
     $("btnComboGo").classList.add("hidden");
     $("btnComboDraw").classList.remove("hidden");
     $("btnComboDraw").textContent = "再抽一题";
-    repopBox($("comboQ"), ".play-card");
   }
 
   function resetScene() {
+    $("sceneCard").classList.remove("is-flipped");
     $("sceneKicker").textContent = "抽一幕";
     $("sceneTitle").textContent = "点下面，抽出今晚要演的一幕。";
     $("sceneSetup").textContent = "";
     $("sceneDo").textContent = "";
   }
 
-  function drawScene() {
+  function drawScene(opts) {
     const card = pick(packOf("scenes"), `scene-${genderKey()}`);
-    $("sceneKicker").textContent = "这一幕";
-    $("sceneTitle").textContent = fill(card.title);
-    $("sceneSetup").textContent = fill(card.setup);
-    $("sceneDo").textContent = fill(card.do);
-    repopBox($("sceneTitle"), ".play-card");
+    const render = () => {
+      $("sceneKicker").textContent = "这一幕";
+      $("sceneTitle").textContent = fill(card.title);
+      $("sceneSetup").textContent = fill(card.setup);
+      $("sceneDo").textContent = fill(card.do);
+    };
+    if (opts && opts.flip === false) {
+      render();
+      $("sceneCard").classList.add("is-flipped");
+      repop($("sceneCard"));
+      return;
+    }
+    flipTo($("sceneCard"), render);
   }
 
   function resetChoice() {
     clearChoiceState();
     state.currentChoice = null;
+    $("choiceCard").classList.remove("is-flipped");
     $("choiceQ").textContent = "点下面，抽出一道必须选的题。";
     $("choiceDo").textContent = "";
     $("choiceBtns").classList.add("hidden");
     $("btnChoiceDraw").classList.remove("hidden");
   }
 
-  function drawChoice() {
+  function drawChoice(opts) {
     clearChoiceState();
     const card = pick(packOf("choices"), `choice-${genderKey()}`);
     state.currentChoice = card;
-    $("choiceQ").textContent = fill(card.q);
-    $("choiceDo").textContent = "选一个。选完就按那个做。";
-    $("choiceA").textContent = fill(card.a);
-    $("choiceB").textContent = fill(card.b);
+    const render = () => {
+      $("choiceQ").textContent = fill(card.q);
+      $("choiceDo").textContent = "选一个。选完就按那个做。";
+      $("choiceA").textContent = fill(card.a);
+      $("choiceB").textContent = fill(card.b);
+    };
     $("choiceBtns").classList.remove("hidden");
     $("btnChoiceDraw").classList.add("hidden");
-    repopBox($("choiceQ"), ".play-card");
+    if (opts && opts.flip === false) {
+      render();
+      $("choiceCard").classList.add("is-flipped");
+      repop($("choiceCard"));
+      return;
+    }
+    flipTo($("choiceCard"), render);
   }
 
   function clearChoiceState() {
@@ -896,11 +970,12 @@
     // 300ms = .is-selected 的 280ms 过渡 + 余量；display:none 会在同一帧取消过渡，故必须延后收起/揭晓
     pickChoice.timer = window.setTimeout(() => {
       pickChoice.timer = 0;
-      $("choiceDo").textContent = fill(side === "a" ? card.doA : card.doB);
+      flipTo($("choiceCard"), () => {
+        $("choiceDo").textContent = fill(side === "a" ? card.doA : card.doB);
+      });
       $("choiceBtns").classList.add("hidden");
       $("btnChoiceDraw").classList.remove("hidden");
       $("btnChoiceDraw").textContent = "再抽一道";
-      repopBox($("choiceDo"), ".play-card");
     }, 300);
   }
 
@@ -919,6 +994,7 @@
   function resetTimerView() {
     stopTimer();
     state.currentTimer = null;
+    $("timerCard").classList.remove("is-flipped");
     $("timerKicker").textContent = "铃响之前";
     $("timerNum").textContent = "00";
     $("timerNum").classList.remove("done");
@@ -927,18 +1003,26 @@
     $("btnTimerStart").disabled = true;
   }
 
-  function drawTimer() {
+  function drawTimer(opts) {
     stopTimer();
     const card = pick(packOf("timers"), `timer-${genderKey()}`);
     state.currentTimer = card;
     state.timerLeft = card.sec;
-    $("timerKicker").innerHTML = `<span class="tight">${card.sec}</span> 秒`;
-    $("timerNum").textContent = formatTime(card.sec);
-    $("timerNum").classList.remove("done");
-    $("timerText").textContent = fill(card.text);
+    const render = () => {
+      $("timerKicker").innerHTML = `<span class="tight">${card.sec}</span> 秒`;
+      $("timerNum").textContent = formatTime(card.sec);
+      $("timerNum").classList.remove("done");
+      $("timerText").textContent = fill(card.text);
+    };
     $("btnTimerStart").textContent = "开始";
     $("btnTimerStart").disabled = false;
-    repopBox($("timerText"), ".play-card");
+    if (opts && opts.flip === false) {
+      render();
+      $("timerCard").classList.add("is-flipped");
+      repop($("timerCard"));
+      return;
+    }
+    flipTo($("timerCard"), render);
   }
 
   function startTimer() {

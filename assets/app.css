@@ -936,6 +936,50 @@ img.img-reveal.is-loaded {
   animation: repick 0.32s ease, reveal 520ms var(--ease-out);
 }
 
+/* C5 · 统一翻卡：抽取 → 沿 Y 轴翻面 → 背面只留结果大字。
+   动效参照 michaelsboost/CoupleCards 单卡翻抽（行为重写）。
+   正面 .flip-front＝眉标＋提示语；背面 .flip-back＝纯结果大字。 */
+.flip-card {
+  perspective: 1200px;
+}
+
+.flip-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+  transition: transform 520ms var(--ease-out);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.flip-card.is-flipped .flip-inner {
+  transform: rotateY(180deg);
+}
+
+.flip-face {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+}
+
+.flip-back {
+  position: absolute;
+  inset: 0;
+  transform: rotateY(180deg);
+}
+
+/* 背面结果大字：解决「原卡换字字体太小、内容不突出」 */
+.flip-back .q {
+  font-size: clamp(26px, 7vw, 32px);
+  line-height: 1.6;
+}
+
 /* B3 · 蓄力回拉：骰子/轮盘的 transform 已被 JS inline 3D 姿态与旋转占用，
    风箱动画走 standalone scale / rotate 属性，与 transform 链式复合、互不覆盖 */
 @keyframes dieWindup {
@@ -2134,5 +2178,23 @@ input[type="text"]::placeholder {
 
   .reveal::after {
     content: none; /* 光泽扫掠整体撤下 */
+  }
+
+  .flip-inner {
+    transition: opacity 280ms var(--ease-out); /* 翻面 → 纯 opacity 切换 */
+  }
+
+  .flip-card.is-flipped .flip-inner {
+    transform: none;
+  }
+
+  .flip-card.is-flipped .flip-front {
+    position: absolute;
+    inset: 0;
+    visibility: hidden;
+  }
+
+  .flip-card:not(.is-flipped) .flip-back {
+    visibility: hidden;
   }
 }
