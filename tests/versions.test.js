@@ -162,3 +162,16 @@ test("manifest.webmanifest parses as JSON and start_url is ./index.html", () => 
     `manifest start_url is ${JSON.stringify(manifest.start_url)}, expected "./index.html"`
   );
 });
+
+test("every file in the precache list actually exists on disk", () => {
+  const files = [...swJs.matchAll(/"\.\/([^"]*)"/g)]
+    .map((m) => m[1].split("?")[0])
+    .filter(Boolean);
+  assert.ok(files.length > 5, `expected a substantial precache list, parsed ${files.length} entries`);
+  const missing = files.filter((rel) => !fs.existsSync(path.join(root, rel)));
+  assert.deepEqual(
+    missing,
+    [],
+    `sw.js precaches files that do not exist — cache.addAll would reject and silently kill offline: ${missing.join(", ")}`
+  );
+});

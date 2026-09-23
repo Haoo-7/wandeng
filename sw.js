@@ -33,30 +33,42 @@ self.addEventListener("activate", (event) => {
   self.clients.claim();
 });
 
+// 缓存写入失败（配额、不支持的 scheme）不该冒泡成未处理的拒绝。
+function cachePut(req, res) {
+  caches
+    .open(CACHE)
+    .then((cache) => cache.put(req, res))
+    .catch(() => {});
+}
+
 self.addEventListener("fetch", (event) => {
   const req = event.request;
+  if (req.method !== "GET") return;
+
   if (req.mode === "navigate") {
     event.respondWith(
       fetch(req)
         .then((res) => {
-          const copy = res.clone();
-          caches.open(CACHE).then((cache) => cache.put(req, copy));
+          cachePut(req, res.clone());
           return res;
         })
-        .catch(() => caches.match(req).then((hit) => hit || caches.match("./index.html")))
+        // 链尾必须落到真正的 Response：两处都没命中就是 undefined，respondWith(undefined) 会被判成 net::ERR_FAILED。
+        .catch(() =>
+          caches
+            .match(req)
+            .then((hit) => hit || caches.match("./index.html"))
+            .then((hit) => hit || Response.error())
+        )
     );
     return;
   }
+
   event.respondWith(
     fetch(req)
       .then((res) => {
-        if (res && res.status === 200) {
-          const copy = res.clone();
-          caches.open(CACHE).then((cache) => cache.put(req, copy));
-        }
+        if (res && res.status === 200) cachePut(req, res.clone());
         return res;
       })
-      // 兜底必须返回真正的 Response：caches.match 未命中会返回 undefined，respondWith(undefined) 会被判成 net::ERR_FAILED。
       .catch(() => caches.match(req).then((hit) => hit || Response.error()))
   );
 });
