@@ -887,7 +887,7 @@
     const card = pick(packOf("timers"), `timer-${genderKey()}`);
     state.currentTimer = card;
     state.timerLeft = card.sec;
-    $("timerKicker").textContent = `${card.sec} 秒`;
+    $("timerKicker").innerHTML = `<span class="tight">${card.sec}</span> 秒`;
     $("timerNum").textContent = formatTime(card.sec);
     $("timerNum").classList.remove("done");
     $("timerText").textContent = fill(card.text);
