@@ -1685,20 +1685,20 @@ input[type="text"]::placeholder {
   border-color: rgba(255, 255, 255, 0.62);
 }
 
-/* SVG 大棋子：18px 光盘＋白环＋名字首字，同格两枚左右并排 */
+/* SVG 大棋子：22px 光盘＋白环＋名字首字，同格两枚左右并排 */
 .tok-svg {
   position: absolute;
   bottom: 2px;
-  width: 18px;
-  height: 18px;
+  width: 22px;
+  height: 22px;
 }
 
 .tok-svg.tok-a {
-  left: 3px;
+  left: 2px;
 }
 
 .tok-svg.tok-b {
-  right: 3px;
+  right: 2px;
 }
 
 .tok-svg .tok-disc.tok-a,
@@ -1724,17 +1724,20 @@ input[type="text"]::placeholder {
   font-style: normal;
 }
 
-/* 序号让位：同格有棋子时序号上移半格，避免与棋子重叠 */
+/* 序号让位：同格有棋子时序号上移，避免与 22px 棋子重叠 */
 .board-tile .tile-num {
-  transform: translateY(-6px);
+  transform: translateY(-8px);
 }
 
-/* 掷骰小骰面：board-slot 头的点数显示，tumbling 期抖动 */
-.board-die {
+/* 掷骰小骰面：board-slot 头的点数显示，固定槽位不被 flex 挤扁，tumbling 期抖动。
+   特异性必须压过 .glass-row-head span（10px 斜体），否则骰面被压成 10px。 */
+.glass-row-head .board-die {
   font-size: 20px;
-  line-height: 1;
+  font-style: normal;
+  line-height: 1.2;
   color: var(--text-1);
   min-width: 24px;
+  flex: 0 0 auto;
   text-align: center;
   display: inline-block;
 }
