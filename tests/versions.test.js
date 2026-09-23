@@ -9,7 +9,7 @@ const root = path.join(__dirname, "..");
 const read = (rel) => fs.readFileSync(path.join(root, rel), "utf8");
 
 // The release we are converging on. Nothing in the repo is bumped to this yet.
-const EXPECTED = 16;
+const EXPECTED = 17;
 
 const indexHtml = read("index.html");
 const appJs = read("assets/app.js");
@@ -39,7 +39,7 @@ function tokenMap(refs) {
   return map;
 }
 
-test("every ?v= token on a local asset reference in index.html equals 16", () => {
+test("every ?v= token on a local asset reference in index.html equals 17", () => {
   const refs = indexAssetRefs(indexHtml);
   assert.ok(
     refs.length > 0,
@@ -54,7 +54,7 @@ test("every ?v= token on a local asset reference in index.html equals 16", () =>
   });
 });
 
-test("index.html references a script assets/logic.js?v=16", () => {
+test("index.html references a script assets/logic.js?v=17", () => {
   const re = /(?:src)\s*=\s*["']([^"']*logic\.js[^"']*)["']/g;
   const found = [];
   let m;
@@ -79,7 +79,7 @@ test("index.html references a script assets/logic.js?v=16", () => {
   );
 });
 
-test("assets/app.js registers a service worker with ?v=16", () => {
+test("assets/app.js registers a service worker with ?v=17", () => {
   const m = appJs.match(
     /serviceWorker[\s\S]*?\.register\(\s*["']([^"']+)["']/
   );
@@ -101,7 +101,7 @@ test("assets/app.js registers a service worker with ?v=16", () => {
   );
 });
 
-test("sw.js declares a cache name whose trailing number is 16", () => {
+test("sw.js declares a cache name whose trailing number is 17", () => {
   const m = swJs.match(/CACHE\s*=\s*["']([^"']+)["']/);
   assert.ok(m, "sw.js declares no CACHE constant");
 

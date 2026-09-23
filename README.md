@@ -13,7 +13,7 @@
 
 **开玩之前先过一遍「边界清单」**：两个人各自对同一条点 Yes / Maybe / No，顶部会实时汇总「共同 Yes / 有 Maybe / 存在 No」。今晚真正该玩的，只是双方都点了 Yes 的那些。
 
-**飞行棋**：24 格，两人轮流掷骰，落到哪格就做哪格的事（抽题 / 一起 / 代价 / 免过 / 前进后退），先走到最后一格的人赢。右上「玩法」可切换抽题的来源，中途刷新不会丢棋局。
+**飞行棋**：42 格（6×7 蛇形），两人轮流掷骰，落到哪格就做哪格的事（抽题 / 一起 / 代价 / 免过 / 前进后退），先走到最后一格的人赢。右上「玩法」共 8 种：3 种按当前热度抽题，5 种各带一副 36 张的递进牌堆（甜蜜日常 → 灵肉合一）。中途刷新不会丢棋局。
 
 **做什么**：两堆活动卡（房间里 / 出门），抽到就做。带「特殊」标记的是特别卡。
 
@@ -68,15 +68,19 @@ node --test tests/*.test.js
 
 ## 致谢
 
-界面与玩法上参考了三个 MIT 许可的开源项目，代码与文案均为本仓库重写：
+界面与玩法上参考了四个开源项目，代码与文案均为本仓库重写：
 
-- [Chrisbetheking/couple-stark](https://github.com/Chrisbetheking/couple-stark) — 边界清单的「两人各自标记 + 共同 Yes」结构，以及抽卡时「轻一点 / 加码」的升降档思路。
-- [qiaeru/couplecards](https://github.com/qiaeru/couplecards) — 活动卡的卡库结构（分堆 + 稀有标记 + 标题/描述），以及导入导出的设计。
-- [michaelsboost/CoupleCards](https://github.com/michaelsboost/CoupleCards) — 单张卡片翻抽的交互。
-- [woniu9524/couple-flying-chess](https://github.com/woniu9524/couple-flying-chess) — 飞行棋玩法设计（该仓库的授权状态见其 README：声明为 MIT，但未附 LICENSE 文件）。
+- [Chrisbetheking/couple-stark](https://github.com/Chrisbetheking/couple-stark) — MIT。边界清单的「两人各自标记 + 共同 Yes」结构、五档难度分层，以及部分真心话 / 大冒险 / 轮盘 / 边界条目的**选题方向**（条目文本已逐条改写为晚灯语气，非照搬原文）。
+- [qiaeru/couplecards](https://github.com/qiaeru/couplecards) — MIT。活动卡的卡库结构（分堆 + 稀有标记 + 标题/描述），以及导入导出的设计。
+- [michaelsboost/CoupleCards](https://github.com/michaelsboost/CoupleCards) — MIT。单张卡片翻抽的交互。
+- [woniu9524/couple-flying-chess](https://github.com/woniu9524/couple-flying-chess) — 飞行棋玩法设计，以及棋盘五档牌堆的**选题方向**（180 条已逐条改写）。⚠️ 该仓库 README 声明 MIT，但**未附 LICENSE 文件**，授权状态并不明确；已建议作者补上。若你在意这一点，删掉 `assets/data.js` 里的 `boardDecks` 与 `themes` 中 `sweet`/`love`/`burn`/`deep`/`merge` 五项即可完全移除其影响。
+
+上游这些仓库的 599 条主体题库（`truth`/`dare`/`wheel`/`scenes`/`choices`/`timers`/`combo`/`penalties`）早于本次并入就已存在，与上述项目无关；本次并入的是按上方说明改写的那批条目。
 
 字体来自 Google Fonts（Fraunces、Noto Sans SC、Noto Serif SC），各自遵循其原始许可。
 
 ## 附注
 
-`assets/img/` 里的 `dice-hero.jpg` 与 `thumb-*.png|jpg` 已无任何引用，是改版前的遗留素材，因此没有放进 Service Worker 的预缓存列表。确认不再需要即可删除。
+改版前的遗留素材（`dice-hero.jpg` 与 `thumb-*.png|jpg`）确认零引用后已删除。
+
+图标是内嵌在 `index.html` 里的 sprite（256 网格、stroke 16，Phosphor regular 风格），不引 CDN，离线可用。

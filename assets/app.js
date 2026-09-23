@@ -564,6 +564,13 @@
     return state.boardRoll % 2 === 0 ? "truth" : "dare";
   }
 
+  // 五档玩法自带牌堆：task 格优先抽它，抽过的不重复（按玩法分开记记忆）。
+  function boardDeck() {
+    const decks = data && data.boardDecks;
+    const deck = decks && decks[currentTheme().id];
+    return Array.isArray(deck) && deck.length ? deck : null;
+  }
+
   function tokenSvg(name, cls) {
     const ch = (name || "").trim().slice(0, 1) || "·";
     return (
@@ -660,8 +667,13 @@
     let again = false;
 
     if (tile.kind === "task") {
-      const kind = boardPoolKind();
-      line = `${head} ${fill(pick(packOf(kind), `${kind}-${genderKey()}`)) || ""}`;
+      const deck = boardDeck();
+      if (deck) {
+        line = `${head} ${fill(pick(deck, `board-${currentTheme().id}`)) || ""}`;
+      } else {
+        const kind = boardPoolKind();
+        line = `${head} ${fill(pick(packOf(kind), `${kind}-${genderKey()}`)) || ""}`;
+      }
     } else if (tile.kind === "together") {
       const pile = state.boardRoll % 2 === 0 ? "room" : "out";
       const card = pick(pileCards(pile), `plan-${pile}`);
@@ -1483,7 +1495,7 @@
 
     if ("serviceWorker" in navigator) {
       navigator.serviceWorker
-        .register("./sw.js?v=16", { updateViaCache: "none" })
+        .register("./sw.js?v=17", { updateViaCache: "none" })
         .catch(() => {});
     }
   }

@@ -586,10 +586,11 @@ h1,
   white-space: nowrap;
 }
 
-/* 底栏只在 home/settings 出现，两屏预留坞高，内容不被压住 */
+/* 底栏只在 home/settings 出现，两屏按坞高（60px）预留并留 12px 喘气。
+   之前按 --safe-bottom + 84px 预留，比坞高出 36px，矮屏会白白多出一截滚动。 */
 .screen[data-screen="home"],
 .screen[data-screen="settings"] {
-  padding-bottom: calc(var(--safe-bottom) + 84px);
+  padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 72px);
 }
 
 /* 设置里的边界清单入口：button 套 glass-row 壳，清默认边框字体 */
@@ -2150,11 +2151,11 @@ input[type="text"]::placeholder {
 
   .screen-home .home-stack,
   .more-grid {
-    margin-top: 10px;
+    margin-top: 4px;
   }
 
   .screen-home .safe-hint {
-    margin-top: 6px;
+    margin-top: 2px;
   }
 
   .row-card {

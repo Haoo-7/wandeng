@@ -194,3 +194,63 @@ test("board themes are well-formed and the tile kinds cover what the renderer ha
   const used = new Set(W.board.tiles.map((t) => t.kind));
   used.forEach((kind) => assert.ok(rendered.includes(kind), `renderer has no branch for tile kind "${kind}"`));
 });
+
+/** Normalize a prompt for comparison: drop whitespace and the invisible joiners. */
+const flat = (value) => String(value).replace(/[\s\u2060\u200b]/g, "");
+
+test("boardDecks: every deck is reachable, non-empty and free of repeats", () => {
+  const decks = W.boardDecks;
+  assert.ok(decks && typeof decks === "object", "W.boardDecks must be an object");
+
+  const themeIds = new Set(W.board.themes.map((t) => t.id));
+  const ids = Object.keys(decks);
+  assert.ok(ids.length > 0, "W.boardDecks must define at least one deck");
+
+  const seenText = new Map();
+  ids.forEach((id) => {
+    assert.ok(
+      themeIds.has(id),
+      `boardDecks.${id} has no matching theme id, so the board can never draw it`
+    );
+
+    const deck = decks[id];
+    assert.ok(Array.isArray(deck) && deck.length > 0, `boardDecks.${id} must be a non-empty array`);
+
+    const local = new Set();
+    deck.forEach((task, i) => {
+      assert.ok(
+        typeof task === "string" && task.trim(),
+        `boardDecks.${id}[${i}] must be a non-empty string`
+      );
+      const key = flat(task);
+      assert.ok(!local.has(key), `boardDecks.${id} repeats a line (index ${i}): ${task}`);
+      local.add(key);
+      assert.ok(
+        !seenText.has(key),
+        `boardDecks.${id}[${i}] also appears in boardDecks.${seenText.get(key)}: ${task}`
+      );
+      seenText.set(key, id);
+    });
+  });
+});
+
+test("boardDecks share no line with the draw pools, so no card looks doubled", () => {
+  const poolText = new Set();
+  const collect = (value) => {
+    if (typeof value === "string") poolText.add(flat(value));
+    else if (Array.isArray(value)) value.forEach(collect);
+    else if (value && typeof value === "object") Object.values(value).forEach(collect);
+  };
+  ["truth", "dare", "wheel", "scenes", "choices", "timers", "combo", "penalties", "plans", "boundary"].forEach(
+    (kind) => collect(W[kind])
+  );
+
+  Object.entries(W.boardDecks).forEach(([id, deck]) => {
+    deck.forEach((task, i) => {
+      assert.ok(
+        !poolText.has(flat(task)),
+        `boardDecks.${id}[${i}] repeats a line that already exists in the draw pools: ${task}`
+      );
+    });
+  });
+});
