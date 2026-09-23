@@ -10,8 +10,8 @@
 
   // 单个 kind-gender 键下最多保留的去重键数，防止 used 随版本变更无限膨胀
   var MAX_USED_PER_KEY = 64;
-  // used 的键形如 truth-m / scene-f
-  var USED_KEY_RE = /^[a-zA-Z]+-[mf]$/;
+  // used 的键是「一到两段小写」：truth-m / scene-f / plan-room
+  var USED_KEY_RE = /^[a-z]+-[a-z]+$/;
 
   function isPlainObject(value) {
     return value !== null && typeof value === "object" && !Array.isArray(value);
@@ -245,6 +245,23 @@
           break;
         }
         state[key] = deepCopy(rawValue);
+        break;
+      }
+      case "board": {
+        const pos = isPlainObject(rawValue) ? rawValue.pos : null;
+        const valid =
+          Array.isArray(pos) &&
+          pos.length === 2 &&
+          pos.every((p) => typeof p === "number" && isFinite(p) && p >= 0) &&
+          typeof rawValue.theme === "string" &&
+          typeof rawValue.winner === "number" &&
+          isFinite(rawValue.winner);
+        if (!valid) {
+          warnings.push('"board" 形状不符');
+          state[key] = deepCopy(defaultValue);
+          break;
+        }
+        state[key] = { pos: [pos[0], pos[1]], theme: rawValue.theme, winner: rawValue.winner };
         break;
       }
       default:

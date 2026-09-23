@@ -126,16 +126,18 @@ test("migrateUsed: non-object input becomes an empty record", () => {
   }
 });
 
-test("migrateUsed: keys that are not <kind>-<gender> are dropped", () => {
+test("migrateUsed: keys that are not one or two lowercase segments are dropped", () => {
   const out = migrateUsed({
     "truth-m": ["a"],
-    "truth-both": ["b"],
+    "plan-room": ["b"],
     "truth": ["c"],
-    "scene-x": ["d"],
-    "": ["e"],
-    "dare-f": ["f"],
+    "": ["d"],
+    "Truth-m": ["e"],
+    "a-b-c": ["f"],
+    "plan-": ["g"],
+    "dare-f": ["h"],
   });
-  assert.deepEqual(Object.keys(out).sort(), ["dare-f", "truth-m"]);
+  assert.deepEqual(Object.keys(out).sort(), ["dare-f", "plan-room", "truth-m"]);
 });
 
 test("migrateUsed: non-array values are dropped, string entries are coerced through keyOf", () => {
@@ -265,6 +267,47 @@ test("migrateState: returns a fresh object that does not alias defaults", () => 
   out.state.used["truth-m"] = ["s:x"];
   assert.equal(defaults.names[0], "他");
   assert.deepEqual(defaults.used, {});
+});
+
+test("migrateState: the board field is validated and falls back when malformed", () => {
+  const defaults = {
+    names: ["他", "她"], heat: 0, safeWord: "暂停", turn: 0,
+    used: {}, boundary: {}, customPrompts: [],
+    board: { pos: [0, 0], theme: "mix", winner: -1 },
+  };
+  const good = migrateState({ board: { pos: [7, 3], theme: "dare", winner: -1 } }, defaults);
+  assert.deepEqual(good.state.board, { pos: [7, 3], theme: "dare", winner: -1 });
+
+  for (const bad of [
+    { pos: [1], theme: "mix", winner: -1 },
+    { pos: ["3", 1], theme: "mix", winner: -1 },
+    { pos: [1, 2] },
+    { pos: [1, 2], theme: 7, winner: -1 },
+    { pos: [1, 2], theme: "mix", winner: "x" },
+    { pos: [-1, 2], theme: "mix", winner: -1 },
+    "nope",
+    [],
+  ]) {
+    const out = migrateState({ board: bad }, defaults);
+    assert.deepEqual(out.state.board, { pos: [0, 0], theme: "mix", winner: -1 }, `board ${JSON.stringify(bad)} should fall back`);
+  }
+});
+
+test("migrateState: fields without a specific rule keep a type-matching value and reset a mismatched one", () => {
+  const defaults = {
+    names: ["他", "她"], heat: 0, safeWord: "暂停", turn: 0,
+    used: {}, boundary: {}, customPrompts: [],
+    board: { pos: [0, 0], theme: "mix", winner: -1 },
+    planPile: "room",
+  };
+  assert.equal(migrateState({ planPile: "out" }, defaults).state.planPile, "out");
+
+  const reset = migrateState({ planPile: 7 }, defaults);
+  assert.equal(reset.state.planPile, "room");
+  assert.ok(reset.warnings.some((w) => /planPile/.test(w)));
+
+  const resetObj = migrateState({ planPile: { a: 1 } }, defaults);
+  assert.equal(resetObj.state.planPile, "room");
 });
 
 /* ------------------------------------------------------------- clampHeat */
