@@ -1,17 +1,19 @@
 {
   "name": "晚灯",
   "short_name": "晚灯",
+  "description": "给两个人在酒店夜里用的本地小游戏。不联网、不收费、不上传。",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#14090D",
   "theme_color": "#14090D",
   "lang": "zh-CN",
+  "orientation": "portrait-primary",
   "icons": [
     {
       "src": "./assets/favicon.svg",
       "sizes": "any",
       "type": "image/svg+xml",
-      "purpose": "any"
+      "purpose": "any maskable"
     }
   ]
 }
