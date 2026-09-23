@@ -157,7 +157,7 @@
       show("home");
     } else if (tab === "settings") {
       setSettingsStatus("");
-      renderBoundary();
+      renderBoundaryPill();
       show("settings");
     }
   }
@@ -321,6 +321,14 @@
       `<span class="pill">有 Maybe ${status.counts.hasMaybe}</span>` +
       `<span class="pill">存在 No ${status.counts.anyNo}</span>`;
     $("boundaryPill").textContent = `共同 ${status.counts.bothYes}`;
+  }
+
+  // 设置页入口只显示共同数：清单列表只在清单页渲染，这里不碰 boundaryList。
+  function renderBoundaryPill() {
+    const items = Array.isArray(data.boundary) ? data.boundary : [];
+    const status = logic.boundaryStatus(state.boundary, items);
+    const el = $("boundaryPill");
+    if (el) el.textContent = `共同 ${status.counts.bothYes}`;
   }
 
   function setBoundary(itemId, side, level) {
@@ -1196,9 +1204,12 @@
       resetTimerView();
       drawTimer();
       show("timer");
+    } else if (game === "boundary") {
+      renderBoundary();
+      show("boundary");
     } else if (game === "settings") {
       setSettingsStatus("");
-      renderBoundary();
+      renderBoundaryPill();
       show("settings");
     } else if (game === "board") {
       state.boardEvent = null;
@@ -1355,6 +1366,11 @@
     document.querySelectorAll("[data-back]").forEach((btn) => {
       btn.addEventListener("click", () => {
         stopTimer();
+        // 清单页从设置进来，返回回到设置；其余一律回首页。
+        if (btn.dataset.back === "settings") {
+          openTab("settings");
+          return;
+        }
         renderHome();
         show("home");
       });
@@ -1467,7 +1483,7 @@
 
     if ("serviceWorker" in navigator) {
       navigator.serviceWorker
-        .register("./sw.js?v=15", { updateViaCache: "none" })
+        .register("./sw.js?v=16", { updateViaCache: "none" })
         .catch(() => {});
     }
   }

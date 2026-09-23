@@ -546,29 +546,30 @@ h1,
   height: 18px;
 }
 
-/* 底栏双栏：首页 / 设置，fixed 吸底，safe-area 之上；只在 home/settings 显示 */
+/* 底栏双栏：首页 / 设置。全宽吸底坞，直接贴边。
+   之前悬浮胶囊（left 50% + translateX + backdrop-filter）在 iOS 滚动后会糊在半空、
+   文字还会被挤成竖排，故改全宽 dock + 实底 + 无 transform，一次性避开。 */
 .tabbar {
   position: fixed;
-  left: 50%;
-  transform: translateX(-50%);
-  bottom: calc(var(--safe-bottom) + 10px);
-  display: flex;
-  gap: 4px;
-  padding: 6px;
-  border-radius: var(--radius-pill);
-  background: var(--glass-fill-strong);
-  -webkit-backdrop-filter: var(--glass-backdrop);
-  backdrop-filter: var(--glass-backdrop);
-  border: 1px solid var(--glass-line);
-  box-shadow: var(--glass-lift), var(--glass-topline);
+  left: 0;
+  right: 0;
+  bottom: 0;
   z-index: 30;
+  display: flex;
+  gap: 8px;
+  padding: 10px 16px calc(env(safe-area-inset-bottom, 0px) + 10px);
+  background: var(--dusk-violet);
+  border-top: 1px solid var(--glass-line);
+  box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.35);
 }
 
 .tab {
+  flex: 1 1 0;
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 6px;
-  padding: 8px 18px;
+  padding: 10px 0;
   border: 0;
   border-radius: var(--radius-pill);
   background: transparent;
@@ -576,8 +577,44 @@ h1,
   font-family: var(--font-body);
   font-size: 13px;
   letter-spacing: 0.1em;
+  white-space: nowrap;
   cursor: pointer;
   transition: var(--transition-ui);
+}
+
+.tab span {
+  white-space: nowrap;
+}
+
+/* 底栏只在 home/settings 出现，两屏预留坞高，内容不被压住 */
+.screen[data-screen="home"],
+.screen[data-screen="settings"] {
+  padding-bottom: calc(var(--safe-bottom) + 84px);
+}
+
+/* 设置里的边界清单入口：button 套 glass-row 壳，清默认边框字体 */
+button.boundary-entry {
+  display: block;
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+  position: relative;
+  font-family: var(--font-body);
+  color: var(--text-1);
+}
+
+.boundary-entry {
+  position: relative;
+}
+
+.boundary-entry::after {
+  content: "›";
+  position: absolute;
+  right: 14px;
+  bottom: 12px;
+  color: var(--text-3);
+  font-size: 18px;
+  line-height: 1;
 }
 
 .tab.is-active {

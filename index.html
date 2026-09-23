@@ -21,7 +21,7 @@
       href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,400;1,9..144,600&family=Noto+Sans+SC:wght@300;400;500;700&family=Noto+Serif+SC:wght@500;600&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="./assets/app.css?v=15" />
+    <link rel="stylesheet" href="./assets/app.css?v=16" />
   </head>
   <body>
     <!-- 图标本地子集（Phosphor regular 风格：256 网格、stroke 16、round 端点；不走 CDN，离线可用） -->
@@ -437,6 +437,21 @@
         <button class="btn btn-gold" id="passConfirm">是我</button>
       </section>
 
+      <section class="screen" data-screen="boundary" id="screen-boundary">
+        <div class="topbar">
+          <button class="icon-btn" data-back="settings"><svg class="ico" aria-hidden="true"><use href="#i-arrow-left" /></svg></button>
+          <div class="who">边界清单</div>
+          <span class="pill" id="boundaryTopPill">只在本机</span>
+        </div>
+        <p class="field-note bd-lead">两个人各自点一遍。今晚真正要玩的，只留都点了 Yes 的。</p>
+        <div class="bd-summary" id="boundarySummary"></div>
+        <div class="boundary-list" id="boundaryList"></div>
+        <div class="actions">
+          <button class="btn btn-outline" id="boundaryClear">清空这一页</button>
+          <p class="safe-hint" data-safe-hint>安全词：暂停</p>
+        </div>
+      </section>
+
       <section class="screen" data-screen="settings" id="screen-settings">
         <div class="topbar">
           <button class="icon-btn" data-back><svg class="ico" aria-hidden="true"><use href="#i-arrow-left" /></svg></button>
@@ -470,13 +485,10 @@
             <p class="field-note">回到最开始那一屏，重新填称呼、选今晚的热度。记录不会清掉。</p>
             <button class="btn btn-outline" id="resetBtn">回到设置</button>
           </div>
-          <div class="glass-row">
+          <button class="glass-row boundary-entry" data-open="boundary">
             <div class="glass-row-head"><b>边界清单</b><span id="boundaryPill">共同 0</span></div>
             <p class="field-note bd-lead">两个人各自点一遍。今晚真正要玩的，只留都点了 Yes 的。</p>
-            <div class="bd-summary" id="boundarySummary"></div>
-            <div class="boundary-list" id="boundaryList"></div>
-            <button class="btn btn-outline" id="boundaryClear">清空这一页</button>
-          </div>
+          </button>
         </div>
         <p class="set-status" id="settingsStatus"></p>
         <div class="actions">
@@ -558,9 +570,9 @@
     <div id="staleBar" class="stale-bar hidden">
       手机还在用旧版，连招会打不开。请关掉这个标签，再打开一次。
     </div>
-    <script src="./assets/logic.js?v=15"></script>
-    <script src="./assets/data.js?v=15"></script>
-    <script src="./assets/app.js?v=15"></script>
+    <script src="./assets/logic.js?v=16"></script>
+    <script src="./assets/data.js?v=16"></script>
+    <script src="./assets/app.js?v=16"></script>
     <script>
       (function () {
         if (!window.WANDENG || !window.WANDENG.combo) {
