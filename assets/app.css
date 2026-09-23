@@ -1521,6 +1521,26 @@ input[type="text"]::placeholder {
 .board-tile.kind-back { background: rgba(166, 58, 110, 0.3); color: var(--text-1); }
 .board-tile.kind-skip { background: rgba(63, 40, 104, 0.5); color: var(--text-1); }
 
+/* 格子类型角标：底色差异不足以辨类，色板不动，改用微型图形标记（六类事件各一个） */
+.board-tile::before {
+  position: absolute;
+  top: 4px;
+  right: 5px;
+  font-family: system-ui, sans-serif;
+  font-style: normal;
+  font-size: 9px;
+  font-weight: 600;
+  line-height: 1;
+  opacity: 0.9;
+}
+
+.board-tile.kind-task::before { content: "?"; color: var(--text-3); }
+.board-tile.kind-forward::before { content: "→"; color: var(--cta-honey); }
+.board-tile.kind-back::before { content: "←"; color: var(--kicker-rose); }
+.board-tile.kind-cost::before { content: "✕"; color: var(--kicker-rose); }
+.board-tile.kind-together::before { content: "♥"; color: var(--cta-blush); }
+.board-tile.kind-skip::before { content: "⊘"; color: var(--text-3); }
+
 .board-tile.kind-start,
 .board-tile.kind-end {
   border-color: var(--cta-blush);
