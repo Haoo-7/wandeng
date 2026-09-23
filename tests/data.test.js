@@ -70,14 +70,14 @@ test("boundary is a non-empty array of unique, well-formed entries", () => {
   });
 });
 
-test("board.size is 24 and tiles has length 24", () => {
+test("board.size is 42 and tiles has length 42", () => {
   assert.ok(W.board && typeof W.board === "object", "W.board must be an object");
-  assert.equal(W.board.size, 24, "W.board.size must be 24");
+  assert.equal(W.board.size, 42, "W.board.size must be 42");
   assert.ok(Array.isArray(W.board.tiles), "W.board.tiles must be an array");
   assert.equal(
     W.board.tiles.length,
-    24,
-    `W.board.tiles must have length 24, got ${W.board.tiles.length}`
+    42,
+    `W.board.tiles must have length 42, got ${W.board.tiles.length}`
   );
 });
 
@@ -106,7 +106,7 @@ test("every forward/back tile carries an integer by >= 1", () => {
   });
 });
 
-test("exactly one start tile at index 0 and one end tile at index 23", () => {
+test("exactly one start tile at index 0 and one end tile at the last index", () => {
   const starts = [];
   const ends = [];
   W.board.tiles.forEach((tile, i) => {
@@ -126,7 +126,7 @@ test("exactly one start tile at index 0 and one end tile at index 23", () => {
     1,
     `expected exactly one end tile, found ${ends.length} at index(es) ${ends.join(", ")}`
   );
-  assert.equal(ends[0], 23, `end tile must be at index 23, found at index ${ends[0]}`);
+  assert.equal(ends[0], W.board.tiles.length - 1, `end tile must be at the last index, found at index ${ends[0]}`);
 });
 
 test("themes is a non-empty array of unique ids with name and hint", () => {

@@ -556,23 +556,35 @@
     return state.boardRoll % 2 === 0 ? "truth" : "dare";
   }
 
+  function tokenSvg(name, cls) {
+    const ch = (name || "").trim().slice(0, 1) || "·";
+    return (
+      `<svg class="tok-svg ${cls}" viewBox="0 0 24 24" aria-hidden="true">` +
+      `<circle cx="12" cy="12" r="10" class="tok-disc" />` +
+      `<circle cx="12" cy="12" r="10" class="tok-ring" />` +
+      `<text x="12" y="16" text-anchor="middle" class="tok-word">${esc(ch)}</text>` +
+      `</svg>`
+    );
+  }
+
   function renderBoard() {
     const tiles = boardTiles();
+    const nameA = state.names[0] || "他";
+    const nameB = state.names[1] || "她";
     let html = "";
     for (let i = 0; i < tiles.length; i++) {
       const pos = logic.serpentine(i, BOARD_COLS);
       const here = state.board.pos[0] === i || state.board.pos[1] === i;
       const toks =
-        (state.board.pos[0] === i ? '<i class="tok tok-a"></i>' : "") +
-        (state.board.pos[1] === i ? '<i class="tok tok-b"></i>' : "");
+        (state.board.pos[0] === i ? tokenSvg(nameA, "tok-a") : "") +
+        (state.board.pos[1] === i ? tokenSvg(nameB, "tok-b") : "");
       html +=
         `<div class="board-tile kind-${tiles[i].kind}${here ? " here" : ""}"` +
-        ` style="grid-row:${pos.row + 1};grid-column:${pos.col + 1}">${i + 1}${toks}</div>`;
+        ` style="grid-row:${pos.row + 1};grid-column:${pos.col + 1}"><span class="tile-num">${i + 1}</span>${toks}</div>`;
     }
     $("boardGrid").innerHTML = html;
 
     const done = state.board.winner >= 0;
-    $("boardWho").textContent = done ? "结束" : `轮到 ${who()}`;
     $("boardPill").textContent = done ? "已分胜负" : `第 ${state.board.pos[state.turn] + 1} 格`;
     $("btnBoardTheme").textContent = `玩法：${currentTheme().name}`;
     $("btnBoardRoll").textContent = done ? "再来一局" : "掷骰子";
@@ -591,14 +603,42 @@
     renderBoard();
   }
 
+  let boardBusy = false;
+
+  // 掷骰动画：小骰面 600ms 随机跳面营造手感，落定后再走格；reduceMotion 下直接走格。
   function rollBoard() {
-    if (state.board.winner >= 0) return;
+    if (state.board.winner >= 0 || boardBusy) return;
     const tiles = boardTiles();
     if (!tiles.length) return;
 
+    const roll = 1 + Math.floor(Math.random() * 6);
+    const die = $("boardDie");
+    const settle = () => {
+      boardBusy = false;
+      settleBoardRoll(roll);
+    };
+    if (die && !reduceMotion.matches) {
+      boardBusy = true;
+      die.classList.add("tumbling");
+      const iv = window.setInterval(() => {
+        die.textContent = String(1 + Math.floor(Math.random() * 6));
+      }, 80);
+      window.setTimeout(() => {
+        window.clearInterval(iv);
+        die.textContent = String(roll);
+        die.classList.remove("tumbling");
+        settle();
+      }, 600);
+      return;
+    }
+    settle();
+  }
+
+  function settleBoardRoll(roll) {
+    const tiles = boardTiles();
+    if (!tiles.length) return;
     const mover = state.turn;
     const from = state.board.pos[mover];
-    const roll = 1 + Math.floor(Math.random() * 6);
     const to = logic.stepTile(tiles, from, roll).to;
     const tile = tiles[to] || { kind: "task" };
 

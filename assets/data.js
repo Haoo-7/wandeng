@@ -881,7 +881,7 @@ window.WANDENG = {
 
   // kind: task / forward / back / cost / skip / together / start / end，由 app.js 分派。
   board: {
-    size: 24,
+    size: 42,
     themes: [
       { id: "truth", name: "只聊，不做", hint: "格子里的题偏真心话" },
       { id: "dare", name: "今晚不许躲", hint: "格子里的题偏大冒险" },
@@ -907,6 +907,24 @@ window.WANDENG = {
       { kind: "forward", by: 2 },
       { kind: "together" },
       { kind: "task" },
+      { kind: "skip" },
+      { kind: "task" },
+      { kind: "forward", by: 3 },
+      { kind: "cost" },
+      { kind: "task" },
+      { kind: "together" },
+      { kind: "back", by: 1 },
+      { kind: "task" },
+      { kind: "forward", by: 2 },
+      { kind: "skip" },
+      { kind: "task" },
+      { kind: "together" },
+      { kind: "cost" },
+      { kind: "task" },
+      { kind: "back", by: 2 },
+      { kind: "forward", by: 1 },
+      { kind: "task" },
+      { kind: "together" },
       { kind: "skip" },
       { kind: "task" },
       { kind: "forward", by: 3 },

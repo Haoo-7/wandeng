@@ -1685,24 +1685,71 @@ input[type="text"]::placeholder {
   border-color: rgba(255, 255, 255, 0.62);
 }
 
-.board-tile .tok {
+/* SVG 大棋子：18px 光盘＋白环＋名字首字，同格两枚左右并排 */
+.tok-svg {
   position: absolute;
-  bottom: 3px;
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
+  bottom: 2px;
+  width: 18px;
+  height: 18px;
 }
 
-.board-tile .tok-a {
-  left: 5px;
-  background: var(--cta-honey);
-  box-shadow: 0 0 6px rgba(245, 206, 159, 0.9);
+.tok-svg.tok-a {
+  left: 3px;
 }
 
-.board-tile .tok-b {
-  right: 5px;
-  background: var(--cta-blush);
-  box-shadow: 0 0 6px rgba(242, 184, 198, 0.9);
+.tok-svg.tok-b {
+  right: 3px;
+}
+
+.tok-svg .tok-disc.tok-a,
+.tok-svg.tok-a .tok-disc {
+  fill: var(--cta-honey);
+}
+
+.tok-svg .tok-disc.tok-b,
+.tok-svg.tok-b .tok-disc {
+  fill: var(--cta-blush);
+}
+
+.tok-svg .tok-ring {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.85);
+  stroke-width: 2;
+}
+
+.tok-svg .tok-word {
+  fill: var(--ink-plum);
+  font-size: 11px;
+  font-weight: 700;
+  font-style: normal;
+}
+
+/* 序号让位：同格有棋子时序号上移半格，避免与棋子重叠 */
+.board-tile .tile-num {
+  transform: translateY(-6px);
+}
+
+/* 掷骰小骰面：board-slot 头的点数显示，tumbling 期抖动 */
+.board-die {
+  font-size: 20px;
+  line-height: 1;
+  color: var(--text-1);
+  min-width: 24px;
+  text-align: center;
+  display: inline-block;
+}
+
+.board-die.tumbling {
+  animation: dieTumble 120ms ease-in-out infinite;
+}
+
+@keyframes dieTumble {
+  0% {
+    transform: rotate(-12deg) scale(1.05);
+  }
+  100% {
+    transform: rotate(12deg) scale(0.95);
+  }
 }
 
 .board-slot {
@@ -2021,6 +2068,22 @@ input[type="text"]::placeholder {
 
   .result b {
     font-size: 24px;
+  }
+
+  /* 42 格棋盘在矮屏格子更小：角标与序号同步缩小，棋子保持 18px 可辨 */
+  .board-grid {
+    gap: 3px;
+  }
+
+  .board-tile {
+    font-size: 9px;
+    border-radius: 8px;
+  }
+
+  .board-tile::before {
+    font-size: 8px;
+    top: 3px;
+    right: 4px;
   }
 
   .hero-copy {
