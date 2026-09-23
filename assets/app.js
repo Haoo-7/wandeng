@@ -102,13 +102,31 @@
     return data.heats[state.heat];
   }
 
+  /* CJK 词内不断点：复合词插 U+2060（WORD JOINER）。只护真词——护任意断点字对会让
+     断点螺旋搬家、词表等价于做分词器。词表取自视觉验收揪出的三句难看断行。 */
+  const JOIN_PAIRS = new Set([
+    "对方", "可以", "衣服", "不许", "解扣", "二十", "十秒", "三次", "完全", "坐下",
+    "坐到", "到底", "才许", "用嘴", "第三", "这一", "一段", "时间", "回床", "镜子",
+  ]);
+
+  function joinWords(text) {
+    if (!text || text.length < 2) return text;
+    let out = text[0];
+    for (let i = 1; i < text.length; i++) {
+      out += (JOIN_PAIRS.has(text[i - 1] + text[i]) ? "\u2060" : "") + text[i];
+    }
+    return out;
+  }
+
   function fill(text) {
     if (!text) return "";
-    return String(text)
-      .replaceAll("{男}", state.names[0] || "他")
-      .replaceAll("{女}", state.names[1] || "她")
-      .replaceAll("{who}", who())
-      .replaceAll("{other}", other());
+    return joinWords(
+      String(text)
+        .replaceAll("{男}", state.names[0] || "他")
+        .replaceAll("{女}", state.names[1] || "她")
+        .replaceAll("{who}", who())
+        .replaceAll("{other}", other())
+    );
   }
 
   function packOf(kind) {
@@ -657,10 +675,12 @@
     const lines = data.diceLines[state.heat] || data.diceLines[0];
     const tpl = lines[Math.floor(Math.random() * lines.length)];
     const verb = data.diceVerb[action] || action;
-    return fill(tpl)
-      .replaceAll("{action}", action)
-      .replaceAll("{body}", body)
-      .replaceAll("{verb}", verb);
+    return joinWords(
+      fill(tpl)
+        .replaceAll("{action}", action)
+        .replaceAll("{body}", body)
+        .replaceAll("{verb}", verb)
+    );
   }
 
   function prepDice() {

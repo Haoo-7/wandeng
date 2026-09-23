@@ -980,10 +980,8 @@ img.img-reveal.is-loaded {
   letter-spacing: 0.04em;
   color: var(--text-1);
   text-shadow: var(--q-shadow);
-  /* CJK 只在标点处断行，容不下才劈词兜底；balance 均衡行长 */
-  word-break: keep-all;
-  overflow-wrap: break-word;
-  text-wrap: balance;
+  /* pretty 收敛孤字行尾与生硬断点；CJK 断行用默认（keep-all 配方会破标点禁则，已弃） */
+  text-wrap: pretty;
 }
 
 .play-card .q::before {
@@ -1021,9 +1019,7 @@ img.img-reveal.is-loaded {
   font-family: var(--font-serif-cn);
   font-size: 17px;
   line-height: 1.6;
-  word-break: keep-all;
-  overflow-wrap: break-word;
-  text-wrap: balance;
+  text-wrap: pretty;
 }
 
 /* ==========================================================================
@@ -1248,9 +1244,7 @@ input[type="text"]::placeholder {
   letter-spacing: 0.08em;
   margin-bottom: 8px;
   color: var(--text-1);
-  word-break: keep-all;
-  overflow-wrap: break-word;
-  text-wrap: balance;
+  text-wrap: pretty;
 }
 
 .result span {
@@ -1588,9 +1582,7 @@ input[type="text"]::placeholder {
   font-family: var(--font-serif-cn);
   font-size: 15px;
   line-height: 1.6;
-  word-break: keep-all;
-  overflow-wrap: break-word;
-  text-wrap: balance;
+  text-wrap: pretty;
 }
 
 /* ==========================================================================
