@@ -1449,9 +1449,14 @@ input[type="text"]::placeholder {
    今晚做什么（两堆活动卡）与飞行棋棋盘
    ========================================================================== */
 
+/* 与 .play-card / .board-slot 同构：卡片吸收剩余高度，否则内容会挤在上半屏、下半屏空着 */
 .plan-card {
   margin-top: clamp(10px, 2dvh, 14px);
-  flex: 0 0 auto;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 
 .plan-card .glass-row-head b {
