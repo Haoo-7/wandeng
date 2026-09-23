@@ -384,7 +384,9 @@ h1,
   width: 44px;
   height: 44px;
   border-radius: var(--radius-ico);
-  background: var(--glass-fill-strong);
+  /* 槽底补暖色渐变：无位图可用，靠填充密度向三张插画图标的分量靠拢 */
+  background: linear-gradient(150deg, rgba(245, 206, 159, 0.26), rgba(242, 184, 198, 0.2)),
+    var(--glass-fill-strong);
   border: 1px solid var(--glass-line);
   box-shadow: var(--glass-topline);
   color: var(--cta-honey);
