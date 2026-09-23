@@ -15,6 +15,8 @@
     used: {},
     boundary: {},
     customPrompts: [],
+    board: { pos: [0, 0], theme: "mix", winner: -1 },
+    planPile: "room",
   };
 
   const state = {
@@ -37,11 +39,9 @@
     currentTimer: null,
     planPile: "room",
     planCard: null,
-    boardPos: [0, 0],
-    boardTheme: "mix",
-    boardFace: [1, 1],
+    board: { pos: [0, 0], theme: "mix", winner: -1 },
     boardRoll: 0,
-    boardWinner: -1,
+    boardEvent: null,
   };
 
   const faces = [
@@ -416,6 +416,192 @@
     };
     reader.onerror = () => setSettingsStatus("这个文件读不了，什么都没改");
     reader.readAsText(file);
+  }
+
+  const PILE_LABELS = { room: "房间里", out: "出门" };
+
+  function currentPile() {
+    return state.planPile === "out" ? "out" : "room";
+  }
+
+  function pileCards(pile) {
+    const plans = data && data.plans;
+    const list = plans && plans[pile];
+    return Array.isArray(list) ? list : [];
+  }
+
+  function renderPileButtons() {
+    document.querySelectorAll("[data-plan-pile]").forEach((btn) => {
+      btn.className = btn.dataset.planPile === currentPile() ? "btn btn-honey" : "btn btn-outline";
+    });
+  }
+
+  function resetPlan() {
+    state.planCard = null;
+    $("planPill").textContent = PILE_LABELS[currentPile()];
+    $("planTitle").textContent = "还没抽";
+    $("planMark").textContent = "";
+    $("planDesc").textContent = "两堆卡：在房间里做的，和要出门做的。抽到就做，不换。";
+    $("planCard").classList.remove("is-foil");
+    renderPileButtons();
+  }
+
+  function drawPlan() {
+    const pile = currentPile();
+    const card = pick(pileCards(pile), `plan-${pile}`);
+    if (!card) return;
+    state.planCard = card;
+    $("planPill").textContent = PILE_LABELS[pile];
+    $("planTitle").textContent = card.title;
+    $("planMark").textContent = card.foil ? "特殊" : PILE_LABELS[pile];
+    $("planDesc").textContent = card.desc;
+    $("planCard").classList.toggle("is-foil", !!card.foil);
+    repopBox($("planTitle"), ".plan-card");
+    if (navigator.vibrate) navigator.vibrate(18);
+  }
+
+  function setPile(pile) {
+    if (pile !== "room" && pile !== "out") return;
+    if (pile === currentPile()) return;
+    state.planPile = pile;
+    save();
+    resetPlan();
+  }
+
+  const BOARD_COLS = 6;
+  const BOARD_TILE_LABEL = {
+    start: "起点",
+    end: "终点",
+    task: "抽题",
+    together: "一起",
+    cost: "代价",
+    skip: "免过",
+    forward: "前进",
+    back: "后退",
+  };
+
+  function boardTiles() {
+    const board = data && data.board;
+    const tiles = board && board.tiles;
+    return Array.isArray(tiles) ? tiles : [];
+  }
+
+  function boardThemes() {
+    const board = data && data.board;
+    const themes = board && board.themes;
+    return Array.isArray(themes) && themes.length ? themes : [{ id: "mix", name: "都来" }];
+  }
+
+  function currentTheme() {
+    return boardThemes().find((t) => t.id === state.board.theme) || boardThemes()[0];
+  }
+
+  function boardPoolKind() {
+    const id = currentTheme().id;
+    if (id === "truth" || id === "dare") return id;
+    return state.boardRoll % 2 === 0 ? "truth" : "dare";
+  }
+
+  function renderBoard() {
+    const tiles = boardTiles();
+    let html = "";
+    for (let i = 0; i < tiles.length; i++) {
+      const pos = logic.serpentine(i, BOARD_COLS);
+      const here = state.board.pos[0] === i || state.board.pos[1] === i;
+      const toks =
+        (state.board.pos[0] === i ? '<i class="tok tok-a"></i>' : "") +
+        (state.board.pos[1] === i ? '<i class="tok tok-b"></i>' : "");
+      html +=
+        `<div class="board-tile kind-${tiles[i].kind}${here ? " here" : ""}"` +
+        ` style="grid-row:${pos.row + 1};grid-column:${pos.col + 1}">${i + 1}${toks}</div>`;
+    }
+    $("boardGrid").innerHTML = html;
+
+    const done = state.board.winner >= 0;
+    $("boardWho").textContent = done ? "结束" : `轮到 ${who()}`;
+    $("boardPill").textContent = done ? "已分胜负" : `第 ${state.board.pos[state.turn] + 1} 格`;
+    $("btnBoardTheme").textContent = `玩法：${currentTheme().name}`;
+    $("btnBoardRoll").textContent = done ? "再来一局" : "掷骰子";
+
+    const ev = state.boardEvent;
+    $("boardTitle").textContent = ev ? ev.title : "掷骰子";
+    $("boardMark").textContent = ev ? ev.mark : currentTheme().name;
+    $("boardLine").textContent = ev ? ev.line : `两个人轮流。先走到第 ${tiles.length} 格的人赢。`;
+  }
+
+  function resetBoard() {
+    state.board = { pos: [0, 0], theme: state.board.theme, winner: -1 };
+    state.boardRoll = 0;
+    state.boardEvent = null;
+    save();
+    renderBoard();
+  }
+
+  function rollBoard() {
+    if (state.board.winner >= 0) return;
+    const tiles = boardTiles();
+    if (!tiles.length) return;
+
+    const mover = state.turn;
+    const from = state.board.pos[mover];
+    const roll = 1 + Math.floor(Math.random() * 6);
+    const to = logic.stepTile(tiles, from, roll).to;
+    const tile = tiles[to] || { kind: "task" };
+
+    state.boardRoll = roll;
+    state.board.pos = state.board.pos.slice();
+    state.board.pos[mover] = to;
+
+    const head = `掷出 ${roll}：第 ${from + 1} 格走到第 ${to + 1} 格。`;
+    let title = `第 ${to + 1} 格 · ${BOARD_TILE_LABEL[tile.kind] || tile.kind}`;
+    let line = head;
+    let again = false;
+
+    if (tile.kind === "task") {
+      const kind = boardPoolKind();
+      line = `${head} ${fill(pick(packOf(kind), `${kind}-${genderKey()}`)) || ""}`;
+    } else if (tile.kind === "together") {
+      const pile = state.boardRoll % 2 === 0 ? "room" : "out";
+      const card = pick(pileCards(pile), `plan-${pile}`);
+      if (card) line = `${head} 两个人一起：${card.title}——${card.desc}`;
+    } else if (tile.kind === "cost") {
+      line = `${head} 落到代价：${fill(pick(packOf("penalties"), `penalty-${genderKey()}`)) || ""}`;
+    } else if (tile.kind === "skip") {
+      again = true;
+      line = `${head} 这一格免过，${who()} 再掷一次。`;
+    } else if (tile.kind === "end") {
+      state.board.winner = mover;
+      title = `${who()} 到终点`;
+      line = `${head} ${who()} 先走到第 ${tiles.length} 格，赢了。`;
+    } else if (tile.kind === "forward" || tile.kind === "back") {
+      line = `${head} 棋子被这一格又挪了一段，停在上面那格。`;
+    } else {
+      line = `${head} 起点，什么也不用做。`;
+    }
+
+    state.boardEvent = { title: title, mark: who(), line: line };
+    if (!again && tile.kind !== "end") state.turn = 1 - state.turn;
+    save();
+    renderBoard();
+    repopBox($("boardLine"), ".board-slot");
+    if (navigator.vibrate) navigator.vibrate(again ? [12, 30, 12] : 18);
+  }
+
+  function cycleBoardTheme() {
+    const themes = boardThemes();
+    const index = themes.findIndex((t) => t.id === state.board.theme);
+    state.board.theme = themes[(index + 1 + themes.length) % themes.length].id;
+    state.boardEvent = null;
+    save();
+    renderBoard();
+  }
+
+  function boardPrimary() {
+    if (state.board.winner >= 0) {
+      resetBoard();
+      return;
+    }
+    rollBoard();
   }
 
   function repop(el) {
@@ -852,6 +1038,13 @@
     } else if (game === "settings") {
       setSettingsStatus("");
       show("settings");
+    } else if (game === "plan") {
+      resetPlan();
+      show("plan");
+    } else if (game === "board") {
+      state.boardEvent = null;
+      renderBoard();
+      show("board");
     }
   }
 
@@ -954,6 +1147,13 @@
     });
 
     $("btnExport").addEventListener("click", exportBackup);
+
+    document.querySelectorAll("[data-plan-pile]").forEach((btn) => {
+      btn.addEventListener("click", () => setPile(btn.dataset.planPile));
+    });
+    $("btnPlanDraw").addEventListener("click", drawPlan);
+    $("btnBoardRoll").addEventListener("click", boardPrimary);
+    $("btnBoardTheme").addEventListener("click", cycleBoardTheme);
 
     $("importBackup").addEventListener("change", (e) => {
       const file = e.currentTarget.files && e.currentTarget.files[0];

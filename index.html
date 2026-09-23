@@ -90,6 +90,21 @@
             </div>
             <span>›</span>
           </button>
+          <button class="row-card" data-open="board">
+            <i class="row-ico" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 7h16M4 12h16M4 17h16" />
+                <circle cx="8" cy="7" r="1.7" fill="currentColor" stroke="none" />
+                <circle cx="15" cy="12" r="1.7" fill="currentColor" stroke="none" />
+                <circle cx="10" cy="17" r="1.7" fill="currentColor" stroke="none" />
+              </svg>
+            </i>
+            <div>
+              <h2>飞行棋</h2>
+              <p>掷骰往前走，先到头的人赢</p>
+            </div>
+            <span>›</span>
+          </button>
         </div>
         <div class="more-grid">
           <button type="button" data-open="combo" onclick="window.wandengOpen && window.wandengOpen('combo')">
@@ -119,9 +134,9 @@
         </div>
         <div class="bottom-row">
           <span class="pill pill-wine" id="heatPill">热度  微醺</span>
+          <button class="linkish" data-open="plan">做什么</button>
           <button class="linkish" data-open="boundary">边界清单</button>
           <button class="linkish" data-open="settings">设置</button>
-          <button class="linkish" id="resetBtn">重设</button>
         </div>
         <p class="safe-hint" data-safe-hint>安全词：暂停</p>
       </section>
@@ -375,9 +390,54 @@
               <input type="file" accept="application/json,.json" id="importCustom" />
             </label>
           </div>
+          <div class="glass-row">
+            <div class="glass-row-head"><b>重新设置</b><span>称呼 · 热度</span></div>
+            <p class="field-note">回到最开始那一屏，重新填称呼、选今晚的热度。记录不会清掉。</p>
+            <button class="btn btn-outline" id="resetBtn">回到设置</button>
+          </div>
         </div>
         <p class="set-status" id="settingsStatus"></p>
         <div class="actions">
+          <p class="safe-hint" data-safe-hint>安全词：暂停</p>
+        </div>
+      </section>
+
+      <section class="screen" data-screen="plan" id="screen-plan">
+        <div class="topbar">
+          <button class="icon-btn" data-back>←</button>
+          <div class="who">今晚做什么</div>
+          <span class="pill" id="planPill">房间里</span>
+        </div>
+        <div class="btn-row">
+          <button class="btn btn-honey" data-plan-pile="room">房间里</button>
+          <button class="btn btn-outline" data-plan-pile="out">出门</button>
+        </div>
+        <article class="glass-row plan-card" id="planCard">
+          <div class="glass-row-head"><b id="planTitle">还没抽</b><span id="planMark"></span></div>
+          <p class="plan-desc" id="planDesc">两堆卡：在房间里做的，和要出门做的。抽到就做，不换。</p>
+        </article>
+        <div class="actions">
+          <button class="btn btn-gold" id="btnPlanDraw">抽一张</button>
+          <p class="safe-hint" data-safe-hint>安全词：暂停</p>
+        </div>
+      </section>
+
+      <section class="screen" data-screen="board" id="screen-board">
+        <div class="topbar">
+          <button class="icon-btn" data-back>←</button>
+          <div class="who" id="boardWho">轮流走</div>
+          <span class="pill" id="boardPill">起点</span>
+        </div>
+        <div class="board-grid" id="boardGrid"></div>
+        <article class="glass-row board-slot">
+          <div class="glass-row-head"><b id="boardTitle">掷骰子</b><span id="boardMark">第 1 格</span></div>
+          <p class="board-line" id="boardLine">两个人轮流。先走到第 24 格的人赢。</p>
+        </article>
+        <div class="actions">
+          <div class="btn-row">
+            <button class="btn btn-outline" id="btnBoardTheme">玩法：都来</button>
+            <button class="btn btn-gold" id="btnBoardRoll">掷骰子</button>
+          </div>
           <p class="safe-hint" data-safe-hint>安全词：暂停</p>
         </div>
       </section>

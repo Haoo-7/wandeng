@@ -374,6 +374,24 @@ h1,
   box-shadow: var(--glass-topline);
 }
 
+/* 飞行棋卡片的图标槽与 .row-card img 同尺寸同位：没有对应位图，图形用代码画 */
+.row-ico {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-ico);
+  background: var(--glass-fill-strong);
+  border: 1px solid var(--glass-line);
+  box-shadow: var(--glass-topline);
+  color: var(--cta-honey);
+}
+
+.row-ico svg {
+  width: 22px;
+  height: 22px;
+}
+
 .row-card h2 {
   margin: 0 0 3px;
   font-family: var(--font-body);
@@ -1425,6 +1443,109 @@ input[type="text"]::placeholder {
 }
 
 /* ==========================================================================
+   今晚做什么（两堆活动卡）与飞行棋棋盘
+   ========================================================================== */
+
+.plan-card {
+  margin-top: clamp(10px, 2dvh, 14px);
+  flex: 0 0 auto;
+}
+
+.plan-card .glass-row-head b {
+  font-size: 16px;
+}
+
+.plan-card.is-foil {
+  border-color: rgba(232, 168, 124, 0.6);
+}
+
+.plan-desc {
+  margin: 0;
+  color: var(--text-2);
+  font-size: 14px;
+  font-weight: 300;
+  line-height: 1.7;
+}
+
+.board-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 4px;
+  flex: 0 0 auto;
+  margin-top: clamp(6px, 1.4dvh, 10px);
+}
+
+.board-tile {
+  position: relative;
+  aspect-ratio: 1 / 1;
+  display: grid;
+  place-items: center;
+  border-radius: 10px;
+  border: 1px solid var(--glass-line);
+  background: var(--glass-fill-soft);
+  color: var(--text-3);
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  transition: var(--transition-ui);
+}
+
+.board-tile.kind-task { background: var(--glass-fill); color: var(--text-2); }
+.board-tile.kind-together { background: rgba(242, 184, 198, 0.22); color: var(--text-1); }
+.board-tile.kind-cost { background: rgba(198, 94, 134, 0.26); color: var(--text-1); }
+.board-tile.kind-forward { background: rgba(232, 168, 124, 0.24); color: var(--text-1); }
+.board-tile.kind-back { background: rgba(166, 58, 110, 0.3); color: var(--text-1); }
+.board-tile.kind-skip { background: rgba(63, 40, 104, 0.5); color: var(--text-1); }
+
+.board-tile.kind-start,
+.board-tile.kind-end {
+  border-color: var(--cta-blush);
+  color: var(--text-1);
+}
+
+.board-tile.here {
+  border-color: rgba(255, 255, 255, 0.62);
+}
+
+.board-tile .tok {
+  position: absolute;
+  bottom: 3px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+}
+
+.board-tile .tok-a {
+  left: 5px;
+  background: var(--cta-honey);
+  box-shadow: 0 0 6px rgba(245, 206, 159, 0.9);
+}
+
+.board-tile .tok-b {
+  right: 5px;
+  background: var(--cta-blush);
+  box-shadow: 0 0 6px rgba(242, 184, 198, 0.9);
+}
+
+.board-slot {
+  margin-top: clamp(10px, 2dvh, 14px);
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.board-line {
+  margin: 0;
+  color: var(--cta-honey);
+  font-family: var(--font-serif-cn);
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+/* ==========================================================================
    设置：备份与自定义题库，复用 .glass-row 的玻璃行
    ========================================================================== */
 
@@ -1647,6 +1768,25 @@ input[type="text"]::placeholder {
    纵向节奏全部 clamp(dvh)，两档只压上下限，667→1366 连续压缩/舒展。
    ========================================================================== */
 
+/* 844 档：首页多了一张游戏卡，dvh 高度增长快过视口增长，故这一档各收一档。
+   选择器形态刻意与下方两档一致并置于其前，靠级联顺序让 ≤800/≤720 继续覆盖，避免特异性之争。 */
+@media (max-height: 880px) {
+  .hero-photo {
+    height: clamp(140px, 17dvh, 220px);
+  }
+
+  /* 卡片高度由内容盒（44px 图槽 + 纵向内距）决定，改 min-height 无效，必须收内距 */
+  .row-card {
+    min-height: clamp(56px, 7dvh, 62px);
+    padding: clamp(5px, 0.8dvh, 7px) 16px clamp(5px, 0.8dvh, 7px) 9px;
+  }
+
+  .home-stack,
+  .more-grid {
+    margin-top: clamp(12px, 2.2dvh, 20px);
+  }
+}
+
 @media (max-height: 800px) {
   .hero-photo {
     height: clamp(140px, 18dvh, 168px);
@@ -1682,7 +1822,17 @@ input[type="text"]::placeholder {
 
 @media (max-height: 720px) {
   .hero-photo {
-    height: clamp(126px, 17.5dvh, 148px);
+    height: clamp(98px, 14dvh, 148px);
+  }
+
+  /* 矮屏：轮盘收一档，给新增的热度行让位；指针半径必须同步，否则会脱离轮沿 */
+  .wheel {
+    width: min(72vw, 320px);
+    height: min(72vw, 320px);
+  }
+
+  .pointer {
+    top: calc(50% - min(36vw, 160px) - 14px);
   }
 
   .hero-copy {
