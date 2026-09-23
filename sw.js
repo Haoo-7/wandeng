@@ -1,11 +1,11 @@
-const CACHE = "wandeng-v13";
+const CACHE = "wandeng-v14";
 const FILES = [
   "./",
   "./index.html",
-  "./assets/app.css?v=13",
-  "./assets/logic.js?v=13",
-  "./assets/data.js?v=13",
-  "./assets/app.js?v=13",
+  "./assets/app.css?v=14",
+  "./assets/logic.js?v=14",
+  "./assets/data.js?v=14",
+  "./assets/app.js?v=14",
   "./assets/favicon.svg",
   "./assets/apple-touch.png",
   "./assets/img/hotel.jpg",
