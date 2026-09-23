@@ -1,15 +1,21 @@
-const CACHE = "wandeng-v10";
+const CACHE = "wandeng-v16";
 const FILES = [
   "./",
   "./index.html",
-  "./assets/app.css?v=10",
-  "./assets/app.js?v=10",
-  "./assets/data.js?v=8",
+  "./assets/app.css?v=16",
+  "./assets/logic.js?v=16",
+  "./assets/data.js?v=16",
+  "./assets/app.js?v=16",
   "./assets/favicon.svg",
+  "./assets/apple-touch.png",
   "./assets/img/hotel.jpg",
-  "./assets/img/thumb-tod.png",
-  "./assets/img/thumb-dice.png",
-  "./assets/img/thumb-wheel.jpg",
+  "./assets/img/game-tod.png",
+  "./assets/img/game-dice.png",
+  "./assets/img/game-wheel.png",
+  "./assets/img/tile-combo.png",
+  "./assets/img/tile-scene.png",
+  "./assets/img/tile-choice.png",
+  "./assets/img/tile-timer.png",
   "./manifest.webmanifest",
 ];
 
@@ -27,29 +33,42 @@ self.addEventListener("activate", (event) => {
   self.clients.claim();
 });
 
+// 缓存写入失败（配额、不支持的 scheme）不该冒泡成未处理的拒绝。
+function cachePut(req, res) {
+  caches
+    .open(CACHE)
+    .then((cache) => cache.put(req, res))
+    .catch(() => {});
+}
+
 self.addEventListener("fetch", (event) => {
   const req = event.request;
+  if (req.method !== "GET") return;
+
   if (req.mode === "navigate") {
     event.respondWith(
       fetch(req)
         .then((res) => {
-          const copy = res.clone();
-          caches.open(CACHE).then((cache) => cache.put(req, copy));
+          cachePut(req, res.clone());
           return res;
         })
-        .catch(() => caches.match(req).then((hit) => hit || caches.match("./index.html")))
+        // 链尾必须落到真正的 Response：两处都没命中就是 undefined，respondWith(undefined) 会被判成 net::ERR_FAILED。
+        .catch(() =>
+          caches
+            .match(req)
+            .then((hit) => hit || caches.match("./index.html"))
+            .then((hit) => hit || Response.error())
+        )
     );
     return;
   }
+
   event.respondWith(
     fetch(req)
       .then((res) => {
-        if (res && res.status === 200) {
-          const copy = res.clone();
-          caches.open(CACHE).then((cache) => cache.put(req, copy));
-        }
+        if (res && res.status === 200) cachePut(req, res.clone());
         return res;
       })
-      .catch(() => caches.match(req))
+      .catch(() => caches.match(req).then((hit) => hit || Response.error()))
   );
 });

@@ -93,6 +93,13 @@
   --transition-ui: transform var(--motion-fast) ease, opacity var(--motion-fast) ease,
     box-shadow var(--motion-med) ease, filter var(--motion-fast) ease,
     background var(--motion-med) ease, border-color var(--motion-med) ease;
+  /* v2 动效带：press 160ms · 选中/指示滑动 280ms · 弹层开 420ms/关 300ms · reveal 520ms
+     · ripple 380ms · 图片入场 500ms · 蓄力 240ms（硬上限，只走 transform/opacity + 特许例外） */
+  --motion-slow: 0.38s;
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+  --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
   --safe-top: max(18px, env(safe-area-inset-top));
   --tap-pad: max(env(safe-area-inset-bottom), 12px);
 
@@ -268,10 +275,13 @@ h1,
    ========================================================================== */
 
 /* B · 英雄区溶解：照片带沉浸式延伸到状态栏下，底部经 mask 溶进霞光场，无硬圆角接缝。
-   首页与其余屏共用 .screen 的 --gutter；照片带负 margin 顶到视口左右边缘 */
+   首页与其余屏共用 .screen 的 --gutter；照片带负 margin 顶到视口左右边缘。
+   flex-shrink 允许收缩：首页其余部分都缩不动，空间不够时必须由这张装饰照片先让位，
+   否则整屏只能滚动（这与 .play-card 用 flex:1 吸收余量是同一个道理）。 */
 .hero-photo {
   position: relative;
-  flex: 0 0 auto;
+  flex: 0 1 auto;
+  min-height: 96px;
   margin: calc(-1 * var(--safe-top) - 8px) calc(-1 * var(--gutter)) 0;
   height: clamp(160px, 21dvh, 300px);
 }
@@ -367,6 +377,26 @@ h1,
   box-shadow: var(--glass-topline);
 }
 
+/* 飞行棋卡片的图标槽与 .row-card img 同尺寸同位：没有对应位图，图形用代码画 */
+.row-ico {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-ico);
+  /* 槽底补暖色渐变：无位图可用，靠填充密度向三张插画图标的分量靠拢 */
+  background: linear-gradient(150deg, rgba(245, 206, 159, 0.26), rgba(242, 184, 198, 0.2)),
+    var(--glass-fill-strong);
+  border: 1px solid var(--glass-line);
+  box-shadow: var(--glass-topline);
+  color: var(--cta-honey);
+}
+
+.row-ico svg {
+  width: 22px;
+  height: 22px;
+}
+
 .row-card h2 {
   margin: 0 0 3px;
   font-family: var(--font-body);
@@ -460,14 +490,143 @@ h1,
   text-overflow: ellipsis;
 }
 
-/* 首页底部：热度胶囊 + 重新设置（纵向由 auto margin 均分，安全区交给 .screen 的 padding-bottom） */
-.bottom-row {
+/* 热度步进器：顶栏右端 [−] 热度名 [+]，复用 data-heat-step 与 syncHeatSteps 禁用逻辑 */
+.heat-stepper {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  margin-top: auto;
-  padding-bottom: 0;
+  gap: 6px;
+}
+
+.step-btn {
+  width: 30px;
+  height: 30px;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--glass-line);
+  background: var(--glass-fill);
+  -webkit-backdrop-filter: blur(18px);
+  backdrop-filter: blur(18px);
+  color: var(--text-1);
+  font-size: 15px;
+  line-height: 1;
+  cursor: pointer;
+  box-shadow: var(--glass-topline);
+  transition: var(--transition-ui);
+}
+
+.step-btn:disabled {
+  opacity: 0.35;
+  cursor: default;
+  box-shadow: none;
+}
+
+/* 本地图标 sprite 引用：Phosphor regular 风格，currentColor 继承 */
+.ico {
+  width: 20px;
+  height: 20px;
+  display: block;
+}
+
+.ico-sm {
+  width: 14px;
+  height: 14px;
+}
+
+.icon-btn {
+  display: grid;
+  place-items: center;
+}
+
+.step-btn {
+  display: grid;
+  place-items: center;
+}
+
+.tab .ico {
+  width: 18px;
+  height: 18px;
+}
+
+/* 底栏双栏：首页 / 设置。全宽吸底坞，直接贴边。
+   之前悬浮胶囊（left 50% + translateX + backdrop-filter）在 iOS 滚动后会糊在半空、
+   文字还会被挤成竖排，故改全宽 dock + 实底 + 无 transform，一次性避开。 */
+.tabbar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 30;
+  display: flex;
+  gap: 8px;
+  padding: 10px 16px calc(env(safe-area-inset-bottom, 0px) + 10px);
+  background: var(--dusk-violet);
+  border-top: 1px solid var(--glass-line);
+  box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.35);
+}
+
+.tab {
+  flex: 1 1 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px 0;
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--text-2);
+  font-family: var(--font-body);
+  font-size: 13px;
+  letter-spacing: 0.1em;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: var(--transition-ui);
+}
+
+.tab span {
+  white-space: nowrap;
+}
+
+/* 底栏只在 home/settings 出现，两屏预留坞高，内容不被压住 */
+.screen[data-screen="home"],
+.screen[data-screen="settings"] {
+  padding-bottom: calc(var(--safe-bottom) + 84px);
+}
+
+/* 设置里的边界清单入口：button 套 glass-row 壳，清默认边框字体 */
+button.boundary-entry {
+  display: block;
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+  position: relative;
+  font-family: var(--font-body);
+  color: var(--text-1);
+}
+
+.boundary-entry {
+  position: relative;
+}
+
+.boundary-entry::after {
+  content: "›";
+  position: absolute;
+  right: 14px;
+  bottom: 12px;
+  color: var(--text-3);
+  font-size: 18px;
+  line-height: 1;
+}
+
+.tab.is-active {
+  background: var(--cta-grad-primary);
+  color: var(--ink-plum);
+  font-weight: 600;
+}
+
+/* 棋盘进度行：顶栏只留轮到谁，进度另起一行 */
+.board-progress {
+  align-self: center;
+  margin: 0 0 6px;
 }
 
 .pill {
@@ -528,6 +687,9 @@ h1,
   line-height: 1.35;
   letter-spacing: 0.04em;
   font-size: 14px;
+  /* 选中/变暗 280ms 带、按压 filter 160ms 带；缓动随状态切换（见动效 v2 段） */
+  transition: transform 280ms var(--ease-out), opacity 280ms var(--ease-out),
+    box-shadow 280ms var(--ease-out), filter 160ms var(--ease-out);
 }
 
 /* 主 CTA：晚霞胶囊（柔光 + 墨紫文字） */
@@ -613,23 +775,14 @@ h1,
 .row-card:focus-visible,
 .more-grid button:focus-visible,
 .heat-btn:focus-visible,
+.bd-opt:focus-visible,
 .linkish:focus-visible,
 input[type="text"]:focus-visible {
   outline: var(--focus-ring);
   outline-offset: 2px;
 }
 
-.btn:not(:disabled):active,
-.row-card:active,
-.more-grid button:active,
-.heat-btn:active,
-.icon-btn:active,
-.linkish:active {
-  transform: translateY(1px);
-  filter: brightness(0.96);
-}
-
-@media (min-width: 720px) {
+@media (hover: hover) and (pointer: fine) {
   .btn:not(:disabled):hover,
   .row-card:hover,
   .more-grid button:hover,
@@ -648,6 +801,265 @@ input[type="text"]:focus-visible {
   .linkish:hover {
     background: var(--glass-fill);
   }
+}
+
+.btn:not(:disabled):active,
+.row-card:active,
+.more-grid button:active,
+.heat-btn:active,
+.icon-btn:active,
+.linkish:active {
+  transform: scale(0.95);
+  filter: brightness(0.94);
+}
+
+/* ==========================================================================
+   动效 v2 — 按压波纹 / 选择态 / 热度胶囊 / 图片入场 / 结果揭示 / 蓄力 / 计时脉冲
+   时长全部走 :root 注释里的硬上限带；仅 transform·opacity + 特许例外
+   （clip 例外仅 gloss 的 translateX、standalone scale/rotate 仅 B3 三件套与 timerPulse、
+   heat-ind 的 left/width 由 JS 写 inline，CSS 只声明过渡）
+   ========================================================================== */
+
+/* A1 · 可点按面统一基座：position 供 ripple 定位，overflow 裁圆角 */
+.btn,
+.row-card,
+.more-grid button,
+.icon-btn {
+  position: relative;
+  overflow: hidden;
+  transition: var(--transition-ui), transform 160ms var(--ease-out), filter 160ms var(--ease-out);
+}
+
+/* A1 · 波纹：JS 注入 span.ripple 并设定 left/top/width/height，单次播放后移除 */
+span.ripple {
+  position: absolute;
+  border-radius: 50%;
+  transform: scale(0);
+  opacity: 0.9;
+  background: rgba(255, 255, 255, 0.30);
+  pointer-events: none;
+  animation: ripple var(--motion-slow) var(--ease-out);
+}
+
+@keyframes ripple {
+  to {
+    transform: scale(4);
+    opacity: 0;
+  }
+}
+
+/* A2 · 二选一：选中=弹簧微放大+琥珀描边环，落选=压暗。环色走 --dusk-amber token */
+#choiceA.is-selected,
+#choiceB.is-selected {
+  transform: scale(1.04);
+  box-shadow: 0 0 0 2px var(--dusk-amber), 0 8px 24px rgba(0, 0, 0, 0.28), var(--cta-topline-soft);
+  transition: transform 280ms var(--ease-spring), opacity 280ms var(--ease-spring),
+    box-shadow 280ms var(--ease-spring), filter 160ms var(--ease-out);
+}
+
+#choiceA.is-dimmed,
+#choiceB.is-dimmed {
+  opacity: 0.45;
+  transform: scale(0.97);
+  transition: transform 280ms var(--ease-out), opacity 280ms var(--ease-out),
+    box-shadow 280ms var(--ease-out), filter 160ms var(--ease-out);
+}
+
+/* A3 · 热度指示胶囊：垫在 .heat-btn（z-index:1）之下，滑动/伸缩由 JS 写 inline left·width */
+span.heat-ind {
+  position: absolute;
+  top: 4px;
+  bottom: 4px;
+  left: 0;
+  width: 0;
+  border-radius: 999px;
+  background: var(--cta-grad-primary);
+  transition: transform 280ms var(--ease-in-out), width 280ms var(--ease-in-out);
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* B1 · 照片渐进：模糊+微放大 → 落定。transition 而非 keyframes（load 时机不定，需可重定向） */
+img.img-reveal {
+  opacity: 0;
+  filter: blur(10px);
+  transform: scale(1.02);
+  transition: opacity 500ms var(--ease-out), filter 500ms var(--ease-out),
+    transform 500ms var(--ease-out);
+}
+
+img.img-reveal.is-loaded {
+  opacity: 1;
+  filter: blur(0);
+  transform: scale(1);
+}
+
+/* 英雄区溶解 mask 与 blur/scale 相撞：hero 图退化为纯 opacity，mask 溶解效果原样保留 */
+.hero-photo img.img-reveal {
+  filter: none;
+  transform: none;
+  transition: opacity 500ms var(--ease-out);
+}
+
+/* C2 · 倒计时节拍：standalone scale 属性，不碰 transform */
+.timer-num.pulse {
+  animation: timerPulse 600ms var(--ease-spring);
+}
+
+@keyframes timerPulse {
+  0% {
+    scale: 1;
+  }
+  40% {
+    scale: 1.18;
+  }
+  70% {
+    scale: 0.96;
+  }
+  100% {
+    scale: 1;
+  }
+}
+
+/* C4 · 结果揭示：reveal=入场缩放+光泽扫掠。
+   与 .repick 同标时用逗号列表合并双动画（.reveal.repick），两个都能播 */
+.reveal {
+  position: relative;
+  overflow: hidden;
+  animation: reveal 520ms var(--ease-out);
+}
+
+@keyframes reveal {
+  0% {
+    opacity: 0;
+    transform: scale(0.94);
+  }
+  60% {
+    opacity: 1;
+    transform: scale(1.015);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* 减少动态时 reveal 的仅-opacity 温和变体（第 8 个新 keyframe） */
+@keyframes revealFade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.reveal::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(105deg, transparent 30%, rgba(255, 255, 255, 0.28) 50%, transparent 70%);
+  transform: translateX(-120%);
+  animation: gloss 520ms var(--ease-out);
+  pointer-events: none;
+}
+
+@keyframes gloss {
+  to {
+    transform: translateX(120%);
+  }
+}
+
+.reveal.repick {
+  animation: repick 0.32s ease, reveal 520ms var(--ease-out);
+}
+
+/* C5 · 统一翻卡：抽取 → 沿 Y 轴翻面 → 背面只留结果大字。
+   动效参照 michaelsboost/CoupleCards 单卡翻抽（行为重写）。
+   正面 .flip-front＝眉标＋提示语；背面 .flip-back＝纯结果大字。 */
+.flip-card {
+  perspective: 1200px;
+}
+
+.flip-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+  transition: transform 520ms var(--ease-out);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.flip-card.is-flipped .flip-inner {
+  transform: rotateY(180deg);
+}
+
+.flip-face {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+}
+
+.flip-back {
+  position: absolute;
+  inset: 0;
+  transform: rotateY(180deg);
+}
+
+/* 背面结果大字：解决「原卡换字字体太小、内容不突出」 */
+.flip-back .q {
+  font-size: clamp(26px, 7vw, 32px);
+  line-height: 1.6;
+}
+
+/* B3 · 蓄力回拉：骰子/轮盘的 transform 已被 JS inline 3D 姿态与旋转占用，
+   风箱动画走 standalone scale / rotate 属性，与 transform 链式复合、互不覆盖 */
+@keyframes dieWindup {
+  0%,
+  100% {
+    scale: 1;
+  }
+  45% {
+    scale: 0.9;
+  }
+}
+
+@keyframes wheelWindup {
+  0%,
+  100% {
+    rotate: 0deg;
+  }
+  45% {
+    rotate: -4deg;
+  }
+}
+
+@keyframes windup {
+  0%,
+  100% {
+    scale: 1;
+  }
+  45% {
+    scale: 0.94;
+  }
+}
+
+.die.anticipate {
+  animation: dieWindup 240ms var(--ease-out);
+}
+
+.wheel.anticipate {
+  animation: wheelWindup 240ms var(--ease-out);
+}
+
+#btnRoll.windup,
+#btnSpin.windup {
+  animation: windup 240ms var(--ease-out);
 }
 
 /* ==========================================================================
@@ -730,6 +1142,11 @@ input[type="text"]:focus-visible {
   background: var(--kicker-hair);
 }
 
+/* 数字不跟着 kicker 字距拆开（「45 秒」不能显示成「4 5 秒」） */
+.play-card .kicker .tight {
+  letter-spacing: 0;
+}
+
 .play-card .q {
   font-family: var(--font-serif-cn);
   font-size: clamp(20px, 5.4vw, 24px);
@@ -738,6 +1155,8 @@ input[type="text"]:focus-visible {
   letter-spacing: 0.04em;
   color: var(--text-1);
   text-shadow: var(--q-shadow);
+  /* pretty 收敛孤字行尾与生硬断点；CJK 断行用默认（keep-all 配方会破标点禁则，已弃） */
+  text-wrap: pretty;
 }
 
 .play-card .q::before {
@@ -775,6 +1194,7 @@ input[type="text"]:focus-visible {
   font-family: var(--font-serif-cn);
   font-size: 17px;
   line-height: 1.6;
+  text-wrap: pretty;
 }
 
 /* ==========================================================================
@@ -849,6 +1269,7 @@ input[type="text"]::placeholder {
 
 /* 热度分段控件（样张 .heat-seg：玻璃槽 + 渐变选中胶囊） */
 .heat-grid {
+  position: relative; /* A3 · span.heat-ind 的定位锚 */
   display: flex;
   gap: 4px;
   padding: 4px;
@@ -861,6 +1282,8 @@ input[type="text"]::placeholder {
 }
 
 .heat-btn {
+  position: relative; /* A3 · 抬到 heat-ind 胶囊之上 */
+  z-index: 1;
   flex: 1;
   min-height: 48px;
   text-align: center;
@@ -996,6 +1419,7 @@ input[type="text"]::placeholder {
   letter-spacing: 0.08em;
   margin-bottom: 8px;
   color: var(--text-1);
+  text-wrap: pretty;
 }
 
 .result span {
@@ -1010,6 +1434,8 @@ input[type="text"]::placeholder {
    ========================================================================== */
 
 .wheel-box {
+  /* 轮盘直径的唯一事实源：.wheel 与 .pointer 都从这里取半径 */
+  --wheel-size: min(78vw, 320px);
   flex: 1;
   display: grid;
   place-items: center;
@@ -1019,8 +1445,8 @@ input[type="text"]::placeholder {
 }
 
 .wheel {
-  width: min(78vw, 320px);
-  height: min(78vw, 320px);
+  width: var(--wheel-size);
+  height: var(--wheel-size);
   border-radius: 50%;
   border: 8px solid var(--glass-line);
   box-shadow: var(--glass-lift-deep), 0 0 40px var(--glass-fill);
@@ -1053,7 +1479,7 @@ input[type="text"]::placeholder {
 /* I · 指针加大体量与投影，落在轮盘上沿更清晰 */
 .pointer {
   position: absolute;
-  top: calc(50% - min(39vw, 160px) - 14px);
+  top: calc(50% - var(--wheel-size) / 2 - 14px);
   left: 50%;
   transform: translateX(-50%);
   width: 0;
@@ -1077,6 +1503,8 @@ input[type="text"]::placeholder {
   letter-spacing: 0.06em;
   color: var(--dusk-amber);
   margin: 8px 0 18px;
+  /* C2 · .done 换色 300ms 渐变；脉冲本体走 animation（standalone scale） */
+  transition: color 300ms var(--ease-out);
 }
 
 /* I · 倒计时四排操作行：拉开行距留出呼吸，仍单屏不溢出 */
@@ -1122,21 +1550,29 @@ input[type="text"]::placeholder {
    安全词面板 / 旧版提示条：玻璃面板 radius 32
    ========================================================================== */
 
+/* C1 · 常驻 flex + opacity/visibility 过渡（不再 display:none 硬切）；关时 pointer-events 放行 */
 .modal {
   position: fixed;
   inset: 0;
   background: var(--veil);
   -webkit-backdrop-filter: blur(8px);
   backdrop-filter: blur(8px);
-  display: none;
+  display: flex;
   align-items: flex-end;
   justify-content: center;
   z-index: 20;
   padding: 18px;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 320ms var(--ease-out), visibility 0s linear 320ms;
 }
 
 .modal.active {
-  display: flex;
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transition: opacity 320ms var(--ease-out), visibility 0s;
 }
 
 .sheet {
@@ -1150,6 +1586,17 @@ input[type="text"]::placeholder {
   box-shadow: var(--glass-lift-deep), var(--glass-topline-hi);
   color: var(--text-1);
   padding: 24px 20px calc(var(--tap-pad) + 16px);
+  /* C1 · 底部抽屉：开 420ms / 关 300ms（关快于开），玻璃质感规则原样保留 */
+  transform: translateY(100%);
+  transition: transform 420ms var(--ease-drawer);
+}
+
+.modal.active .sheet {
+  transform: translateY(0);
+}
+
+.modal:not(.active) .sheet {
+  transition-duration: 300ms;
 }
 
 .sheet h3 {
@@ -1185,11 +1632,425 @@ input[type="text"]::placeholder {
 }
 
 /* ==========================================================================
+   今晚做什么（两堆活动卡）与飞行棋棋盘
+   ========================================================================== */
+
+/* 与 .play-card / .board-slot 同构：卡片吸收剩余高度，否则内容会挤在上半屏、下半屏空着 */
+.plan-card {
+  margin-top: clamp(10px, 2dvh, 14px);
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.plan-card .glass-row-head b {
+  font-size: 16px;
+}
+
+.plan-card.is-foil {
+  border-color: rgba(232, 168, 124, 0.6);
+}
+
+.plan-desc {
+  margin: 0;
+  color: var(--text-2);
+  font-size: 14px;
+  font-weight: 300;
+  line-height: 1.7;
+}
+
+.board-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 4px;
+  flex: 0 0 auto;
+  margin-top: clamp(6px, 1.4dvh, 10px);
+}
+
+.board-tile {
+  position: relative;
+  aspect-ratio: 1 / 1;
+  display: grid;
+  place-items: center;
+  border-radius: 10px;
+  border: 1px solid var(--glass-line);
+  background: var(--glass-fill-soft);
+  color: var(--text-3);
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  transition: var(--transition-ui);
+}
+
+.board-tile.kind-task { background: var(--glass-fill); color: var(--text-2); }
+.board-tile.kind-together { background: rgba(242, 184, 198, 0.22); color: var(--text-1); }
+.board-tile.kind-cost { background: rgba(198, 94, 134, 0.26); color: var(--text-1); }
+.board-tile.kind-forward { background: rgba(232, 168, 124, 0.24); color: var(--text-1); }
+.board-tile.kind-back { background: rgba(166, 58, 110, 0.3); color: var(--text-1); }
+.board-tile.kind-skip { background: rgba(63, 40, 104, 0.5); color: var(--text-1); }
+
+/* 格子类型角标：底色差异不足以辨类，色板不动，改用微型图形标记（六类事件各一个） */
+.board-tile::before {
+  position: absolute;
+  top: 4px;
+  right: 5px;
+  font-family: system-ui, sans-serif;
+  font-style: normal;
+  font-size: 9px;
+  font-weight: 600;
+  line-height: 1;
+  opacity: 0.9;
+}
+
+.board-tile.kind-task::before { content: "?"; color: var(--text-3); }
+.board-tile.kind-forward::before { content: "→"; color: var(--cta-honey); }
+.board-tile.kind-back::before { content: "←"; color: var(--kicker-rose); }
+.board-tile.kind-cost::before { content: "✕"; color: var(--kicker-rose); }
+.board-tile.kind-together::before { content: "♥"; color: var(--cta-blush); }
+.board-tile.kind-skip::before { content: "⊘"; color: var(--text-3); }
+
+.board-tile.kind-start,
+.board-tile.kind-end {
+  border-color: var(--cta-blush);
+  color: var(--text-1);
+}
+
+.board-tile.here {
+  border-color: rgba(255, 255, 255, 0.62);
+}
+
+/* SVG 大棋子：22px 光盘＋白环＋名字首字，同格两枚左右并排 */
+.tok-svg {
+  position: absolute;
+  bottom: 2px;
+  width: 22px;
+  height: 22px;
+}
+
+.tok-svg.tok-a {
+  left: 2px;
+}
+
+.tok-svg.tok-b {
+  right: 2px;
+}
+
+.tok-svg .tok-disc.tok-a,
+.tok-svg.tok-a .tok-disc {
+  fill: var(--cta-honey);
+}
+
+.tok-svg .tok-disc.tok-b,
+.tok-svg.tok-b .tok-disc {
+  fill: var(--cta-blush);
+}
+
+.tok-svg .tok-ring {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.85);
+  stroke-width: 2;
+}
+
+.tok-svg .tok-word {
+  fill: var(--ink-plum);
+  font-size: 11px;
+  font-weight: 700;
+  font-style: normal;
+}
+
+/* 序号让位：同格有棋子时序号上移，避免与 22px 棋子重叠 */
+.board-tile .tile-num {
+  transform: translateY(-8px);
+}
+
+/* 掷骰小骰面：board-slot 头的点数显示，固定槽位不被 flex 挤扁，tumbling 期抖动。
+   特异性必须压过 .glass-row-head span（10px 斜体），否则骰面被压成 10px。 */
+.glass-row-head .board-die {
+  font-size: 20px;
+  font-style: normal;
+  line-height: 1.2;
+  color: var(--text-1);
+  min-width: 24px;
+  flex: 0 0 auto;
+  text-align: center;
+  display: inline-block;
+}
+
+.board-die.tumbling {
+  animation: dieTumble 120ms ease-in-out infinite;
+}
+
+@keyframes dieTumble {
+  0% {
+    transform: rotate(-12deg) scale(1.05);
+  }
+  100% {
+    transform: rotate(12deg) scale(0.95);
+  }
+}
+
+.board-slot {
+  margin-top: clamp(10px, 2dvh, 14px);
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.board-line {
+  margin: 0;
+  color: var(--cta-honey);
+  font-family: var(--font-serif-cn);
+  font-size: 15px;
+  line-height: 1.6;
+  text-wrap: pretty;
+}
+
+/* ==========================================================================
+   设置：备份与自定义题库，复用 .glass-row 的玻璃行
+   ========================================================================== */
+
+.settings-list {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  flex: 0 0 auto;
+}
+
+.glass-row .field-note {
+  margin: 0 0 10px;
+}
+
+.set-status {
+  margin: clamp(10px, 2dvh, 14px) 0 0;
+  min-height: 17px;
+  text-align: center;
+  font-size: 12px;
+  font-weight: 300;
+  letter-spacing: 0.06em;
+  line-height: 1.5;
+  color: var(--cta-honey);
+  flex: 0 0 auto;
+}
+
+.file-btn {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 52px;
+  margin: 0;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--btn-ghost-line);
+  background: var(--btn-ghost-fill);
+  color: var(--text-1);
+  font-family: var(--font-body);
+  font-size: 15px;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  cursor: pointer;
+  overflow: hidden;
+  transition: var(--transition-ui), transform 160ms var(--ease-out), filter 160ms var(--ease-out);
+}
+
+.file-btn input[type="file"] {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.file-btn:focus-within {
+  outline: var(--focus-ring);
+  outline-offset: 2px;
+}
+
+.file-btn:active {
+  transform: scale(0.95);
+  filter: brightness(0.94);
+}
+
+/* ==========================================================================
+   热度加减：游戏屏内直接升降一档
+   ========================================================================== */
+
+.heat-step .btn {
+  height: 44px;
+  font-size: 14px;
+  letter-spacing: 0.1em;
+}
+
+/* ==========================================================================
+   边界清单：每人一行 Yes / Maybe / No，双方都点头的才进今晚
+   ========================================================================== */
+
+.bd-lead {
+  margin: 0 0 clamp(10px, 2dvh, 14px);
+  text-align: center;
+}
+
+.bd-summary {
+  display: flex;
+  gap: 7px;
+  justify-content: center;
+  margin-bottom: clamp(10px, 2dvh, 14px);
+  flex: 0 0 auto;
+}
+
+.bd-summary .pill {
+  height: 28px;
+  padding: 0 11px;
+  font-size: 10px;
+}
+
+.boundary-list {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  flex: 0 0 auto;
+}
+
+.glass-row {
+  padding: 11px 13px;
+  border-radius: var(--radius-tile);
+  border: 1px solid var(--glass-line);
+  background: var(--glass-fill);
+  -webkit-backdrop-filter: var(--glass-backdrop);
+  backdrop-filter: var(--glass-backdrop);
+  box-shadow: var(--glass-lift), var(--glass-topline);
+  transition: var(--transition-ui);
+}
+
+/* 灯金描边 = 双方都 Yes；酒红描边 = 任一方 No */
+.glass-row.has-both-yes {
+  border-color: rgba(232, 168, 124, 0.55);
+}
+
+.glass-row.has-any-no {
+  border-color: rgba(198, 94, 134, 0.5);
+}
+
+.glass-row-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 9px;
+}
+
+.glass-row-head b {
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  line-height: 1.45;
+  color: var(--text-1);
+}
+
+.glass-row-head span {
+  flex: 0 0 auto;
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  color: var(--text-3);
+}
+
+.bd-player {
+  display: grid;
+  grid-template-columns: 52px 1fr;
+  align-items: center;
+  gap: 9px;
+}
+
+.bd-player + .bd-player {
+  margin-top: 6px;
+}
+
+.bd-player > span {
+  font-size: 11px;
+  font-weight: 300;
+  letter-spacing: 0.06em;
+  color: var(--text-2);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.bd-seg {
+  display: flex;
+  gap: 4px;
+  padding: 3px;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--glass-line);
+  background: var(--glass-fill-soft);
+}
+
+.bd-opt {
+  position: relative;
+  overflow: hidden;
+  flex: 1;
+  min-height: 30px;
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: none;
+  color: var(--text-3);
+  font-family: var(--font-body);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+  transition: var(--transition-ui), transform 160ms var(--ease-out), filter 160ms var(--ease-out);
+}
+
+.bd-opt.on-yes {
+  background: var(--cta-grad-honey);
+  color: var(--ink-amber);
+  font-weight: 500;
+  box-shadow: var(--cta-topline-soft);
+}
+
+.bd-opt.on-maybe {
+  background: var(--glass-fill-strong);
+  color: var(--text-1);
+  font-weight: 500;
+  box-shadow: var(--glass-topline);
+}
+
+.bd-opt.on-no {
+  background: var(--cta-grad-rose);
+  color: var(--ink-plum);
+  font-weight: 500;
+  box-shadow: var(--cta-topline-soft);
+}
+
+/* ==========================================================================
    D · 全宽度满屏：霞光场由 body 铺满视口，内容列 min(100% - 48px, 640px) 居中。
    设备框（≥720px 样张画板）已整体移除，不再有任何手机外壳模拟。
    E · 矮屏两档收紧：≤800 高（iPad 横屏 768）轻收；≤720 高（375×667 SE）重收。
    纵向节奏全部 clamp(dvh)，两档只压上下限，667→1366 连续压缩/舒展。
    ========================================================================== */
+
+/* 844 档：首页多了一张游戏卡，dvh 高度增长快过视口增长，故这一档各收一档。
+   选择器形态刻意与下方两档一致并置于其前，靠级联顺序让 ≤800/≤720 继续覆盖，避免特异性之争。 */
+@media (max-height: 880px) {
+  .hero-photo {
+    height: clamp(140px, 17dvh, 220px);
+  }
+
+  /* 卡片高度由内容盒（44px 图槽 + 纵向内距）决定，改 min-height 无效，必须收内距 */
+  .row-card {
+    min-height: clamp(56px, 7dvh, 62px);
+    padding: clamp(5px, 0.8dvh, 7px) 16px clamp(5px, 0.8dvh, 7px) 9px;
+  }
+
+  .home-stack,
+  .more-grid {
+    margin-top: clamp(12px, 2.2dvh, 20px);
+  }
+}
 
 @media (max-height: 800px) {
   .hero-photo {
@@ -1224,9 +2085,45 @@ input[type="text"]::placeholder {
   }
 }
 
+@media (max-height: 780px) {
+  /* 轮盘屏高度预算：矮高下轮盘随高度收缩 + 结果字号降档，长文案才不溢出 */
+  .wheel-box {
+    --wheel-size: min(74vw, 32dvh, 264px);
+  }
+
+  .result b {
+    font-size: 25px;
+  }
+}
+
 @media (max-height: 720px) {
   .hero-photo {
-    height: clamp(126px, 17.5dvh, 148px);
+    height: clamp(98px, 14dvh, 148px);
+  }
+
+  /* 矮屏：轮盘再收一档给按钮与结果让位；指针半径自动跟随 --wheel-size */
+  .wheel-box {
+    --wheel-size: min(74vw, 30dvh, 240px);
+  }
+
+  .result b {
+    font-size: 24px;
+  }
+
+  /* 42 格棋盘在矮屏格子更小：角标与序号同步缩小，棋子保持 18px 可辨 */
+  .board-grid {
+    gap: 3px;
+  }
+
+  .board-tile {
+    font-size: 9px;
+    border-radius: 8px;
+  }
+
+  .board-tile::before {
+    font-size: 8px;
+    top: 3px;
+    right: 4px;
   }
 
   .hero-copy {
@@ -1310,11 +2207,7 @@ input[type="text"]::placeholder {
 
 @media (prefers-reduced-motion: reduce) {
   .screen.active {
-    animation: none;
-  }
-
-  .repick {
-    animation: none;
+    animation: revealFade 0.3s var(--ease-out);
   }
 
   .btn,
@@ -1324,6 +2217,7 @@ input[type="text"]::placeholder {
   .icon-btn,
   .linkish,
   .heat-btn,
+  .bd-opt,
   input[type="text"] {
     transition: none;
   }
@@ -1334,6 +2228,76 @@ input[type="text"]::placeholder {
   .heat-btn:active,
   .icon-btn:active,
   .linkish:active {
+    transform: scale(0.98); /* 按压保留但减半：0.95 → 0.98 */
+  }
+
+  /* —— 动效 v2 温和变体：降为 opacity/短过渡，去 transform、blur、过冲，不清零 —— */
+  span.ripple,
+  .die.anticipate,
+  .wheel.anticipate,
+  #btnRoll.windup,
+  #btnSpin.windup {
+    animation: none; /* 一次性装饰/蓄力弹跳整体停播 */
+  }
+
+  #choiceA.is-selected,
+  #choiceB.is-selected,
+  #choiceA.is-dimmed,
+  #choiceB.is-dimmed {
+    transform: none; /* 只留描边环与压暗的 opacity/box-shadow 渐变，去缩放与弹簧 */
+    transition: opacity 280ms var(--ease-out), box-shadow 280ms var(--ease-out);
+  }
+
+  span.heat-ind {
+    transition: transform 150ms var(--ease-out), width 150ms var(--ease-out); /* 更短、无对称缓动过冲 */
+  }
+
+  img.img-reveal {
+    filter: none;
     transform: none;
+    transition: opacity 500ms var(--ease-out); /* 只淡入，去 blur 与缩放 */
+  }
+
+  .sheet {
+    transform: none; /* 弹层留 opacity/遮罩淡变，抽屉位移归零 */
+    transition: none;
+  }
+
+  .timer-num {
+    transition: color 300ms var(--ease-out); /* 留换色，去 transform 弹簧带 */
+  }
+
+  .timer-num.pulse {
+    animation: none;
+  }
+
+  .reveal {
+    animation: revealFade 520ms var(--ease-out); /* 缩放揭示 → 纯 opacity 揭示 */
+  }
+
+  .reveal.repick {
+    animation: revealFade 520ms var(--ease-out); /* 合并态同样去位移、去缩放 */
+  }
+
+  .reveal::after {
+    content: none; /* 光泽扫掠整体撤下 */
+  }
+
+  .flip-inner {
+    transition: opacity 280ms var(--ease-out); /* 翻面 → 纯 opacity 切换 */
+  }
+
+  .flip-card.is-flipped .flip-inner {
+    transform: none;
+  }
+
+  .flip-card.is-flipped .flip-front {
+    position: absolute;
+    inset: 0;
+    visibility: hidden;
+  }
+
+  .flip-card:not(.is-flipped) .flip-back {
+    visibility: hidden;
   }
 }

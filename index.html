@@ -21,9 +21,48 @@
       href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,400;1,9..144,600&family=Noto+Sans+SC:wght@300;400;500;700&family=Noto+Serif+SC:wght@500;600&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="./assets/app.css?v=10" />
+    <link rel="stylesheet" href="./assets/app.css?v=16" />
   </head>
   <body>
+    <!-- 图标本地子集（Phosphor regular 风格：256 网格、stroke 16、round 端点；不走 CDN，离线可用） -->
+    <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+      <defs>
+        <symbol id="i-arrow-left" viewBox="0 0 256 256">
+          <g fill="none" stroke="currentColor" stroke-width="16" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="216" y1="128" x2="40" y2="128" />
+            <polyline points="112 56 40 128 112 200" />
+          </g>
+        </symbol>
+        <symbol id="i-minus" viewBox="0 0 256 256">
+          <line x1="40" y1="128" x2="216" y2="128" stroke="currentColor" stroke-width="16" stroke-linecap="round" />
+        </symbol>
+        <symbol id="i-plus" viewBox="0 0 256 256">
+          <g stroke="currentColor" stroke-width="16" stroke-linecap="round">
+            <line x1="128" y1="40" x2="128" y2="216" />
+            <line x1="40" y1="128" x2="216" y2="128" />
+          </g>
+        </symbol>
+        <symbol id="i-house" viewBox="0 0 256 256">
+          <g fill="none" stroke="currentColor" stroke-width="16" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M32 120 128 40l96 80" />
+            <path d="M72 108v96h44v-52h24v52h44v-96" />
+          </g>
+        </symbol>
+        <symbol id="i-gear" viewBox="0 0 256 256">
+          <g fill="none" stroke="currentColor" stroke-width="16" stroke-linecap="round">
+            <circle cx="128" cy="128" r="44" />
+            <line x1="192" y1="128" x2="212" y2="128" />
+            <line x1="173.3" y1="173.3" x2="187.4" y2="187.4" />
+            <line x1="128" y1="192" x2="128" y2="212" />
+            <line x1="82.7" y1="173.3" x2="68.6" y2="187.4" />
+            <line x1="64" y1="128" x2="44" y2="128" />
+            <line x1="82.7" y1="82.7" x2="68.6" y2="68.6" />
+            <line x1="128" y1="64" x2="128" y2="44" />
+            <line x1="173.3" y1="82.7" x2="187.4" y2="68.6" />
+          </g>
+        </symbol>
+      </defs>
+    </svg>
     <div id="app">
       <section class="screen active" data-screen="setup" id="screen-setup">
         <div class="mini-hero">
@@ -57,7 +96,7 @@
 
       <section class="screen screen-home" data-screen="home" id="screen-home">
         <header class="hero-photo">
-          <img src="./assets/img/hotel.jpg" alt="" />
+          <img src="./assets/img/hotel.jpg" alt="" loading="eager" decoding="async" class="img-reveal" />
           <div class="hero-shade"></div>
         </header>
         <div class="hero-copy">
@@ -67,7 +106,7 @@
         </div>
         <div class="stack home-stack">
           <button class="row-card" data-open="tod">
-            <img src="./assets/img/game-tod.png" alt="" />
+            <img src="./assets/img/game-tod.png" alt="" loading="lazy" decoding="async" class="img-reveal" />
             <div>
               <h2>真心话大冒险</h2>
               <p>轮到谁，谁就答</p>
@@ -75,7 +114,7 @@
             <span>›</span>
           </button>
           <button class="row-card" data-open="dice">
-            <img src="./assets/img/game-dice.png" alt="" />
+            <img src="./assets/img/game-dice.png" alt="" loading="lazy" decoding="async" class="img-reveal" />
             <div>
               <h2>情趣骰子</h2>
               <p>掷出这一下要做什么</p>
@@ -83,56 +122,79 @@
             <span>›</span>
           </button>
           <button class="row-card" data-open="wheel">
-            <img src="./assets/img/game-wheel.png" alt="" />
+            <img src="./assets/img/game-wheel.png" alt="" loading="lazy" decoding="async" class="img-reveal" />
             <div>
               <h2>命运轮盘</h2>
               <p>转到哪句，就按哪句做</p>
             </div>
             <span>›</span>
           </button>
+          <button class="row-card" data-open="board">
+            <i class="row-ico" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 7h16M4 12h16M4 17h16" />
+                <circle cx="8" cy="7" r="2.4" fill="var(--cta-honey)" stroke="none" />
+                <circle cx="15" cy="12" r="2.4" fill="var(--cta-blush)" stroke="none" />
+                <circle cx="10" cy="17" r="2.4" fill="var(--cta-honey)" stroke="none" />
+              </svg>
+            </i>
+            <div>
+              <h2>飞行棋</h2>
+              <p>掷骰往前走，先到头的人赢</p>
+            </div>
+            <span>›</span>
+          </button>
         </div>
         <div class="more-grid">
           <button type="button" data-open="combo" onclick="window.wandengOpen && window.wandengOpen('combo')">
-            <img class="tile-ico" src="./assets/img/tile-combo.png" alt="" />
+            <img class="tile-ico img-reveal" src="./assets/img/tile-combo.png" alt="" loading="lazy" decoding="async" />
             <small>04</small>
             <b>连招</b>
             <span>答完，立刻按这个做</span>
           </button>
           <button type="button" data-open="scene">
-            <img class="tile-ico" src="./assets/img/tile-scene.png" alt="" />
+            <img class="tile-ico img-reveal" src="./assets/img/tile-scene.png" alt="" loading="lazy" decoding="async" />
             <small>05</small>
             <b>今晚剧本</b>
             <span>抽一幕，按场景演</span>
           </button>
           <button type="button" data-open="choice">
-            <img class="tile-ico" src="./assets/img/tile-choice.png" alt="" />
+            <img class="tile-ico img-reveal" src="./assets/img/tile-choice.png" alt="" loading="lazy" decoding="async" />
             <small>06</small>
             <b>二选一</b>
             <span>选了就不能反悔</span>
           </button>
           <button type="button" data-open="timer">
-            <img class="tile-ico" src="./assets/img/tile-timer.png" alt="" />
+            <img class="tile-ico img-reveal" src="./assets/img/tile-timer.png" alt="" loading="lazy" decoding="async" />
             <small>07</small>
             <b>倒计时</b>
             <span>铃响之前不许停</span>
           </button>
-        </div>
-        <div class="bottom-row">
-          <span class="pill pill-wine" id="heatPill">热度  微醺</span>
-          <button class="linkish" id="resetBtn">重新设置</button>
         </div>
         <p class="safe-hint" data-safe-hint>安全词：暂停</p>
       </section>
 
       <section class="screen" data-screen="tod" id="screen-tod">
         <div class="topbar">
-          <button class="icon-btn" data-back>←</button>
-          <div class="who" id="todWho">回合</div>
-          <span class="pill" id="todHeat">微醺</span>
+          <button class="icon-btn" data-back><svg class="ico" aria-hidden="true"><use href="#i-arrow-left" /></svg></button>
+          <div class="who" id="todWho">轮到谁</div>
+          <div class="heat-stepper">
+            <button class="step-btn" data-heat-step="-1"><svg class="ico ico-sm" aria-hidden="true"><use href="#i-minus" /></svg></button>
+            <span class="pill" id="todHeat">微醺</span>
+            <button class="step-btn" data-heat-step="1"><svg class="ico ico-sm" aria-hidden="true"><use href="#i-plus" /></svg></button>
+          </div>
         </div>
-        <article class="play-card">
-          <div class="kicker" id="todKind">真心话</div>
-          <div class="q" id="todText">先选真心话，还是大冒险。</div>
+        <article class="play-card flip-card" id="todCard">
+          <div class="flip-inner">
+            <div class="flip-face flip-front">
+              <div class="kicker">真心话 · 大冒险</div>
+              <div class="q">先选一边，翻面出题。</div>
+            </div>
+            <div class="flip-face flip-back">
+              <div class="kicker" id="todKind">真心话</div>
+              <div class="q" id="todText">先选真心话，还是大冒险。</div>
+            </div>
+          </div>
         </article>
         <div class="actions">
           <div class="btn-row">
@@ -149,9 +211,13 @@
 
       <section class="screen" data-screen="dice" id="screen-dice">
         <div class="topbar">
-          <button class="icon-btn" data-back>←</button>
-          <div class="who">情趣骰子</div>
-          <span class="pill" id="diceWho">执行</span>
+          <button class="icon-btn" data-back><svg class="ico" aria-hidden="true"><use href="#i-arrow-left" /></svg></button>
+          <div class="who" id="diceWho">轮到谁</div>
+          <div class="heat-stepper">
+            <button class="step-btn" data-heat-step="-1"><svg class="ico ico-sm" aria-hidden="true"><use href="#i-minus" /></svg></button>
+            <span class="pill" data-heat-name>微醺</span>
+            <button class="step-btn" data-heat-step="1"><svg class="ico ico-sm" aria-hidden="true"><use href="#i-plus" /></svg></button>
+          </div>
         </div>
         <div class="dice-stage">
           <div class="dice-row">
@@ -162,9 +228,17 @@
               <div class="die" id="dieBody"></div>
             </div>
           </div>
-          <div class="result">
-            <b id="diceTitle">动作 × 部位</b>
-            <span id="diceLine">点下面，掷出这一轮要做的事。</span>
+          <div class="result flip-card" id="diceCard">
+            <div class="flip-inner">
+              <div class="flip-face flip-front">
+                <b>掷一次</b>
+                <span>点下面，掷出这一轮要做的事。</span>
+              </div>
+              <div class="flip-face flip-back">
+                <b id="diceTitle">动作 × 部位</b>
+                <span id="diceLine">点下面，掷出这一轮要做的事。</span>
+              </div>
+            </div>
           </div>
         </div>
         <div class="actions">
@@ -179,17 +253,29 @@
 
       <section class="screen" data-screen="wheel" id="screen-wheel">
         <div class="topbar">
-          <button class="icon-btn" data-back>←</button>
-          <div class="who">命运轮盘</div>
-          <span class="pill" id="wheelWho">回合</span>
+          <button class="icon-btn" data-back><svg class="ico" aria-hidden="true"><use href="#i-arrow-left" /></svg></button>
+          <div class="who" id="wheelWho">轮到谁</div>
+          <div class="heat-stepper">
+            <button class="step-btn" data-heat-step="-1"><svg class="ico ico-sm" aria-hidden="true"><use href="#i-minus" /></svg></button>
+            <span class="pill" data-heat-name>微醺</span>
+            <button class="step-btn" data-heat-step="1"><svg class="ico ico-sm" aria-hidden="true"><use href="#i-plus" /></svg></button>
+          </div>
         </div>
         <div class="wheel-box">
           <div class="pointer"></div>
           <div class="wheel" id="wheel"></div>
         </div>
-        <div class="result" style="margin-bottom: 16px">
-          <b id="wheelTitle">转起来</b>
-          <span id="wheelLine">指针停下后，按出现的那一句做。</span>
+        <div class="result flip-card" id="wheelCard" style="margin-bottom: 16px">
+          <div class="flip-inner">
+            <div class="flip-face flip-front">
+              <b>转起来</b>
+              <span>指针停下后，按出现的那一句做。</span>
+            </div>
+            <div class="flip-face flip-back">
+              <b id="wheelTitle">转起来</b>
+              <span id="wheelLine">指针停下后，按出现的那一句做。</span>
+            </div>
+          </div>
         </div>
         <div class="actions">
           <button class="btn btn-gold" id="btnSpin">转动</button>
@@ -203,15 +289,28 @@
 
       <section class="screen" data-screen="combo" id="screen-combo">
         <div class="topbar">
-          <button class="icon-btn" data-back>←</button>
-          <div class="who">连招</div>
-          <span class="pill" id="comboWho">回合</span>
+          <button class="icon-btn" data-back><svg class="ico" aria-hidden="true"><use href="#i-arrow-left" /></svg></button>
+          <div class="who" id="comboWho">轮到谁</div>
+          <div class="heat-stepper">
+            <button class="step-btn" data-heat-step="-1"><svg class="ico ico-sm" aria-hidden="true"><use href="#i-minus" /></svg></button>
+            <span class="pill" data-heat-name>微醺</span>
+            <button class="step-btn" data-heat-step="1"><svg class="ico ico-sm" aria-hidden="true"><use href="#i-plus" /></svg></button>
+          </div>
         </div>
-        <article class="play-card">
-          <div class="kicker" id="comboKicker">先答</div>
-          <div class="q" id="comboQ">点下面，抽出一道。先认真答。</div>
-          <p class="scene-do" id="comboDare"></p>
-          <p class="hint" id="comboHint">答完点下面，答案会变成要做的事。</p>
+        <article class="play-card flip-card" id="comboCard">
+          <div class="flip-inner">
+            <div class="flip-face flip-front">
+              <div class="kicker">连招</div>
+              <div class="q">点下面抽题，答完翻面出招。</div>
+              <p class="hint">答完点下面，答案会变成要做的事。</p>
+            </div>
+            <div class="flip-face flip-back">
+              <div class="kicker" id="comboKicker">先答</div>
+              <div class="q" id="comboQ">点下面，抽出一道。先认真答。</div>
+              <p class="scene-do" id="comboDare"></p>
+              <p class="hint" id="comboHint">答完点下面，答案会变成要做的事。</p>
+            </div>
+          </div>
         </article>
         <div class="actions">
           <button class="btn btn-gold" id="btnComboDraw">抽一题</button>
@@ -226,15 +325,27 @@
 
       <section class="screen" data-screen="scene" id="screen-scene">
         <div class="topbar">
-          <button class="icon-btn" data-back>←</button>
-          <div class="who">今晚剧本</div>
-          <span class="pill" id="sceneWho">回合</span>
+          <button class="icon-btn" data-back><svg class="ico" aria-hidden="true"><use href="#i-arrow-left" /></svg></button>
+          <div class="who" id="sceneWho">轮到谁</div>
+          <div class="heat-stepper">
+            <button class="step-btn" data-heat-step="-1"><svg class="ico ico-sm" aria-hidden="true"><use href="#i-minus" /></svg></button>
+            <span class="pill" data-heat-name>微醺</span>
+            <button class="step-btn" data-heat-step="1"><svg class="ico ico-sm" aria-hidden="true"><use href="#i-plus" /></svg></button>
+          </div>
         </div>
-        <article class="play-card">
-          <div class="kicker" id="sceneKicker">抽一幕</div>
-          <div class="q" id="sceneTitle">点下面，抽出今晚要演的一幕。</div>
-          <p class="scene-setup" id="sceneSetup"></p>
-          <p class="scene-do" id="sceneDo"></p>
+        <article class="play-card flip-card" id="sceneCard">
+          <div class="flip-inner">
+            <div class="flip-face flip-front">
+              <div class="kicker">今晚剧本</div>
+              <div class="q">点下面抽一幕，翻面开演。</div>
+            </div>
+            <div class="flip-face flip-back">
+              <div class="kicker" id="sceneKicker">抽一幕</div>
+              <div class="q" id="sceneTitle">点下面，抽出今晚要演的一幕。</div>
+              <p class="scene-setup" id="sceneSetup"></p>
+              <p class="scene-do" id="sceneDo"></p>
+            </div>
+          </div>
         </article>
         <div class="actions">
           <button class="btn btn-gold" id="btnScene">抽一幕</button>
@@ -248,14 +359,26 @@
 
       <section class="screen" data-screen="choice" id="screen-choice">
         <div class="topbar">
-          <button class="icon-btn" data-back>←</button>
-          <div class="who">二选一</div>
-          <span class="pill" id="choiceWho">回合</span>
+          <button class="icon-btn" data-back><svg class="ico" aria-hidden="true"><use href="#i-arrow-left" /></svg></button>
+          <div class="who" id="choiceWho">轮到谁</div>
+          <div class="heat-stepper">
+            <button class="step-btn" data-heat-step="-1"><svg class="ico ico-sm" aria-hidden="true"><use href="#i-minus" /></svg></button>
+            <span class="pill" data-heat-name>微醺</span>
+            <button class="step-btn" data-heat-step="1"><svg class="ico ico-sm" aria-hidden="true"><use href="#i-plus" /></svg></button>
+          </div>
         </div>
-        <article class="play-card">
-          <div class="kicker">选了就不能反悔</div>
-          <div class="q" id="choiceQ">点下面，抽出一道必须选的题。</div>
-          <p class="scene-do" id="choiceDo"></p>
+        <article class="play-card flip-card" id="choiceCard">
+          <div class="flip-inner">
+            <div class="flip-face flip-front">
+              <div class="kicker">二选一</div>
+              <div class="q">点下面抽题，选了就不能反悔。</div>
+            </div>
+            <div class="flip-face flip-back">
+              <div class="kicker">选了就不能反悔</div>
+              <div class="q" id="choiceQ">点下面，抽出一道必须选的题。</div>
+              <p class="scene-do" id="choiceDo"></p>
+            </div>
+          </div>
         </article>
         <div class="actions" id="choiceActions">
           <div class="btn-row" id="choiceBtns">
@@ -273,14 +396,26 @@
 
       <section class="screen" data-screen="timer" id="screen-timer">
         <div class="topbar">
-          <button class="icon-btn" data-back>←</button>
-          <div class="who">倒计时</div>
-          <span class="pill" id="timerWho">回合</span>
+          <button class="icon-btn" data-back><svg class="ico" aria-hidden="true"><use href="#i-arrow-left" /></svg></button>
+          <div class="who" id="timerWho">轮到谁</div>
+          <div class="heat-stepper">
+            <button class="step-btn" data-heat-step="-1"><svg class="ico ico-sm" aria-hidden="true"><use href="#i-minus" /></svg></button>
+            <span class="pill" data-heat-name>微醺</span>
+            <button class="step-btn" data-heat-step="1"><svg class="ico ico-sm" aria-hidden="true"><use href="#i-plus" /></svg></button>
+          </div>
         </div>
-        <article class="play-card">
-          <div class="kicker" id="timerKicker">铃响之前</div>
-          <div class="timer-num" id="timerNum">00</div>
-          <div class="q" id="timerText">点下面，抽出限时要做的事。</div>
+        <article class="play-card flip-card" id="timerCard">
+          <div class="flip-inner">
+            <div class="flip-face flip-front">
+              <div class="kicker">倒计时</div>
+              <div class="q">点下面抽题，铃响之前不许停。</div>
+            </div>
+            <div class="flip-face flip-back">
+              <div class="kicker" id="timerKicker">铃响之前</div>
+              <div class="timer-num" id="timerNum">00</div>
+              <div class="q" id="timerText">点下面，抽出限时要做的事。</div>
+            </div>
+          </div>
         </article>
         <div class="actions">
           <button class="btn btn-gold" id="btnTimerStart" disabled>开始</button>
@@ -302,6 +437,121 @@
         <button class="btn btn-gold" id="passConfirm">是我</button>
       </section>
 
+      <section class="screen" data-screen="boundary" id="screen-boundary">
+        <div class="topbar">
+          <button class="icon-btn" data-back="settings"><svg class="ico" aria-hidden="true"><use href="#i-arrow-left" /></svg></button>
+          <div class="who">边界清单</div>
+          <span class="pill" id="boundaryTopPill">只在本机</span>
+        </div>
+        <p class="field-note bd-lead">两个人各自点一遍。今晚真正要玩的，只留都点了 Yes 的。</p>
+        <div class="bd-summary" id="boundarySummary"></div>
+        <div class="boundary-list" id="boundaryList"></div>
+        <div class="actions">
+          <button class="btn btn-outline" id="boundaryClear">清空这一页</button>
+          <p class="safe-hint" data-safe-hint>安全词：暂停</p>
+        </div>
+      </section>
+
+      <section class="screen" data-screen="settings" id="screen-settings">
+        <div class="topbar">
+          <button class="icon-btn" data-back><svg class="ico" aria-hidden="true"><use href="#i-arrow-left" /></svg></button>
+          <div class="who">设置</div>
+          <span class="pill">只在本机</span>
+        </div>
+        <div class="settings-list">
+          <div class="glass-row">
+            <div class="glass-row-head"><b>导出备份</b><span>JSON</span></div>
+            <p class="field-note">称呼、热度、用过的题、边界清单都会一起导出。</p>
+            <button class="btn btn-outline" id="btnExport">导出到文件</button>
+          </div>
+          <div class="glass-row">
+            <div class="glass-row-head"><b>导入备份</b><span>JSON</span></div>
+            <p class="field-note">会用文件里的内容覆盖这台手机上的记录。读不了就什么都不改。</p>
+            <label class="file-btn">
+              <span>选择备份文件</span>
+              <input type="file" accept="application/json,.json" id="importBackup" />
+            </label>
+          </div>
+          <div class="glass-row">
+            <div class="glass-row-head"><b>导入自定义题</b><span>JSON</span></div>
+            <p class="field-note">一串对象，每个含 kind、heat、gender 与该项对应字段，追加进抽题池。</p>
+            <label class="file-btn">
+              <span>选择题库文件</span>
+              <input type="file" accept="application/json,.json" id="importCustom" />
+            </label>
+          </div>
+          <div class="glass-row">
+            <div class="glass-row-head"><b>重新设置</b><span>称呼 · 热度</span></div>
+            <p class="field-note">回到最开始那一屏，重新填称呼、选今晚的热度。记录不会清掉。</p>
+            <button class="btn btn-outline" id="resetBtn">回到设置</button>
+          </div>
+          <button class="glass-row boundary-entry" data-open="boundary">
+            <div class="glass-row-head"><b>边界清单</b><span id="boundaryPill">共同 0</span></div>
+            <p class="field-note bd-lead">两个人各自点一遍。今晚真正要玩的，只留都点了 Yes 的。</p>
+          </button>
+        </div>
+        <p class="set-status" id="settingsStatus"></p>
+        <div class="actions">
+          <p class="safe-hint" data-safe-hint>安全词：暂停</p>
+        </div>
+      </section>
+
+      <section class="screen" data-screen="plan" id="screen-plan">
+        <div class="topbar">
+          <button class="icon-btn" data-back><svg class="ico" aria-hidden="true"><use href="#i-arrow-left" /></svg></button>
+          <div class="who">今晚做什么</div>
+          <span class="pill" id="planPill">房间里</span>
+        </div>
+        <div class="btn-row">
+          <button class="btn btn-honey" data-plan-pile="room">房间里</button>
+          <button class="btn btn-outline" data-plan-pile="out">出门</button>
+        </div>
+        <article class="glass-row plan-card" id="planCard">
+          <div class="glass-row-head"><b id="planTitle">还没抽</b><span id="planMark"></span></div>
+          <p class="plan-desc" id="planDesc">两堆卡：在房间里做的，和要出门做的。抽到就做，不换。</p>
+        </article>
+        <div class="actions">
+          <button class="btn btn-gold" id="btnPlanDraw">抽一张</button>
+          <p class="safe-hint" data-safe-hint>安全词：暂停</p>
+        </div>
+      </section>
+
+      <section class="screen" data-screen="board" id="screen-board">
+        <div class="topbar">
+          <button class="icon-btn" data-back><svg class="ico" aria-hidden="true"><use href="#i-arrow-left" /></svg></button>
+          <div class="who" id="boardWho">轮流走</div>
+          <div class="heat-stepper">
+            <button class="step-btn" data-heat-step="-1"><svg class="ico ico-sm" aria-hidden="true"><use href="#i-minus" /></svg></button>
+            <span class="pill" data-heat-name>微醺</span>
+            <button class="step-btn" data-heat-step="1"><svg class="ico ico-sm" aria-hidden="true"><use href="#i-plus" /></svg></button>
+          </div>
+        </div>
+        <p class="board-progress pill" id="boardPill">起点</p>
+        <div class="board-grid" id="boardGrid"></div>
+        <article class="glass-row board-slot">
+          <div class="glass-row-head"><b id="boardTitle">掷骰子</b><span class="board-die" id="boardDie" aria-hidden="true">⚄</span><span id="boardMark">第 1 格</span></div>
+          <p class="board-line" id="boardLine">两个人轮流。先走到第 24 格的人赢。</p>
+        </article>
+        <div class="actions">
+          <div class="btn-row">
+            <button class="btn btn-outline" id="btnBoardTheme">玩法：都来</button>
+            <button class="btn btn-gold" id="btnBoardRoll">掷骰子</button>
+          </div>
+          <p class="safe-hint" data-safe-hint>安全词：暂停</p>
+        </div>
+      </section>
+
+      <nav class="tabbar hidden" id="tabbar" aria-label="主分区">
+        <button type="button" class="tab is-active" data-tab="home">
+          <svg class="ico" aria-hidden="true"><use href="#i-house" /></svg>
+          <span>首页</span>
+        </button>
+        <button type="button" class="tab" data-tab="settings">
+          <svg class="ico" aria-hidden="true"><use href="#i-gear" /></svg>
+          <span>设置</span>
+        </button>
+      </nav>
+
     </div>
 
     <div class="modal" id="safeModal">
@@ -320,8 +570,9 @@
     <div id="staleBar" class="stale-bar hidden">
       手机还在用旧版，连招会打不开。请关掉这个标签，再打开一次。
     </div>
-    <script src="./assets/data.js?v=8"></script>
-    <script src="./assets/app.js?v=10"></script>
+    <script src="./assets/logic.js?v=16"></script>
+    <script src="./assets/data.js?v=16"></script>
+    <script src="./assets/app.js?v=16"></script>
     <script>
       (function () {
         if (!window.WANDENG || !window.WANDENG.combo) {
