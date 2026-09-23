@@ -170,3 +170,27 @@ test("every heat-keyed pack exposes heat keys 0, 1 and 2", () => {
     });
   });
 });
+
+test("plans exposes the two activity piles with well-formed cards", () => {
+  assert.ok(W.plans && typeof W.plans === "object", "W.plans must be an object");
+  ["room", "out"].forEach((pile) => {
+    const cards = W.plans[pile];
+    assert.ok(Array.isArray(cards) && cards.length > 0, `W.plans.${pile} must be a non-empty array`);
+    const seen = new Set();
+    cards.forEach((card, i) => {
+      assert.ok(card && typeof card === "object", `plans.${pile}[${i}] must be an object`);
+      assert.ok(typeof card.id === "string" && card.id, `plans.${pile}[${i}] needs an id`);
+      assert.ok(!seen.has(card.id), `plans.${pile} duplicate id "${card.id}"`);
+      seen.add(card.id);
+      assert.ok(typeof card.title === "string" && card.title.trim(), `plans.${pile}[${i}] (${card.id}) needs a title`);
+      assert.ok(typeof card.desc === "string" && card.desc.trim(), `plans.${pile}[${i}] (${card.id}) needs a desc`);
+      assert.equal(typeof card.foil, "boolean", `plans.${pile}[${i}] (${card.id}) foil must be a boolean`);
+    });
+  });
+});
+
+test("board themes are well-formed and the tile kinds cover what the renderer handles", () => {
+  const rendered = ["start", "task", "forward", "back", "cost", "skip", "together", "end"];
+  const used = new Set(W.board.tiles.map((t) => t.kind));
+  used.forEach((kind) => assert.ok(rendered.includes(kind), `renderer has no branch for tile kind "${kind}"`));
+});
