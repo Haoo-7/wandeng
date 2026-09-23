@@ -24,6 +24,45 @@
     <link rel="stylesheet" href="./assets/app.css?v=14" />
   </head>
   <body>
+    <!-- 图标本地子集（Phosphor regular 风格：256 网格、stroke 16、round 端点；不走 CDN，离线可用） -->
+    <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+      <defs>
+        <symbol id="i-arrow-left" viewBox="0 0 256 256">
+          <g fill="none" stroke="currentColor" stroke-width="16" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="216" y1="128" x2="40" y2="128" />
+            <polyline points="112 56 40 128 112 200" />
+          </g>
+        </symbol>
+        <symbol id="i-minus" viewBox="0 0 256 256">
+          <line x1="40" y1="128" x2="216" y2="128" stroke="currentColor" stroke-width="16" stroke-linecap="round" />
+        </symbol>
+        <symbol id="i-plus" viewBox="0 0 256 256">
+          <g stroke="currentColor" stroke-width="16" stroke-linecap="round">
+            <line x1="128" y1="40" x2="128" y2="216" />
+            <line x1="40" y1="128" x2="216" y2="128" />
+          </g>
+        </symbol>
+        <symbol id="i-house" viewBox="0 0 256 256">
+          <g fill="none" stroke="currentColor" stroke-width="16" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M32 120 128 40l96 80" />
+            <path d="M72 108v96h44v-52h24v52h44v-96" />
+          </g>
+        </symbol>
+        <symbol id="i-gear" viewBox="0 0 256 256">
+          <g fill="none" stroke="currentColor" stroke-width="16" stroke-linecap="round">
+            <circle cx="128" cy="128" r="44" />
+            <line x1="192" y1="128" x2="212" y2="128" />
+            <line x1="173.3" y1="173.3" x2="187.4" y2="187.4" />
+            <line x1="128" y1="192" x2="128" y2="212" />
+            <line x1="82.7" y1="173.3" x2="68.6" y2="187.4" />
+            <line x1="64" y1="128" x2="44" y2="128" />
+            <line x1="82.7" y1="82.7" x2="68.6" y2="68.6" />
+            <line x1="128" y1="64" x2="128" y2="44" />
+            <line x1="173.3" y1="82.7" x2="187.4" y2="68.6" />
+          </g>
+        </symbol>
+      </defs>
+    </svg>
     <div id="app">
       <section class="screen active" data-screen="setup" id="screen-setup">
         <div class="mini-hero">
@@ -137,12 +176,12 @@
 
       <section class="screen" data-screen="tod" id="screen-tod">
         <div class="topbar">
-          <button class="icon-btn" data-back>←</button>
+          <button class="icon-btn" data-back><svg class="ico" aria-hidden="true"><use href="#i-arrow-left" /></svg></button>
           <div class="who" id="todWho">轮到谁</div>
           <div class="heat-stepper">
-            <button class="step-btn" data-heat-step="-1">−</button>
+            <button class="step-btn" data-heat-step="-1"><svg class="ico ico-sm" aria-hidden="true"><use href="#i-minus" /></svg></button>
             <span class="pill" id="todHeat">微醺</span>
-            <button class="step-btn" data-heat-step="1">＋</button>
+            <button class="step-btn" data-heat-step="1"><svg class="ico ico-sm" aria-hidden="true"><use href="#i-plus" /></svg></button>
           </div>
         </div>
         <article class="play-card">
@@ -164,12 +203,12 @@
 
       <section class="screen" data-screen="dice" id="screen-dice">
         <div class="topbar">
-          <button class="icon-btn" data-back>←</button>
+          <button class="icon-btn" data-back><svg class="ico" aria-hidden="true"><use href="#i-arrow-left" /></svg></button>
           <div class="who" id="diceWho">轮到谁</div>
           <div class="heat-stepper">
-            <button class="step-btn" data-heat-step="-1">−</button>
+            <button class="step-btn" data-heat-step="-1"><svg class="ico ico-sm" aria-hidden="true"><use href="#i-minus" /></svg></button>
             <span class="pill" data-heat-name>微醺</span>
-            <button class="step-btn" data-heat-step="1">＋</button>
+            <button class="step-btn" data-heat-step="1"><svg class="ico ico-sm" aria-hidden="true"><use href="#i-plus" /></svg></button>
           </div>
         </div>
         <div class="dice-stage">
@@ -198,12 +237,12 @@
 
       <section class="screen" data-screen="wheel" id="screen-wheel">
         <div class="topbar">
-          <button class="icon-btn" data-back>←</button>
+          <button class="icon-btn" data-back><svg class="ico" aria-hidden="true"><use href="#i-arrow-left" /></svg></button>
           <div class="who" id="wheelWho">轮到谁</div>
           <div class="heat-stepper">
-            <button class="step-btn" data-heat-step="-1">−</button>
+            <button class="step-btn" data-heat-step="-1"><svg class="ico ico-sm" aria-hidden="true"><use href="#i-minus" /></svg></button>
             <span class="pill" data-heat-name>微醺</span>
-            <button class="step-btn" data-heat-step="1">＋</button>
+            <button class="step-btn" data-heat-step="1"><svg class="ico ico-sm" aria-hidden="true"><use href="#i-plus" /></svg></button>
           </div>
         </div>
         <div class="wheel-box">
@@ -226,12 +265,12 @@
 
       <section class="screen" data-screen="combo" id="screen-combo">
         <div class="topbar">
-          <button class="icon-btn" data-back>←</button>
+          <button class="icon-btn" data-back><svg class="ico" aria-hidden="true"><use href="#i-arrow-left" /></svg></button>
           <div class="who" id="comboWho">轮到谁</div>
           <div class="heat-stepper">
-            <button class="step-btn" data-heat-step="-1">−</button>
+            <button class="step-btn" data-heat-step="-1"><svg class="ico ico-sm" aria-hidden="true"><use href="#i-minus" /></svg></button>
             <span class="pill" data-heat-name>微醺</span>
-            <button class="step-btn" data-heat-step="1">＋</button>
+            <button class="step-btn" data-heat-step="1"><svg class="ico ico-sm" aria-hidden="true"><use href="#i-plus" /></svg></button>
           </div>
         </div>
         <article class="play-card">
@@ -253,12 +292,12 @@
 
       <section class="screen" data-screen="scene" id="screen-scene">
         <div class="topbar">
-          <button class="icon-btn" data-back>←</button>
+          <button class="icon-btn" data-back><svg class="ico" aria-hidden="true"><use href="#i-arrow-left" /></svg></button>
           <div class="who" id="sceneWho">轮到谁</div>
           <div class="heat-stepper">
-            <button class="step-btn" data-heat-step="-1">−</button>
+            <button class="step-btn" data-heat-step="-1"><svg class="ico ico-sm" aria-hidden="true"><use href="#i-minus" /></svg></button>
             <span class="pill" data-heat-name>微醺</span>
-            <button class="step-btn" data-heat-step="1">＋</button>
+            <button class="step-btn" data-heat-step="1"><svg class="ico ico-sm" aria-hidden="true"><use href="#i-plus" /></svg></button>
           </div>
         </div>
         <article class="play-card">
@@ -279,12 +318,12 @@
 
       <section class="screen" data-screen="choice" id="screen-choice">
         <div class="topbar">
-          <button class="icon-btn" data-back>←</button>
+          <button class="icon-btn" data-back><svg class="ico" aria-hidden="true"><use href="#i-arrow-left" /></svg></button>
           <div class="who" id="choiceWho">轮到谁</div>
           <div class="heat-stepper">
-            <button class="step-btn" data-heat-step="-1">−</button>
+            <button class="step-btn" data-heat-step="-1"><svg class="ico ico-sm" aria-hidden="true"><use href="#i-minus" /></svg></button>
             <span class="pill" data-heat-name>微醺</span>
-            <button class="step-btn" data-heat-step="1">＋</button>
+            <button class="step-btn" data-heat-step="1"><svg class="ico ico-sm" aria-hidden="true"><use href="#i-plus" /></svg></button>
           </div>
         </div>
         <article class="play-card">
@@ -308,12 +347,12 @@
 
       <section class="screen" data-screen="timer" id="screen-timer">
         <div class="topbar">
-          <button class="icon-btn" data-back>←</button>
+          <button class="icon-btn" data-back><svg class="ico" aria-hidden="true"><use href="#i-arrow-left" /></svg></button>
           <div class="who" id="timerWho">轮到谁</div>
           <div class="heat-stepper">
-            <button class="step-btn" data-heat-step="-1">−</button>
+            <button class="step-btn" data-heat-step="-1"><svg class="ico ico-sm" aria-hidden="true"><use href="#i-minus" /></svg></button>
             <span class="pill" data-heat-name>微醺</span>
-            <button class="step-btn" data-heat-step="1">＋</button>
+            <button class="step-btn" data-heat-step="1"><svg class="ico ico-sm" aria-hidden="true"><use href="#i-plus" /></svg></button>
           </div>
         </div>
         <article class="play-card">
@@ -343,7 +382,7 @@
 
       <section class="screen" data-screen="settings" id="screen-settings">
         <div class="topbar">
-          <button class="icon-btn" data-back>←</button>
+          <button class="icon-btn" data-back><svg class="ico" aria-hidden="true"><use href="#i-arrow-left" /></svg></button>
           <div class="who">设置</div>
           <span class="pill">只在本机</span>
         </div>
@@ -390,7 +429,7 @@
 
       <section class="screen" data-screen="plan" id="screen-plan">
         <div class="topbar">
-          <button class="icon-btn" data-back>←</button>
+          <button class="icon-btn" data-back><svg class="ico" aria-hidden="true"><use href="#i-arrow-left" /></svg></button>
           <div class="who">今晚做什么</div>
           <span class="pill" id="planPill">房间里</span>
         </div>
@@ -410,12 +449,12 @@
 
       <section class="screen" data-screen="board" id="screen-board">
         <div class="topbar">
-          <button class="icon-btn" data-back>←</button>
+          <button class="icon-btn" data-back><svg class="ico" aria-hidden="true"><use href="#i-arrow-left" /></svg></button>
           <div class="who" id="boardWho">轮流走</div>
           <div class="heat-stepper">
-            <button class="step-btn" data-heat-step="-1">−</button>
+            <button class="step-btn" data-heat-step="-1"><svg class="ico ico-sm" aria-hidden="true"><use href="#i-minus" /></svg></button>
             <span class="pill" data-heat-name>微醺</span>
-            <button class="step-btn" data-heat-step="1">＋</button>
+            <button class="step-btn" data-heat-step="1"><svg class="ico ico-sm" aria-hidden="true"><use href="#i-plus" /></svg></button>
           </div>
         </div>
         <p class="board-progress pill" id="boardPill">起点</p>

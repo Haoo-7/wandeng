@@ -519,6 +519,33 @@ h1,
   box-shadow: none;
 }
 
+/* 本地图标 sprite 引用：Phosphor regular 风格，currentColor 继承 */
+.ico {
+  width: 20px;
+  height: 20px;
+  display: block;
+}
+
+.ico-sm {
+  width: 14px;
+  height: 14px;
+}
+
+.icon-btn {
+  display: grid;
+  place-items: center;
+}
+
+.step-btn {
+  display: grid;
+  place-items: center;
+}
+
+.tab .ico {
+  width: 18px;
+  height: 18px;
+}
+
 /* 底栏双栏：首页 / 设置，fixed 吸底，safe-area 之上；只在 home/settings 显示 */
 .tabbar {
   position: fixed;
