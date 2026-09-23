@@ -1265,6 +1265,8 @@ input[type="text"]::placeholder {
    ========================================================================== */
 
 .wheel-box {
+  /* 轮盘直径的唯一事实源：.wheel 与 .pointer 都从这里取半径 */
+  --wheel-size: min(78vw, 320px);
   flex: 1;
   display: grid;
   place-items: center;
@@ -1274,8 +1276,8 @@ input[type="text"]::placeholder {
 }
 
 .wheel {
-  width: min(78vw, 320px);
-  height: min(78vw, 320px);
+  width: var(--wheel-size);
+  height: var(--wheel-size);
   border-radius: 50%;
   border: 8px solid var(--glass-line);
   box-shadow: var(--glass-lift-deep), 0 0 40px var(--glass-fill);
@@ -1308,7 +1310,7 @@ input[type="text"]::placeholder {
 /* I · 指针加大体量与投影，落在轮盘上沿更清晰 */
 .pointer {
   position: absolute;
-  top: calc(50% - min(39vw, 160px) - 14px);
+  top: calc(50% - var(--wheel-size) / 2 - 14px);
   left: 50%;
   transform: translateX(-50%);
   width: 0;
@@ -1866,19 +1868,29 @@ input[type="text"]::placeholder {
   }
 }
 
+@media (max-height: 780px) {
+  /* 轮盘屏高度预算：矮高下轮盘随高度收缩 + 结果字号降档，长文案才不溢出 */
+  .wheel-box {
+    --wheel-size: min(74vw, 32dvh, 264px);
+  }
+
+  .result b {
+    font-size: 25px;
+  }
+}
+
 @media (max-height: 720px) {
   .hero-photo {
     height: clamp(98px, 14dvh, 148px);
   }
 
-  /* 矮屏：轮盘收一档，给新增的热度行让位；指针半径必须同步，否则会脱离轮沿 */
-  .wheel {
-    width: min(72vw, 320px);
-    height: min(72vw, 320px);
+  /* 矮屏：轮盘再收一档给按钮与结果让位；指针半径自动跟随 --wheel-size */
+  .wheel-box {
+    --wheel-size: min(74vw, 30dvh, 240px);
   }
 
-  .pointer {
-    top: calc(50% - min(36vw, 160px) - 14px);
+  .result b {
+    font-size: 24px;
   }
 
   .hero-copy {
