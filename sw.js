@@ -1,15 +1,21 @@
-const CACHE = "wandeng-v12";
+const CACHE = "wandeng-v13";
 const FILES = [
   "./",
   "./index.html",
-  "./assets/app.css?v=12",
-  "./assets/app.js?v=12",
-  "./assets/data.js?v=8",
+  "./assets/app.css?v=13",
+  "./assets/logic.js?v=13",
+  "./assets/data.js?v=13",
+  "./assets/app.js?v=13",
   "./assets/favicon.svg",
+  "./assets/apple-touch.png",
   "./assets/img/hotel.jpg",
-  "./assets/img/thumb-tod.png",
-  "./assets/img/thumb-dice.png",
-  "./assets/img/thumb-wheel.jpg",
+  "./assets/img/game-tod.png",
+  "./assets/img/game-dice.png",
+  "./assets/img/game-wheel.png",
+  "./assets/img/tile-combo.png",
+  "./assets/img/tile-scene.png",
+  "./assets/img/tile-choice.png",
+  "./assets/img/tile-timer.png",
   "./manifest.webmanifest",
 ];
 
@@ -50,6 +56,7 @@ self.addEventListener("fetch", (event) => {
         }
         return res;
       })
-      .catch(() => caches.match(req))
+      // 兜底必须返回真正的 Response：caches.match 未命中会返回 undefined，respondWith(undefined) 会被判成 net::ERR_FAILED。
+      .catch(() => caches.match(req).then((hit) => hit || Response.error()))
   );
 });

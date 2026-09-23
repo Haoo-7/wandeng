@@ -1286,7 +1286,7 @@
 
     if ("serviceWorker" in navigator) {
       navigator.serviceWorker
-        .register("./sw.js?v=10", { updateViaCache: "none" })
+        .register("./sw.js?v=13", { updateViaCache: "none" })
         .catch(() => {});
     }
   }
