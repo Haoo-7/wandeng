@@ -275,10 +275,13 @@ h1,
    ========================================================================== */
 
 /* B · 英雄区溶解：照片带沉浸式延伸到状态栏下，底部经 mask 溶进霞光场，无硬圆角接缝。
-   首页与其余屏共用 .screen 的 --gutter；照片带负 margin 顶到视口左右边缘 */
+   首页与其余屏共用 .screen 的 --gutter；照片带负 margin 顶到视口左右边缘。
+   flex-shrink 允许收缩：首页其余部分都缩不动，空间不够时必须由这张装饰照片先让位，
+   否则整屏只能滚动（这与 .play-card 用 flex:1 吸收余量是同一个道理）。 */
 .hero-photo {
   position: relative;
-  flex: 0 0 auto;
+  flex: 0 1 auto;
+  min-height: 96px;
   margin: calc(-1 * var(--safe-top) - 8px) calc(-1 * var(--gutter)) 0;
   height: clamp(160px, 21dvh, 300px);
 }

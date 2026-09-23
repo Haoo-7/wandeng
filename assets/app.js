@@ -1089,8 +1089,27 @@
     });
   }
 
+  // 导入的备份可能带着越界或非整数的棋子位置：留着会渲染不出棋子，掷一次还会直接判胜。
+  function clampBoardToTiles() {
+    const last = boardTiles().length - 1;
+    if (last < 0) return;
+    let dirty = false;
+    const pos = state.board.pos.map((p) => {
+      if (!Number.isInteger(p) || p < 0 || p > last) {
+        dirty = true;
+        return 0;
+      }
+      return p;
+    });
+    if (dirty) {
+      state.board = { pos: pos, theme: state.board.theme, winner: -1 };
+      save();
+    }
+  }
+
   function boot() {
     load();
+    clampBoardToTiles();
     fillSetup();
     renderSafeHints();
     revealImages();
