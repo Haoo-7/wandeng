@@ -132,20 +132,18 @@
             <span>铃响之前不许停</span>
           </button>
         </div>
-        <div class="bottom-row">
-          <span class="pill pill-wine" id="heatPill">热度  微醺</span>
-          <button class="linkish" data-open="plan">做什么</button>
-          <button class="linkish" data-open="boundary">边界清单</button>
-          <button class="linkish" data-open="settings">设置</button>
-        </div>
         <p class="safe-hint" data-safe-hint>安全词：暂停</p>
       </section>
 
       <section class="screen" data-screen="tod" id="screen-tod">
         <div class="topbar">
           <button class="icon-btn" data-back>←</button>
-          <div class="who" id="todWho">回合</div>
-          <span class="pill" id="todHeat">微醺</span>
+          <div class="who" id="todWho">轮到谁</div>
+          <div class="heat-stepper">
+            <button class="step-btn" data-heat-step="-1">−</button>
+            <span class="pill" id="todHeat">微醺</span>
+            <button class="step-btn" data-heat-step="1">＋</button>
+          </div>
         </div>
         <article class="play-card">
           <div class="kicker" id="todKind">真心话</div>
@@ -160,10 +158,6 @@
             <button class="btn btn-outline js-pass" id="btnSkip">过</button>
             <button class="btn btn-outline" id="btnNext">换人</button>
           </div>
-          <div class="btn-row heat-step">
-            <button class="btn btn-outline" data-heat-step="-1">轻一点</button>
-            <button class="btn btn-outline" data-heat-step="1">加码</button>
-          </div>
           <p class="safe-hint" data-safe-hint>安全词：暂停</p>
         </div>
       </section>
@@ -171,8 +165,12 @@
       <section class="screen" data-screen="dice" id="screen-dice">
         <div class="topbar">
           <button class="icon-btn" data-back>←</button>
-          <div class="who">情趣骰子</div>
-          <span class="pill" id="diceWho">执行</span>
+          <div class="who" id="diceWho">轮到谁</div>
+          <div class="heat-stepper">
+            <button class="step-btn" data-heat-step="-1">−</button>
+            <span class="pill" data-heat-name>微醺</span>
+            <button class="step-btn" data-heat-step="1">＋</button>
+          </div>
         </div>
         <div class="dice-stage">
           <div class="dice-row">
@@ -194,10 +192,6 @@
             <button class="btn btn-outline js-pass">过</button>
             <button class="btn btn-outline" id="btnDiceNext">换人执行</button>
           </div>
-          <div class="btn-row heat-step">
-            <button class="btn btn-outline" data-heat-step="-1">轻一点</button>
-            <button class="btn btn-outline" data-heat-step="1">加码</button>
-          </div>
           <p class="safe-hint" data-safe-hint>安全词：暂停</p>
         </div>
       </section>
@@ -205,8 +199,12 @@
       <section class="screen" data-screen="wheel" id="screen-wheel">
         <div class="topbar">
           <button class="icon-btn" data-back>←</button>
-          <div class="who">命运轮盘</div>
-          <span class="pill" id="wheelWho">回合</span>
+          <div class="who" id="wheelWho">轮到谁</div>
+          <div class="heat-stepper">
+            <button class="step-btn" data-heat-step="-1">−</button>
+            <span class="pill" data-heat-name>微醺</span>
+            <button class="step-btn" data-heat-step="1">＋</button>
+          </div>
         </div>
         <div class="wheel-box">
           <div class="pointer"></div>
@@ -222,10 +220,6 @@
             <button class="btn btn-outline js-pass">过</button>
             <button class="btn btn-outline" id="btnWheelNext">换人</button>
           </div>
-          <div class="btn-row heat-step">
-            <button class="btn btn-outline" data-heat-step="-1">轻一点</button>
-            <button class="btn btn-outline" data-heat-step="1">加码</button>
-          </div>
           <p class="safe-hint" data-safe-hint>安全词：暂停</p>
         </div>
       </section>
@@ -233,8 +227,12 @@
       <section class="screen" data-screen="combo" id="screen-combo">
         <div class="topbar">
           <button class="icon-btn" data-back>←</button>
-          <div class="who">连招</div>
-          <span class="pill" id="comboWho">回合</span>
+          <div class="who" id="comboWho">轮到谁</div>
+          <div class="heat-stepper">
+            <button class="step-btn" data-heat-step="-1">−</button>
+            <span class="pill" data-heat-name>微醺</span>
+            <button class="step-btn" data-heat-step="1">＋</button>
+          </div>
         </div>
         <article class="play-card">
           <div class="kicker" id="comboKicker">先答</div>
@@ -249,10 +247,6 @@
             <button class="btn btn-outline js-pass" id="btnComboSkip">过</button>
             <button class="btn btn-outline" id="btnComboNext">换人</button>
           </div>
-          <div class="btn-row heat-step">
-            <button class="btn btn-outline" data-heat-step="-1">轻一点</button>
-            <button class="btn btn-outline" data-heat-step="1">加码</button>
-          </div>
           <p class="safe-hint" data-safe-hint>安全词：暂停</p>
         </div>
       </section>
@@ -260,8 +254,12 @@
       <section class="screen" data-screen="scene" id="screen-scene">
         <div class="topbar">
           <button class="icon-btn" data-back>←</button>
-          <div class="who">今晚剧本</div>
-          <span class="pill" id="sceneWho">回合</span>
+          <div class="who" id="sceneWho">轮到谁</div>
+          <div class="heat-stepper">
+            <button class="step-btn" data-heat-step="-1">−</button>
+            <span class="pill" data-heat-name>微醺</span>
+            <button class="step-btn" data-heat-step="1">＋</button>
+          </div>
         </div>
         <article class="play-card">
           <div class="kicker" id="sceneKicker">抽一幕</div>
@@ -275,10 +273,6 @@
             <button class="btn btn-outline js-pass">过</button>
             <button class="btn btn-outline" id="btnSceneNext">换人</button>
           </div>
-          <div class="btn-row heat-step">
-            <button class="btn btn-outline" data-heat-step="-1">轻一点</button>
-            <button class="btn btn-outline" data-heat-step="1">加码</button>
-          </div>
           <p class="safe-hint" data-safe-hint>安全词：暂停</p>
         </div>
       </section>
@@ -286,8 +280,12 @@
       <section class="screen" data-screen="choice" id="screen-choice">
         <div class="topbar">
           <button class="icon-btn" data-back>←</button>
-          <div class="who">二选一</div>
-          <span class="pill" id="choiceWho">回合</span>
+          <div class="who" id="choiceWho">轮到谁</div>
+          <div class="heat-stepper">
+            <button class="step-btn" data-heat-step="-1">−</button>
+            <span class="pill" data-heat-name>微醺</span>
+            <button class="step-btn" data-heat-step="1">＋</button>
+          </div>
         </div>
         <article class="play-card">
           <div class="kicker">选了就不能反悔</div>
@@ -304,10 +302,6 @@
             <button class="btn btn-outline js-pass">过</button>
             <button class="btn btn-outline" id="btnChoiceNext">换人</button>
           </div>
-          <div class="btn-row heat-step">
-            <button class="btn btn-outline" data-heat-step="-1">轻一点</button>
-            <button class="btn btn-outline" data-heat-step="1">加码</button>
-          </div>
           <p class="safe-hint" data-safe-hint>安全词：暂停</p>
         </div>
       </section>
@@ -315,8 +309,12 @@
       <section class="screen" data-screen="timer" id="screen-timer">
         <div class="topbar">
           <button class="icon-btn" data-back>←</button>
-          <div class="who">倒计时</div>
-          <span class="pill" id="timerWho">回合</span>
+          <div class="who" id="timerWho">轮到谁</div>
+          <div class="heat-stepper">
+            <button class="step-btn" data-heat-step="-1">−</button>
+            <span class="pill" data-heat-name>微醺</span>
+            <button class="step-btn" data-heat-step="1">＋</button>
+          </div>
         </div>
         <article class="play-card">
           <div class="kicker" id="timerKicker">铃响之前</div>
@@ -328,10 +326,6 @@
           <div class="btn-row">
             <button class="btn btn-outline" id="btnTimerDraw">再抽一个</button>
             <button class="btn btn-outline" id="btnTimerNext">换人</button>
-          </div>
-          <div class="btn-row heat-step">
-            <button class="btn btn-outline" data-heat-step="-1">轻一点</button>
-            <button class="btn btn-outline" data-heat-step="1">加码</button>
           </div>
           <button class="linkish js-pass">过</button>
           <p class="safe-hint" data-safe-hint>安全词：暂停</p>
@@ -345,21 +339,6 @@
           <p class="sub">确认是你，再看下一题。</p>
         </div>
         <button class="btn btn-gold" id="passConfirm">是我</button>
-      </section>
-
-      <section class="screen" data-screen="boundary" id="screen-boundary">
-        <div class="topbar">
-          <button class="icon-btn" data-back>←</button>
-          <div class="who">边界清单</div>
-          <span class="pill" id="boundaryPill">共同 0</span>
-        </div>
-        <p class="field-note bd-lead">两个人各自点一遍。今晚真正要玩的，只留都点了 Yes 的。</p>
-        <div class="bd-summary" id="boundarySummary"></div>
-        <div class="boundary-list" id="boundaryList"></div>
-        <div class="actions">
-          <button class="btn btn-outline" id="boundaryClear">清空这一页</button>
-          <p class="safe-hint" data-safe-hint>安全词：暂停</p>
-        </div>
       </section>
 
       <section class="screen" data-screen="settings" id="screen-settings">
@@ -395,6 +374,13 @@
             <p class="field-note">回到最开始那一屏，重新填称呼、选今晚的热度。记录不会清掉。</p>
             <button class="btn btn-outline" id="resetBtn">回到设置</button>
           </div>
+          <div class="glass-row">
+            <div class="glass-row-head"><b>边界清单</b><span id="boundaryPill">共同 0</span></div>
+            <p class="field-note bd-lead">两个人各自点一遍。今晚真正要玩的，只留都点了 Yes 的。</p>
+            <div class="bd-summary" id="boundarySummary"></div>
+            <div class="boundary-list" id="boundaryList"></div>
+            <button class="btn btn-outline" id="boundaryClear">清空这一页</button>
+          </div>
         </div>
         <p class="set-status" id="settingsStatus"></p>
         <div class="actions">
@@ -426,8 +412,13 @@
         <div class="topbar">
           <button class="icon-btn" data-back>←</button>
           <div class="who" id="boardWho">轮流走</div>
-          <span class="pill" id="boardPill">起点</span>
+          <div class="heat-stepper">
+            <button class="step-btn" data-heat-step="-1">−</button>
+            <span class="pill" data-heat-name>微醺</span>
+            <button class="step-btn" data-heat-step="1">＋</button>
+          </div>
         </div>
+        <p class="board-progress pill" id="boardPill">起点</p>
         <div class="board-grid" id="boardGrid"></div>
         <article class="glass-row board-slot">
           <div class="glass-row-head"><b id="boardTitle">掷骰子</b><span id="boardMark">第 1 格</span></div>
@@ -441,6 +432,17 @@
           <p class="safe-hint" data-safe-hint>安全词：暂停</p>
         </div>
       </section>
+
+      <nav class="tabbar hidden" id="tabbar" aria-label="主分区">
+        <button type="button" class="tab is-active" data-tab="home">
+          <svg class="ico" aria-hidden="true"><use href="#i-house" /></svg>
+          <span>首页</span>
+        </button>
+        <button type="button" class="tab" data-tab="settings">
+          <svg class="ico" aria-hidden="true"><use href="#i-gear" /></svg>
+          <span>设置</span>
+        </button>
+      </nav>
 
     </div>
 

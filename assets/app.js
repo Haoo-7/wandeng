@@ -146,7 +146,20 @@
       el.classList.toggle("active", el.dataset.screen === name);
     });
     syncHeatSteps();
+    syncTopbars();
+    syncTabbar();
     if (name === "setup") renderHeatButtons();
+  }
+
+  function openTab(tab) {
+    if (tab === "home") {
+      renderHome();
+      show("home");
+    } else if (tab === "settings") {
+      setSettingsStatus("");
+      renderBoundary();
+      show("settings");
+    }
   }
 
   // save() 刻意留在这里：pick 是唯一改动「不重复」记忆的入口，只有此处落盘才能保证记忆与存档不分叉。
@@ -195,7 +208,7 @@
   }
 
   function renderHome() {
-    $("heatPill").textContent = `热度  ${heat().name}`;
+    if ($("heatPill")) $("heatPill").textContent = `热度  ${heat().name}`;
     $("homeHero").textContent = "今晚只属于你们";
   }
 
@@ -206,16 +219,41 @@
     });
   }
 
+  // 底栏双栏只在首页/设置出现（游戏屏高度预算不够，setup/pass 也隐藏）。
+  function syncTabbar() {
+    const bar = $("tabbar");
+    if (!bar) return;
+    const visible = state.screen === "home" || state.screen === "settings";
+    bar.classList.toggle("hidden", !visible);
+    bar.querySelectorAll("[data-tab]").forEach((btn) => {
+      btn.classList.toggle("is-active", btn.dataset.tab === state.screen);
+    });
+  }
+
   // 三档行为刻意不同：tod 只换胶囊；骰子与轮盘只换题目池并清掉旧结果（结果随机，要等用户自己掷）；
   // 其余屏按新档重抽，让「换一档」当场看得见。
+  // 顶栏人名与热度胶囊：切屏、换人、换热度三条路径都走这里，避免三处散写分叉.
+  function syncTopbars() {
+    $("todWho").textContent = `轮到 ${who()}`;
+    $("diceWho").textContent = `轮到 ${who()}`;
+    $("wheelWho").textContent = `轮到 ${who()}`;
+    $("comboWho").textContent = `轮到 ${who()}`;
+    $("sceneWho").textContent = `轮到 ${who()}`;
+    $("choiceWho").textContent = `轮到 ${who()}`;
+    $("timerWho").textContent = `轮到 ${who()}`;
+    $("boardWho").textContent = state.board.winner >= 0 ? "结束" : `轮到 ${who()}`;
+    $("todHeat").textContent = heat().name;
+    document.querySelectorAll("[data-heat-name]").forEach((el) => {
+      el.textContent = heat().name;
+    });
+  }
+
   function refreshScreen() {
     renderHome();
     syncHeatSteps();
+    syncTopbars();
     const screen = state.screen;
-    if (screen === "tod") {
-      $("todWho").textContent = `${who()} 的回合`;
-      $("todHeat").textContent = heat().name;
-    } else if (screen === "dice") {
+    if (screen === "dice") {
       prepDice();
     } else if (screen === "wheel") {
       renderWheel();
@@ -227,8 +265,6 @@
       drawChoice();
     } else if (screen === "timer") {
       drawTimer();
-    } else if (screen === "plan") {
-      drawPlan();
     } else if (screen === "board") {
       renderBoard();
     }
@@ -650,8 +686,6 @@
     const text = pick(packOf(kind), `${kind}-${genderKey()}`);
     $("todKind").textContent = kind === "truth" ? "真心话" : "大冒险";
     $("todText").textContent = fill(text);
-    $("todWho").textContent = `${who()} 的回合`;
-    $("todHeat").textContent = heat().name;
     repopBox($("todText"), ".play-card");
   }
 
@@ -687,7 +721,6 @@
     const pack = dicePack();
     buildDie($("dieAction"), pack.actions, false);
     buildDie($("dieBody"), pack.bodies, true);
-    $("diceWho").textContent = `${who()} 来做`;
     $("diceTitle").textContent = state.heat === 2 ? "深夜 · 动作 × 部位" : "动作 × 部位";
     $("diceLine").textContent =
       state.heat === 2
@@ -738,7 +771,6 @@
         return `<span style="transform: rotate(${rot}deg) translate(72px, -6px)">·</span>`;
       })
       .join("");
-    $("wheelWho").textContent = who();
     $("wheelTitle").textContent = "转起来";
     $("wheelLine").textContent = "指针停下后，按出现的那一句做。";
   }
@@ -770,7 +802,6 @@
 
   function resetCombo() {
     state.currentCombo = null;
-    $("comboWho").textContent = who();
     $("comboKicker").textContent = "先答";
     $("comboQ").textContent = "点下面，抽出一道。先认真答。";
     $("comboDare").textContent = "";
@@ -789,7 +820,6 @@
     $("comboHint").textContent = "说完再点下面。规则允许你现在按答案做。";
     $("btnComboDraw").classList.add("hidden");
     $("btnComboGo").classList.remove("hidden");
-    $("comboWho").textContent = who();
     repopBox($("comboQ"), ".play-card");
   }
 
@@ -806,7 +836,6 @@
   }
 
   function resetScene() {
-    $("sceneWho").textContent = who();
     $("sceneKicker").textContent = "抽一幕";
     $("sceneTitle").textContent = "点下面，抽出今晚要演的一幕。";
     $("sceneSetup").textContent = "";
@@ -819,14 +848,12 @@
     $("sceneTitle").textContent = fill(card.title);
     $("sceneSetup").textContent = fill(card.setup);
     $("sceneDo").textContent = fill(card.do);
-    $("sceneWho").textContent = who();
     repopBox($("sceneTitle"), ".play-card");
   }
 
   function resetChoice() {
     clearChoiceState();
     state.currentChoice = null;
-    $("choiceWho").textContent = who();
     $("choiceQ").textContent = "点下面，抽出一道必须选的题。";
     $("choiceDo").textContent = "";
     $("choiceBtns").classList.add("hidden");
@@ -843,7 +870,6 @@
     $("choiceB").textContent = fill(card.b);
     $("choiceBtns").classList.remove("hidden");
     $("btnChoiceDraw").classList.add("hidden");
-    $("choiceWho").textContent = who();
     repopBox($("choiceQ"), ".play-card");
   }
 
@@ -893,7 +919,6 @@
   function resetTimerView() {
     stopTimer();
     state.currentTimer = null;
-    $("timerWho").textContent = who();
     $("timerKicker").textContent = "铃响之前";
     $("timerNum").textContent = "00";
     $("timerNum").classList.remove("done");
@@ -913,7 +938,6 @@
     $("timerText").textContent = fill(card.text);
     $("btnTimerStart").textContent = "开始";
     $("btnTimerStart").disabled = false;
-    $("timerWho").textContent = who();
     repopBox($("timerText"), ".play-card");
   }
 
@@ -1027,10 +1051,6 @@
 
   function openGame(game) {
     if (game === "tod") {
-      $("todWho").textContent = `${who()} 的回合`;
-      $("todHeat").textContent = heat().name;
-      $("todKind").textContent = "今晚";
-      $("todText").textContent = "先选真心话，还是大冒险。";
       show("tod");
     } else if (game === "dice") {
       prepDice();
@@ -1052,15 +1072,10 @@
       resetTimerView();
       drawTimer();
       show("timer");
-    } else if (game === "boundary") {
-      renderBoundary();
-      show("boundary");
     } else if (game === "settings") {
       setSettingsStatus("");
+      renderBoundary();
       show("settings");
-    } else if (game === "plan") {
-      resetPlan();
-      show("plan");
     } else if (game === "board") {
       state.boardEvent = null;
       renderBoard();
@@ -1168,6 +1183,9 @@
     document.querySelectorAll("[data-open]").forEach((btn) => {
       btn.addEventListener("click", () => openGame(btn.dataset.open));
     });
+    document.querySelectorAll("[data-tab]").forEach((btn) => {
+      btn.addEventListener("click", () => openTab(btn.dataset.tab));
+    });
 
     $("resetBtn").addEventListener("click", () => {
       show("setup");
@@ -1261,8 +1279,8 @@
 
     $("passConfirm").addEventListener("click", () => {
       const next = state.afterPass;
+      syncTopbars();
       if (next === "tod") {
-        $("todWho").textContent = `${who()} 的回合`;
         $("todKind").textContent = "轮到你了";
         $("todText").textContent = "选真心话，还是大冒险。";
       } else if (next === "dice") {

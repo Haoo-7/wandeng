@@ -490,14 +490,79 @@ h1,
   text-overflow: ellipsis;
 }
 
-/* 首页底部：热度胶囊 + 重新设置（纵向由 auto margin 均分，安全区交给 .screen 的 padding-bottom） */
-.bottom-row {
+/* 热度步进器：顶栏右端 [−] 热度名 [+]，复用 data-heat-step 与 syncHeatSteps 禁用逻辑 */
+.heat-stepper {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  margin-top: auto;
-  padding-bottom: 0;
+  gap: 6px;
+}
+
+.step-btn {
+  width: 30px;
+  height: 30px;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--glass-line);
+  background: var(--glass-fill);
+  -webkit-backdrop-filter: blur(18px);
+  backdrop-filter: blur(18px);
+  color: var(--text-1);
+  font-size: 15px;
+  line-height: 1;
+  cursor: pointer;
+  box-shadow: var(--glass-topline);
+  transition: var(--transition-ui);
+}
+
+.step-btn:disabled {
+  opacity: 0.35;
+  cursor: default;
+  box-shadow: none;
+}
+
+/* 底栏双栏：首页 / 设置，fixed 吸底，safe-area 之上；只在 home/settings 显示 */
+.tabbar {
+  position: fixed;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: calc(var(--safe-bottom) + 10px);
+  display: flex;
+  gap: 4px;
+  padding: 6px;
+  border-radius: var(--radius-pill);
+  background: var(--glass-fill-strong);
+  -webkit-backdrop-filter: var(--glass-backdrop);
+  backdrop-filter: var(--glass-backdrop);
+  border: 1px solid var(--glass-line);
+  box-shadow: var(--glass-lift), var(--glass-topline);
+  z-index: 30;
+}
+
+.tab {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 18px;
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--text-2);
+  font-family: var(--font-body);
+  font-size: 13px;
+  letter-spacing: 0.1em;
+  cursor: pointer;
+  transition: var(--transition-ui);
+}
+
+.tab.is-active {
+  background: var(--cta-grad-primary);
+  color: var(--ink-plum);
+  font-weight: 600;
+}
+
+/* 棋盘进度行：顶栏只留轮到谁，进度另起一行 */
+.board-progress {
+  align-self: center;
+  margin: 0 0 6px;
 }
 
 .pill {
