@@ -1,17 +1,18 @@
-const CACHE = "wandeng-v17";
+const CACHE = "wandeng-v20";
 const FILES = [
   "./",
   "./index.html",
-  "./assets/app.css?v=17",
-  "./assets/logic.js?v=17",
-  "./assets/data.js?v=17",
-  "./assets/app.js?v=17",
+  "./assets/app.css?v=20",
+  "./assets/logic.js?v=20",
+  "./assets/data.js?v=20",
+  "./assets/app.js?v=20",
   "./assets/favicon.svg",
   "./assets/apple-touch.png",
   "./assets/img/hotel.jpg",
   "./assets/img/game-tod.png",
   "./assets/img/game-dice.png",
   "./assets/img/game-wheel.png",
+  "./assets/img/game-board.png",
   "./assets/img/tile-combo.png",
   "./assets/img/tile-scene.png",
   "./assets/img/tile-choice.png",

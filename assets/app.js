@@ -53,6 +53,16 @@
     { rx: 90, ry: 0 },
   ];
 
+  // 真骰子的点位：3×3 网格上的标准布局
+  const PIP_CELLS = {
+    1: [[2, 2]],
+    2: [[1, 3], [3, 1]],
+    3: [[1, 3], [2, 2], [3, 1]],
+    4: [[1, 1], [1, 3], [3, 1], [3, 3]],
+    5: [[1, 1], [1, 3], [2, 2], [3, 1], [3, 3]],
+    6: [[1, 1], [2, 1], [3, 1], [1, 3], [2, 3], [3, 3]],
+  };
+
   function esc(value) {
     const map = { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" };
     return String(value == null ? "" : value).replace(/[&<>"']/g, (ch) => map[ch]);
@@ -307,8 +317,8 @@
         const cls =
           row.verdict === "both-yes" ? " has-both-yes" : row.verdict === "any-no" ? " has-any-no" : "";
         return (
-          `<div class="glass-row${cls}">` +
-          `<div class="glass-row-head"><b>${esc(item.zh)}</b><span>${esc(tier)}</span></div>` +
+          `<div class="panel${cls}">` +
+          `<div class="panel-head"><b>${esc(item.zh)}</b><span>${esc(tier)}</span></div>` +
           bdPlayerRow("a", state.names[0] || "他", row.levels[0], item.id) +
           bdPlayerRow("b", state.names[1] || "她", row.levels[1], item.id) +
           `</div>`
@@ -793,11 +803,15 @@
     flipTo($("todCard"), render);
   }
 
-  function buildDie(el, labels, wine) {
-    el.innerHTML = labels
+  function buildDie(el, wine) {
+    el.innerHTML = [1, 2, 3, 4, 5, 6]
       .map(
-        (label, i) =>
-          `<div class="face ${wine ? "wine" : ""}" data-face="${i + 1}">${label}</div>`
+        (n) =>
+          `<div class="face ${wine ? "wine" : ""}" data-face="${n}">` +
+          PIP_CELLS[n]
+            .map(([r, c]) => `<i class="pip" style="grid-row:${r};grid-column:${c}"></i>`)
+            .join("") +
+          `</div>`
       )
       .join("");
   }
@@ -821,18 +835,24 @@
     );
   }
 
+  /* 骰子与轮盘的结果纸：落定才出现（无前置说明卡），重掷时整张重放 reveal */
+  function showResult(card, renderFn) {
+    renderFn();
+    card.classList.remove("hidden");
+    repop(card);
+  }
+
   function prepDice() {
     const pack = dicePack();
-    buildDie($("dieAction"), pack.actions, false);
-    buildDie($("dieBody"), pack.bodies, true);
-    $("diceTitle").textContent = state.heat === 2 ? "深夜 · 动作 × 部位" : "动作 × 部位";
-    $("diceLine").textContent =
-      state.heat === 2
-        ? "这一档不再是亲亲锁骨。掷出来，就按最直接的那句做。"
-        : "点下面，掷出这一轮。";
+    buildDie($("dieAction"), false);
+    buildDie($("dieBody"), true);
+    $("diceCard").classList.add("hidden");
+    $("diceTitle").textContent = "";
+    $("diceLine").textContent = "";
   }
 
   let diceBusy = false;
+  let diceRevealTimer = 0;
 
   function rollDice() {
     if (diceBusy) return;
@@ -862,25 +882,25 @@
     $("dieBody").classList.add("rolling");
     setDie($("dieAction"), a, state.diceSpin[0]);
     setDie($("dieBody"), b, state.diceSpin[1]);
-    flipTo($("diceCard"), () => {
-      $("diceTitle").textContent = `${action} × ${body}`;
-      $("diceLine").textContent = lineFor(action, body);
-    });
+    window.clearTimeout(diceRevealTimer);
+    const reveal = () =>
+      showResult($("diceCard"), () => {
+        $("diceTitle").textContent = `${action} × ${body}`;
+        $("diceLine").textContent = lineFor(action, body);
+      });
+    if (reduceMotion.matches) reveal();
+    else diceRevealTimer = window.setTimeout(reveal, 1000); // 等骰子落定再出纸
     if (navigator.vibrate) navigator.vibrate([12, 40, 18]);
   }
 
   function renderWheel() {
-    $("wheel").innerHTML = Array.from({ length: 8 })
-      .map((_, i) => {
-        const rot = i * 45 + 22.5;
-        return `<span style="transform: rotate(${rot}deg) translate(72px, -6px)">·</span>`;
-      })
-      .join("");
-    $("wheelTitle").textContent = "转起来";
-    $("wheelLine").textContent = "指针停下后，按出现的那一句做。";
+    $("wheelCard").classList.add("hidden");
+    $("wheelTitle").textContent = "";
+    $("wheelLine").textContent = "";
   }
 
   let wheelBusy = false;
+  let wheelRevealTimer = 0;
 
   function spinWheel() {
     if (wheelBusy) return;
@@ -897,12 +917,16 @@
       }, 240);
     }
     $("wheel").style.transform = `rotate(${state.wheelAngle}deg)`;
-    window.setTimeout(() => {
-      flipTo($("wheelCard"), () => {
-        $("wheelTitle").textContent = fill(text);
-        $("wheelLine").textContent = `${who()} 来做。${other()} 看着，也可以帮忙。`;
-      });
-    }, 3200);
+    $("wheelCard").classList.add("hidden"); // 旧的那句随新的一转退场
+    window.clearTimeout(wheelRevealTimer);
+    wheelRevealTimer = window.setTimeout(
+      () =>
+        showResult($("wheelCard"), () => {
+          $("wheelTitle").textContent = fill(text);
+          $("wheelLine").textContent = `${who()} 来做。${other()} 看着，也可以帮忙。`;
+        }),
+      reduceMotion.matches ? 0 : 3200
+    );
     if (navigator.vibrate) navigator.vibrate(18);
   }
 
@@ -1059,8 +1083,16 @@
     $("timerNum").textContent = "00";
     $("timerNum").classList.remove("done");
     $("timerText").textContent = "点下面，抽出限时要做的事。";
+    setTimerTrack(1);
+    $("timerTrack").classList.remove("done");
     $("btnTimerStart").textContent = "开始";
     $("btnTimerStart").disabled = true;
+  }
+
+  /* 纸下那条进度槽 = 剩下的时间。数字给人读，槽给余光扫 */
+  function setTimerTrack(ratio) {
+    const r = Math.max(0, Math.min(1, ratio));
+    $("timerTrack").style.setProperty("--timer-left", `${Math.round(r * 100)}%`);
   }
 
   function drawTimer(opts) {
@@ -1073,6 +1105,8 @@
       $("timerNum").textContent = formatTime(card.sec);
       $("timerNum").classList.remove("done");
       $("timerText").textContent = fill(card.text);
+      setTimerTrack(1);
+      $("timerTrack").classList.remove("done");
     };
     $("btnTimerStart").textContent = "开始";
     $("btnTimerStart").disabled = false;
@@ -1091,15 +1125,19 @@
     $("btnTimerStart").textContent = "进行中";
     $("btnTimerStart").disabled = true;
     $("timerNum").classList.remove("done");
+    setTimerTrack(1);
+    $("timerTrack").classList.remove("done");
     if (navigator.vibrate) navigator.vibrate(12);
     state.timerId = window.setInterval(() => {
       state.timerLeft -= 1;
       $("timerNum").textContent = formatTime(state.timerLeft);
+      setTimerTrack(state.timerLeft / state.currentTimer.sec);
       if (state.timerLeft <= 0) {
         stopTimer();
         $("timerNum").textContent = "00";
         $("timerNum").classList.add("done");
         $("timerNum").classList.add("pulse");
+        $("timerTrack").classList.add("done");
         window.setTimeout(() => $("timerNum").classList.remove("pulse"), 600);
         $("timerKicker").textContent = "时间到";
         $("btnTimerStart").textContent = "再来一次";
@@ -1151,11 +1189,15 @@
       $("todKind").textContent = "代价";
       $("todText").textContent = text;
     } else if (screen === "dice") {
-      $("diceTitle").textContent = "过了 · 代价";
-      $("diceLine").textContent = text;
+      showResult($("diceCard"), () => {
+        $("diceTitle").textContent = "过了 · 代价";
+        $("diceLine").textContent = text;
+      });
     } else if (screen === "wheel") {
-      $("wheelTitle").textContent = "过了 · 代价";
-      $("wheelLine").textContent = text;
+      showResult($("wheelCard"), () => {
+        $("wheelTitle").textContent = "过了 · 代价";
+        $("wheelLine").textContent = text;
+      });
     } else if (screen === "combo") {
       $("comboKicker").textContent = "代价";
       $("comboQ").textContent = text;
@@ -1237,7 +1279,7 @@
     renderHeatButtons();
   }
 
-  const RIPPLE_TARGETS = ".btn, .row-card, .more-grid button, .icon-btn, .bd-opt";
+  const RIPPLE_TARGETS = ".btn, .btn-text, .row-card, .slip-row, .icon-btn, .bd-opt";
 
   function ripple(e) {
     if (reduceMotion.matches) return;
@@ -1495,7 +1537,7 @@
 
     if ("serviceWorker" in navigator) {
       navigator.serviceWorker
-        .register("./sw.js?v=17", { updateViaCache: "none" })
+        .register("./sw.js?v=20", { updateViaCache: "none" })
         .catch(() => {});
     }
   }

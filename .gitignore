@@ -3,3 +3,9 @@
 .codegraph
 __pycache__/
 .playwright-mcp/
+.commandcode/
+.workbuddy/
+design/critique/
+design/*.mjs
+design/*.out
+design/*.txt
