@@ -931,17 +931,12 @@
     if (navigator.vibrate) navigator.vibrate([12, 40, 18]);
   }
 
-  // 轮盘十二扇各刻一句的短标：称呼占位先落地，取第一个分句，长了截字加省略号
+  // 轮盘十二扇（couple-stark 的可读性结构：盘面无字、结果纸常驻、选项列清单）。
+  // 盘面每扇只刻一个序号，与下方「本轮选项」清单一一对应——转到第几支，念第几句。
   const WHEEL_SEGS = 12;
 
-  function wedgeLabel(text) {
-    const plain = String(text).replace(/\{男\}|\{女\}|\{who\}|\{other\}/g, "TA");
-    const head = plain.split(/[。；！？!?，,.]/)[0] || plain;
-    return head.length > 5 ? `${head.slice(0, 4)}…` : head;
-  }
-
-  // 签筒发牌：整池洗成一筒，盘上 12 支只是窗口——落一支补一支，筒摇空整池重摇。
-  // 三十多句每句都会轮着上盘，盘面却始终读得清（不是把牌堆整个钉死在盘上的静态做法）
+  // 签筒发牌：整池洗成一筒，12 支上盘为窗口——落一支补一支，筒摇空整池重摇，
+  // 三十多句每句都会轮着上盘
   function shuffleDeck(pool) {
     const deck = pool.slice();
     for (let i = deck.length - 1; i > 0; i--) {
@@ -951,54 +946,67 @@
     return deck;
   }
 
-  function renderTicker() {
-    const el = $("wheelQueue");
-    if (!el) return;
-    const deck = state.wheelDeck || [];
-    el.textContent = deck.length
-      ? `签筒里还有 ${deck.length} 支 · 下一支「${wedgeLabel(deck[0])}」`
-      : "签筒空了，下次转动整池重摇";
+  function renderWheelList() {
+    const ol = $("wheelListOl");
+    if (ol) {
+      ol.innerHTML = (state.wheelFaces || [])
+        .map(
+          (text, i) =>
+            `<li${state.wheelLast === i ? ' class="is-landed"' : ""}><i>${i + 1}</i><span>${esc(fill(text))}</span></li>`
+        )
+        .join("");
+    }
+    const count = $("wheelQueue");
+    if (count) {
+      count.textContent =
+        state.wheelDeck && state.wheelDeck.length ? `筒里还有 ${state.wheelDeck.length} 支` : "筒已重摇";
+    }
+  }
+
+  // 序号钉在自己的扇位上，但反向旋转抵消盘子的转角——盘转字不转，任何时刻正立
+  function wedgeTransform(i) {
+    const theta = i * 30 + 15;
+    return (
+      `translate(-50%, -50%) rotate(${theta}deg) translateY(calc(var(--wheel-size) / -2 + 30px)) ` +
+      `rotate(${-theta - state.wheelAngle}deg)`
+    );
   }
 
   function renderWheel() {
-    $("wheelCard").classList.add("hidden");
-    $("wheelTitle").textContent = "";
-    $("wheelLine").textContent = "";
     state.wheelLast = null;
     const pool = packOf("wheel");
     state.wheelDeck = shuffleDeck(pool.map(String));
     state.wheelFaces = [];
-    const wedges = [];
     const step = 100 / WHEEL_SEGS;
     const paint = [];
+    const nums = [];
     for (let i = 0; i < WHEEL_SEGS; i++) {
-      const text = state.wheelDeck.shift() || "";
-      state.wheelFaces.push(text);
+      state.wheelFaces.push(state.wheelDeck.shift() || "");
       const a0 = i * step;
       paint.push(`var(--room) ${a0}% ${a0 + 0.25}%, var(--${i % 2 ? "wheel-dark" : "die-face"}) ${a0 + 0.25}% ${(i + 1) * step}%`);
-      wedges.push(
-        `<span class="wedge" style="transform: rotate(${i * 30 + 15}deg) translateY(calc(var(--wheel-size) / -2 + 26px))">` +
-          `<i class="wedge-${i % 2 ? "dark" : "lite"}">${esc(wedgeLabel(text))}</i></span>`
-      );
+      nums.push(`<span class="wedge" style="transform: ${wedgeTransform(i)}">${i + 1}</span>`);
     }
     paint.push(`var(--room) ${100 - 0.25}% 100%`);
     const wheel = $("wheel");
     wheel.style.background = `conic-gradient(${paint.join(",")})`;
-    wheel.innerHTML = wedges.join("");
-    renderTicker();
+    wheel.innerHTML = nums.join("");
+    // 结果纸常驻（couple-stark 的「当前结果」）：没开转时是灰态占位
+    const card = $("wheelCard");
+    card.classList.remove("hidden");
+    card.classList.add("is-idle");
+    $("wheelTitle").textContent = "还没开转";
+    $("wheelLine").textContent = "盘上十二支，指针停在哪句就念哪句。";
+    renderWheelList();
   }
 
-  // 落过的一扇在下一次转动前从签筒补新签
+  // 落过的一支在下一次转动前从签筒补新签
   function refillWheelSegment(i) {
     if (!state.wheelDeck || !state.wheelDeck.length) {
       state.wheelDeck = shuffleDeck(packOf("wheel").map(String));
     }
     const text = state.wheelDeck.shift() || "";
     if (state.wheelFaces && state.wheelFaces.length === WHEEL_SEGS) state.wheelFaces[i] = text;
-    const wedge = $("wheel").children[i];
-    const label = wedge && wedge.querySelector("i");
-    if (label) label.textContent = wedgeLabel(text);
-    renderTicker();
+    renderWheelList();
   }
 
   let wheelBusy = false;
@@ -1006,11 +1014,12 @@
 
   function spinWheel() {
     if (wheelBusy) return;
-    // 上一次落过的扇子先补牌：盘上永远十二句，整池轮着发（牌堆即盘面）
-    if (state.wheelLast != null) refillWheelSegment(state.wheelLast);
+    // 上一次落过的那支先从签筒补新签，再定这一轮的落点
+    const last = state.wheelLast;
     state.wheelLast = null;
+    if (last != null) refillWheelSegment(last);
     // 先定落点再转：扇心在 i*30+15（conic 自顶部顺时针），指针钉在正上方，
-    // 落角必须满足 扇心 + 转角 ≡ 0 (mod 360)。转到哪扇，念那扇刻的句子。
+    // 落角必须满足 扇心 + 转角 ≡ 0 (mod 360)。转到第几支，念第几句。
     const faces = state.wheelFaces && state.wheelFaces.length === WHEEL_SEGS ? state.wheelFaces : [];
     const s = Math.floor(Math.random() * WHEEL_SEGS);
     const text = faces[s] || String(pick(packOf("wheel"), `wheel-${genderKey()}`) || "");
@@ -1028,14 +1037,20 @@
       }, 240);
     }
     $("wheel").style.transform = `rotate(${state.wheelAngle}deg)`;
+    // 序号同步反向转：与盘子同一条 transition 曲线，转的过程中数字始终正立
+    document.querySelectorAll("#wheel .wedge").forEach((el, i) => {
+      el.style.transform = wedgeTransform(i);
+    });
     $("wheelCard").classList.add("hidden"); // 旧的那句随新的一转退场
     window.clearTimeout(wheelRevealTimer);
     wheelRevealTimer = window.setTimeout(
-      () =>
+      () => {
         showResult($("wheelCard"), () => {
           $("wheelTitle").textContent = fill(text);
-          $("wheelLine").textContent = `${who()} 来做。${other()} 看着，也可以帮忙。`;
-        }),
+          $("wheelLine").textContent = `盘上第 ${s + 1} 支。${who()} 来做。${other()} 看着，也可以帮忙。`;
+        });
+        renderWheelList(); // 落点行高亮，与结果卡对得上
+      },
       reduceMotion.matches ? 0 : 3200
     );
     if (navigator.vibrate) navigator.vibrate(18);
@@ -1648,7 +1663,7 @@
 
     if ("serviceWorker" in navigator) {
       navigator.serviceWorker
-        .register("./sw.js?v=24", { updateViaCache: "none" })
+        .register("./sw.js?v=25", { updateViaCache: "none" })
         .catch(() => {});
     }
   }

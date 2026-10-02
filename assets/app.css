@@ -1387,7 +1387,7 @@ input[type="text"]::placeholder {
 
 .wheel-box {
   /* 轮盘直径的唯一事实源：.wheel 与 .pointer 都从这里取半径 */
-  --wheel-size: min(74vw, 300px);
+  --wheel-size: min(80vw, 320px);
   flex: 1;
   display: grid;
   place-items: center;
@@ -1434,54 +1434,102 @@ input[type="text"]::placeholder {
   z-index: 2;
 }
 
-/* 扇面短标：每扇刻它那句话的头几个字，随盘同转。
-   双数扇是象牙底刻墨字，单数扇是深漆底刻奶油字 */
+/* 扇面序号：盘面不刻句子（可读性交给下方清单），只刻与清单对应的序号。
+   序号用反向旋转抵消盘子的转角，盘转它不转（transition 与 .wheel 同步），
+   任何时刻都正立可读；象牙扇墨字、深漆扇奶油字 */
 .wedge {
   position: absolute;
   left: 50%;
   top: 50%;
-  width: 0;
-  height: 0;
-}
-
-.wedge i {
-  position: absolute;
-  left: 0;
-  top: 0;
-  transform: translate(-50%, -50%);
   font-family: var(--font-body);
   font-style: normal;
-  font-size: 10px;
+  font-variant-numeric: tabular-nums;
+  font-size: 11px;
   font-weight: 500;
   letter-spacing: 0.02em;
   line-height: 1;
-  white-space: nowrap;
+  color: var(--cream-55);
+  transition: transform 3.2s cubic-bezier(0.12, 0.7, 0.08, 1);
 }
 
-.wedge .wedge-lite {
-  color: var(--die-ink);
+.wheel > .wedge:nth-child(odd) {
+  color: var(--paper-ink-55);
 }
 
-.wedge .wedge-dark {
+/* 本轮选项：盘上十二支的全文名单（couple-stark 的可读性来源），
+   序号与扇面一一对应；刚落过的那行字变奶油、序号点灯金 */
+.wheel-list {
+  margin-top: clamp(10px, 1.6dvh, 14px);
+  flex: 0 0 auto;
+}
+
+.wheel-list-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 2px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--line-10);
+}
+
+.wheel-list-head b {
+  font-family: var(--font-body);
+  font-size: 11px;
+  font-weight: 400;
+  letter-spacing: 0.14em;
+  color: var(--cream-55);
+}
+
+.wheel-list-head span {
+  font-size: 10.5px;
+  font-weight: 400;
+  letter-spacing: 0.02em;
+  color: var(--cream-55);
+}
+
+.wheel-list ol {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0 18px;
+}
+
+.wheel-list li {
+  display: flex;
+  align-items: baseline;
+  gap: 7px;
+  padding: 6px 0;
+  font-size: 11.5px;
+  font-weight: 400;
+  letter-spacing: 0.01em;
+  line-height: 1.5;
+  color: var(--cream-72);
+  transition: color 280ms var(--ease-out);
+}
+
+.wheel-list li i {
+  flex: 0 0 auto;
+  font-style: normal;
+  font-variant-numeric: tabular-nums;
+  font-size: 10px;
+  color: var(--cream-55);
+  transition: color 280ms var(--ease-out);
+}
+
+.wheel-list li.is-landed {
   color: var(--cream);
 }
 
-/* 签筒行：盘上 12 支只是窗口，这一行告诉你筒里还压着多少句、下一支是什么 */
-.wheel-queue {
-  position: absolute;
-  left: 16px;
-  right: 16px;
-  bottom: 2px;
-  margin: 0;
-  text-align: center;
-  color: var(--cream-55);
-  font-size: 11px;
-  font-weight: 400;
-  letter-spacing: 0.02em;
-  line-height: 1.4;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+.wheel-list li.is-landed i {
+  color: var(--lamp);
+}
+
+/* 结果纸的灰态：还没开转时的占位 */
+.result.is-idle b {
+  color: var(--paper-ink-55);
 }
 
 /* ==========================================================================

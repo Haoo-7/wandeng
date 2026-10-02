@@ -8,10 +8,10 @@ const path = require("node:path");
 const root = path.join(__dirname, "..");
 const read = (rel) => fs.readFileSync(path.join(root, rel), "utf8");
 
-// The release we are converging on. Bumped 23 -> 24 with the gender-neutral
+// The release we are converging on. Bumped 24 -> 25 with the gender-neutral
 // onboarding copy plus gameplay honesty: dice faces carry the action/body,
 // wheel segments carry their own prompts, board rolls a real die overlay.
-const EXPECTED = 24;
+const EXPECTED = 25;
 
 const indexHtml = read("index.html");
 const appJs = read("assets/app.js");
@@ -41,7 +41,7 @@ function tokenMap(refs) {
   return map;
 }
 
-test("every ?v= token on a local asset reference in index.html equals 24", () => {
+test("every ?v= token on a local asset reference in index.html equals 25", () => {
   const refs = indexAssetRefs(indexHtml);
   assert.ok(
     refs.length > 0,
@@ -56,7 +56,7 @@ test("every ?v= token on a local asset reference in index.html equals 24", () =>
   });
 });
 
-test("index.html references a script assets/logic.js?v=24", () => {
+test("index.html references a script assets/logic.js?v=25", () => {
   const re = /(?:src)\s*=\s*["']([^"']*logic\.js[^"']*)["']/g;
   const found = [];
   let m;
@@ -81,7 +81,7 @@ test("index.html references a script assets/logic.js?v=24", () => {
   );
 });
 
-test("assets/app.js registers a service worker with ?v=24", () => {
+test("assets/app.js registers a service worker with ?v=25", () => {
   const m = appJs.match(
     /serviceWorker[\s\S]*?\.register\(\s*["']([^"']+)["']/
   );
@@ -103,7 +103,7 @@ test("assets/app.js registers a service worker with ?v=24", () => {
   );
 });
 
-test("sw.js declares a cache name whose trailing number is 24", () => {
+test("sw.js declares a cache name whose trailing number is 25", () => {
   const m = swJs.match(/CACHE\s*=\s*["']([^"']+)["']/);
   assert.ok(m, "sw.js declares no CACHE constant");
 

@@ -21,7 +21,7 @@
       href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@500;600&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="./assets/app.css?v=24" />
+    <link rel="stylesheet" href="./assets/app.css?v=25" />
   </head>
   <body>
     <!-- 图标本地子集（Phosphor regular 风格：256 网格、stroke 16、round 端点；不走 CDN，离线可用）
@@ -224,10 +224,9 @@
         <div class="wheel-box">
           <div class="pointer"></div>
           <div class="wheel" id="wheel"></div>
-          <p class="wheel-queue" id="wheelQueue"></p>
         </div>
-        <!-- 轮盘自己就是内容；结果纸在指针停下后才出现 -->
-        <div class="result hidden" id="wheelCard">
+        <!-- 轮盘自己就是内容；结果纸常驻（没开转是灰态），指针停下后才写上那句 -->
+        <div class="result" id="wheelCard">
           <b id="wheelTitle"></b>
           <span id="wheelLine"></span>
         </div>
@@ -237,6 +236,11 @@
             <button class="btn-text js-pass">过</button>
             <button class="btn-text" id="btnWheelNext">换人</button>
           </div>
+        </div>
+        <!-- 本轮选项：盘上十二支的全文名单，序号与扇面一一对应；页尾读物，转完对单 -->
+        <div class="wheel-list">
+          <div class="wheel-list-head"><b>本轮选项</b><span id="wheelQueue"></span></div>
+          <ol id="wheelListOl"></ol>
         </div>
       </section>
 
@@ -516,9 +520,9 @@
     <div id="staleBar" class="stale-bar hidden">
       手机还在用旧版，连招会打不开。请关掉这个标签，再打开一次。
     </div>
-    <script src="./assets/logic.js?v=24"></script>
-    <script src="./assets/data.js?v=24"></script>
-    <script src="./assets/app.js?v=24"></script>
+    <script src="./assets/logic.js?v=25"></script>
+    <script src="./assets/data.js?v=25"></script>
+    <script src="./assets/app.js?v=25"></script>
     <script>
       (function () {
         if (!window.WANDENG || !window.WANDENG.combo) {
