@@ -21,7 +21,7 @@
       href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@500;600&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="./assets/app.css?v=22" />
+    <link rel="stylesheet" href="./assets/app.css?v=23" />
   </head>
   <body>
     <!-- 图标本地子集（Phosphor regular 风格：256 网格、stroke 16、round 端点；不走 CDN，离线可用）
@@ -95,22 +95,22 @@
           <!-- 头牌 + 三件小静物：整宽一件主游戏，其余三件缩成一排小图；
                服务单仍是裸清单（明文决策），只是换成「头版 + 图录 + 华文广告栏」的报纸节奏 -->
           <button class="lead-card" data-open="tod">
-            <img src="./assets/img/game-tod.jpg" alt="" loading="lazy" decoding="async" class="img-reveal" />
+            <span class="media"><img src="./assets/img/game-tod.jpg" alt="" loading="lazy" decoding="async" class="img-reveal" /></span>
             <span class="lead-cap"><b>真心话大冒险</b><i>轮到谁，谁就答</i></span>
           </button>
           <div class="tile-row">
             <button class="tile" data-open="dice">
-              <img src="./assets/img/game-dice.jpg" alt="" loading="lazy" decoding="async" class="img-reveal img-focus-dice" />
+              <span class="media"><img src="./assets/img/game-dice.jpg" alt="" loading="lazy" decoding="async" class="img-reveal img-focus-dice" /></span>
               <b>情趣骰子</b>
               <i>掷出这一下要做什么</i>
             </button>
             <button class="tile" data-open="wheel">
-              <img src="./assets/img/game-wheel.jpg" alt="" loading="lazy" decoding="async" class="img-reveal img-focus-wheel" />
+              <span class="media"><img src="./assets/img/game-wheel.jpg" alt="" loading="lazy" decoding="async" class="img-reveal img-focus-wheel" /></span>
               <b>命运轮盘</b>
               <i>转到哪句，就按哪句做</i>
             </button>
             <button class="tile" data-open="board">
-              <img src="./assets/img/game-board.jpg" alt="" loading="lazy" decoding="async" class="img-reveal" />
+              <span class="media"><img src="./assets/img/game-board.jpg" alt="" loading="lazy" decoding="async" class="img-reveal" /></span>
               <b>飞行棋</b>
               <i>先到头的人赢</i>
             </button>
@@ -474,8 +474,12 @@
         <div class="board-grid" id="boardGrid"></div>
         <article class="panel board-slot">
           <div class="panel-head"><b id="boardTitle">掷骰子</b><span class="board-die" id="boardDie" aria-hidden="true">⚄</span><span id="boardMark">第 1 格</span></div>
-          <p class="board-line" id="boardLine">两个人轮流。先走到第 24 格的人赢。</p>
+          <p class="board-line" id="boardLine">两个人轮流。先走到最后一格的人赢。</p>
         </article>
+        <!-- 掷骰浮层：真正的骰子滚完这一把，棋子才走 -->
+        <div class="die-overlay hidden" id="boardDieOverlay" aria-hidden="true">
+          <div class="die-wrap"><div class="die" id="boardDie3d"></div></div>
+        </div>
         <div class="actions">
           <div class="btn-row">
             <button class="btn btn-outline" id="btnBoardTheme">玩法：都来</button>
@@ -511,9 +515,9 @@
     <div id="staleBar" class="stale-bar hidden">
       手机还在用旧版，连招会打不开。请关掉这个标签，再打开一次。
     </div>
-    <script src="./assets/logic.js?v=22"></script>
-    <script src="./assets/data.js?v=22"></script>
-    <script src="./assets/app.js?v=22"></script>
+    <script src="./assets/logic.js?v=23"></script>
+    <script src="./assets/data.js?v=23"></script>
+    <script src="./assets/app.js?v=23"></script>
     <script>
       (function () {
         if (!window.WANDENG || !window.WANDENG.combo) {

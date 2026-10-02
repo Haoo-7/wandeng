@@ -33,6 +33,7 @@
     currentPenalty: "",
     diceSpin: [0, 0],
     wheelAngle: 0,
+    wheelFaces: [],
     timerId: null,
     timerLeft: 0,
     currentChoice: null,
@@ -610,7 +611,9 @@
     $("boardGrid").innerHTML = html;
 
     const done = state.board.winner >= 0;
-    $("boardPill").textContent = done ? "已分胜负" : `第 ${state.board.pos[state.turn] + 1} 格`;
+    $("boardPill").textContent = done
+      ? `${state.names[state.board.winner] || "TA"} 胜`
+      : `第 ${state.board.pos[state.turn] + 1} 格`;
     $("btnBoardTheme").textContent = `玩法：${currentTheme().name}`;
     $("btnBoardRoll").textContent = done ? "再来一局" : "掷骰子";
 
@@ -629,8 +632,10 @@
   }
 
   let boardBusy = false;
+  let boardSpin = 0;
 
-  // 掷骰动画：小骰面 600ms 随机跳面营造手感，落定后再走格；reduceMotion 下直接走格。
+  // 掷骰动画：真正的骰子在浮层里滚完这一把（reduceMotion 下直接走格），
+  // 落定后棋子才走——飞的是棋，骰子得先看得见。
   function rollBoard() {
     if (state.board.winner >= 0 || boardBusy) return;
     const tiles = boardTiles();
@@ -638,22 +643,26 @@
 
     const roll = 1 + Math.floor(Math.random() * 6);
     const die = $("boardDie");
+    const overlay = $("boardDieOverlay");
+    const die3d = $("boardDie3d");
+
     const settle = () => {
-      boardBusy = false;
+      if (die) die.textContent = "⚀⚁⚂⚃⚄⚅"[roll - 1];
       settleBoardRoll(roll);
     };
-    if (die && !reduceMotion.matches) {
+
+    if (overlay && die3d && !reduceMotion.matches) {
       boardBusy = true;
-      die.classList.add("tumbling");
-      const iv = window.setInterval(() => {
-        die.textContent = String(1 + Math.floor(Math.random() * 6));
-      }, 80);
+      if (!die3d.hasChildNodes()) buildDie(die3d, null, true);
+      overlay.classList.remove("hidden");
+      die3d.classList.add("rolling");
+      setDie(die3d, roll - 1, ++boardSpin);
       window.setTimeout(() => {
-        window.clearInterval(iv);
-        die.textContent = String(roll);
-        die.classList.remove("tumbling");
+        overlay.classList.add("hidden");
+        die3d.classList.remove("rolling");
+        boardBusy = false;
         settle();
-      }, 600);
+      }, 1050);
       return;
     }
     settle();
@@ -676,7 +685,19 @@
     let line = head;
     let again = false;
 
-    if (tile.kind === "task") {
+    if (tile.kind === "end") {
+      state.board.winner = mover;
+      title = `${who()} 到终点`;
+      line = `${head} ${who()} 先走到第 ${tiles.length} 格，赢了。${other()} 得满足 ${who()} 一个条件——现在就提，今晚有效。`;
+    } else if (state.board.pos[1 - mover] === to) {
+      // 追上：两枚棋子撞进同一格，天意抽一件两个人一起做的事
+      const pile = state.boardRoll % 2 === 0 ? "room" : "out";
+      const card = pick(pileCards(pile), `plan-${pile}`);
+      title = `第 ${to + 1} 格 · 追上`;
+      line = card
+        ? `${head} ${who()} 追上了 ${other()}。撞在一格是天意——两个人一起：${card.title}，${card.desc}`
+        : `${head} ${who()} 追上了 ${other()}。${other()} 得满足 ${who()} 一个小要求。`;
+    } else if (tile.kind === "task") {
       const deck = boardDeck();
       if (deck) {
         line = `${head} ${fill(pick(deck, `board-${currentTheme().id}`)) || ""}`;
@@ -693,10 +714,6 @@
     } else if (tile.kind === "skip") {
       again = true;
       line = `${head} 这一格免过，${who()} 再掷一次。`;
-    } else if (tile.kind === "end") {
-      state.board.winner = mover;
-      title = `${who()} 到终点`;
-      line = `${head} ${who()} 先走到第 ${tiles.length} 格，赢了。`;
     } else if (tile.kind === "forward" || tile.kind === "back") {
       line = `${head} 棋子被这一格又挪了一段，停在上面那格。`;
     } else {
@@ -803,16 +820,19 @@
     flipTo($("todCard"), render);
   }
 
-  function buildDie(el, wine) {
+  // 骰面两种材质：labels 给出六面文字（动作/部位直接刻在骰面上，掷到什么念什么），
+  // labels 为空则是传统点数骰（飞行棋的行骰）
+  function buildDie(el, labels, wine) {
     el.innerHTML = [1, 2, 3, 4, 5, 6]
-      .map(
-        (n) =>
-          `<div class="face ${wine ? "wine" : ""}" data-face="${n}">` +
-          PIP_CELLS[n]
-            .map(([r, c]) => `<i class="pip" style="grid-row:${r};grid-column:${c}"></i>`)
-            .join("") +
-          `</div>`
-      )
+      .map((n, i) => {
+        const label = labels && labels[i];
+        const body = label
+          ? `<span class="face-label">${esc(label)}</span>`
+          : PIP_CELLS[n]
+              .map(([r, c]) => `<i class="pip" style="grid-row:${r};grid-column:${c}"></i>`)
+              .join("");
+        return `<div class="face ${wine ? "wine" : ""}${label ? " is-label" : ""}" data-face="${n}">${body}</div>`;
+      })
       .join("");
   }
 
@@ -844,8 +864,9 @@
 
   function prepDice() {
     const pack = dicePack();
-    buildDie($("dieAction"), false);
-    buildDie($("dieBody"), true);
+    // 动作与部位直接刻在骰面上：掷出的那一刻，答案就在桌上，不用等结果纸
+    buildDie($("dieAction"), pack.actions, false);
+    buildDie($("dieBody"), pack.bodies, true);
     $("diceCard").classList.add("hidden");
     $("diceTitle").textContent = "";
     $("diceLine").textContent = "";
@@ -893,10 +914,30 @@
     if (navigator.vibrate) navigator.vibrate([12, 40, 18]);
   }
 
+  // 轮盘八扇各刻一句的短标：称呼占位先落地，取第一个分句，长了截到五字加省略号
+  function wedgeLabel(text) {
+    const plain = String(text).replace(/\{男\}|\{女\}|\{who\}|\{other\}/g, "TA");
+    const head = plain.split(/[。；！？!?，,.]/)[0] || plain;
+    return head.length > 6 ? `${head.slice(0, 5)}…` : head;
+  }
+
   function renderWheel() {
     $("wheelCard").classList.add("hidden");
     $("wheelTitle").textContent = "";
     $("wheelLine").textContent = "";
+    // 进轮盘屏就发八句上盘：转盘本身是发牌机，扇面刻着短标，停在哪扇念哪句
+    const pool = packOf("wheel");
+    state.wheelFaces = [];
+    const wedges = [];
+    for (let i = 0; i < 8; i++) {
+      const text = pool.length ? String(pick(pool, `wheel-${genderKey()}`) || "") : "";
+      state.wheelFaces.push(text);
+      wedges.push(
+        `<span class="wedge" style="transform: rotate(${i * 45 + 22.5}deg) translateY(calc(var(--wheel-size) / -2 + 26px))">` +
+          `<i class="wedge-${i % 2 ? "dark" : "lite"}">${esc(wedgeLabel(text))}</i></span>`
+      );
+    }
+    $("wheel").innerHTML = wedges.join("");
   }
 
   let wheelBusy = false;
@@ -904,8 +945,13 @@
 
   function spinWheel() {
     if (wheelBusy) return;
-    const text = pick(packOf("wheel"), `wheel-${genderKey()}`);
-    state.wheelAngle += 360 * 6 + Math.floor(Math.random() * 360);
+    // 先定落点再转：扇心在 i*45+22.5（conic 自顶部顺时针），指针钉在正上方，
+    // 落角必须满足 扇心 + 转角 ≡ 0 (mod 360)。转到哪扇，念那扇刻的句子。
+    const faces = state.wheelFaces && state.wheelFaces.length === 8 ? state.wheelFaces : [];
+    const s = Math.floor(Math.random() * 8);
+    const text = faces[s] || String(pick(packOf("wheel"), `wheel-${genderKey()}`) || "");
+    const delta = ((-(s * 45 + 22.5) - state.wheelAngle) % 360 + 360) % 360;
+    state.wheelAngle += 360 * 6 + delta;
     if (!reduceMotion.matches) {
       wheelBusy = true;
       $("wheel").classList.add("anticipate");
@@ -1537,7 +1583,7 @@
 
     if ("serviceWorker" in navigator) {
       navigator.serviceWorker
-        .register("./sw.js?v=22", { updateViaCache: "none" })
+        .register("./sw.js?v=23", { updateViaCache: "none" })
         .catch(() => {});
     }
   }

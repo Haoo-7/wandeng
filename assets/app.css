@@ -327,27 +327,37 @@ h1,
   margin-top: clamp(10px, 1.8dvh, 14px);
 }
 
-/* 头牌：整宽一件静物，没有壳、没有描边——照片自己就是入口 */
+/* 头牌：整宽一件静物，没有壳、没有描边——照片自己就是入口。
+   圆角与裁剪只落在图片壳（.media）上：图注在壳外，字脚不会被圆角啃掉 */
 .lead-card {
   display: block;
   width: 100%;
   padding: 0;
   border: 0;
-  border-radius: var(--radius-lg);
   background: none;
   box-shadow: none;
   color: inherit;
   text-align: left;
   cursor: pointer;
+  transition: var(--transition-ui), transform 160ms var(--ease-out), filter 160ms var(--ease-out);
 }
 
-.lead-card img {
+.media {
+  display: block;
+  position: relative;
+  overflow: hidden;
+}
+
+.lead-card .media {
+  border-radius: var(--radius-lg);
+}
+
+.lead-card .media img {
   width: 100%;
   height: clamp(136px, 17dvh, 172px);
   display: block;
   object-fit: cover;
   object-position: 50% 62%; /* 方图裁成横带：取景对准灯下的那叠牌，上缘留一点灯晕 */
-  border-radius: var(--radius-lg);
   background: var(--room-sunk);
   filter: brightness(1.05);
 }
@@ -392,20 +402,23 @@ h1,
   display: block;
   padding: 0;
   border: 0;
-  border-radius: var(--radius-sm);
   background: none;
   box-shadow: none;
   color: inherit;
   text-align: left;
   cursor: pointer;
+  transition: var(--transition-ui), transform 160ms var(--ease-out), filter 160ms var(--ease-out);
 }
 
-.tile img {
+.tile .media {
+  border-radius: var(--radius-sm);
+}
+
+.tile .media img {
   width: 100%;
   aspect-ratio: 4 / 3;
   object-fit: cover;
   display: block;
-  border-radius: var(--radius-sm);
   background: var(--room-sunk);
   filter: brightness(1.05);
 }
@@ -432,12 +445,12 @@ h1,
 }
 
 /* 骰子在方图的右下角：窄列 4:3 裁切把取景带对准那两枚骰 */
-.tile img.img-focus-dice {
+.tile .media img.img-focus-dice {
   object-position: 50% 72%;
 }
 
 /* 轮盘格：取景带下压，把左上角灯罩的亮斑让出画面 */
-.tile img.img-focus-wheel {
+.tile .media img.img-focus-wheel {
   object-position: 50% 58%;
 }
 
@@ -780,11 +793,11 @@ input[type="text"]:focus-visible {
   filter: brightness(0.94);
 }
 
-/* 可点按面统一基座：position 供 ripple 定位，overflow 裁圆角 */
+/* 可点按面统一基座：position 供 ripple 定位，overflow 裁圆角。
+   头牌与小静物不在此列——它们的圆角裁剪在 .media 图片壳上，
+   图注在壳外；波纹由 JS 直接注入 .media，图注字脚才不会被圆角啃掉 */
 .btn,
 .btn-text,
-.lead-card,
-.tile,
 .slip-row,
 .heat-btn,
 .icon-btn {
@@ -1215,6 +1228,20 @@ input[type="text"]::placeholder {
   gap: 26px;
 }
 
+/* 飞行棋掷骰浮层：骰子滚完这一把，棋子才走（reduceMotion 直接走格，不见浮层） */
+.die-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 25;
+  display: grid;
+  place-items: center;
+  background: var(--mask-ink);
+}
+
+.die-overlay:not(.hidden) .die-wrap {
+  animation: rise 240ms var(--ease-out);
+}
+
 /* 一枚骰子 + 它管什么：骰面只有点位，不写「动作 / 部位」就得掷完才知道谁说了算 */
 .die-slot {
   display: grid;
@@ -1283,6 +1310,23 @@ input[type="text"]::placeholder {
   height: 16px;
   border-radius: 50%;
   background: var(--die-ink);
+}
+
+/* 字面骰：动作/部位直接刻在骰面上（2 字衬线大字，象牙面 + 墨字） */
+.face.is-label {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.face-label {
+  font-family: var(--font-serif);
+  font-size: 30px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  line-height: 1.2;
+  color: var(--die-ink);
+  text-align: center;
 }
 
 /* 第二枚（部位）象牙再退一档，两枚仍是同一种东西 */
@@ -1405,6 +1449,38 @@ input[type="text"]::placeholder {
   border-right: 13px solid transparent;
   border-top: 22px solid var(--cream);
   z-index: 2;
+}
+
+/* 扇面短标：每扇刻它那句话的头几个字，随盘同转。
+   双数扇是象牙底刻墨字，单数扇是深漆底刻奶油字 */
+.wedge {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 0;
+  height: 0;
+}
+
+.wedge i {
+  position: absolute;
+  left: 0;
+  top: 0;
+  transform: translate(-50%, -50%);
+  font-family: var(--font-body);
+  font-style: normal;
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.wedge .wedge-lite {
+  color: var(--die-ink);
+}
+
+.wedge .wedge-dark {
+  color: var(--cream);
 }
 
 /* ==========================================================================
@@ -2161,7 +2237,7 @@ button.boundary-entry {
     height: clamp(184px, 24dvh, 228px);
   }
 
-  .lead-card img {
+  .lead-card .media img {
     height: clamp(122px, 15.5dvh, 152px);
   }
 
@@ -2188,7 +2264,7 @@ button.boundary-entry {
     height: clamp(184px, 30dvh, 236px);
   }
 
-  .lead-card img {
+  .lead-card .media img {
     height: clamp(112px, 14dvh, 138px);
   }
 
@@ -2307,7 +2383,7 @@ button.boundary-entry {
     margin-top: clamp(-112px, -13dvh, -76px);
   }
 
-  .lead-card img {
+  .lead-card .media img {
     height: clamp(100px, 12.5dvh, 124px);
   }
 
