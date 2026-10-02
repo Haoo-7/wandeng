@@ -1205,6 +1205,56 @@
     return n < 10 ? `0${n}` : String(n);
   }
 
+  /* —— 提示音：倒计时结束的一声轻钟。Web Audio 现场合成，不引音频文件。
+     声压收着，像床头座钟敲两下，不像闹钟。AudioContext 必须在用户手势里
+     创建/恢复（iOS 自动播放策略），所以预热挂在「开始」的点击里。
+     iOS 的静音拨片会压住 Web Audio——那是对房间的尊重，此时还有震动和「时间到」。 —— */
+  let audioCtx = null;
+
+  function primeAudio() {
+    try {
+      const AC = window.AudioContext || window.webkitAudioContext;
+      if (!AC) return;
+      if (!audioCtx) audioCtx = new AC();
+      if (audioCtx.state === "suspended") audioCtx.resume().catch(() => {});
+    } catch {
+      /* 拿不到音频就算了，震动和「时间到」仍在 */
+    }
+  }
+
+  function bellStrike(freq, at) {
+    const ctx = audioCtx;
+    const out = ctx.createGain();
+    out.connect(ctx.destination);
+    // 基音之外加一个偏高的非谐分音，给一点点铜味；包络快起慢落
+    [
+      { f: freq, peak: 0.22, decay: 1.4 },
+      { f: freq * 2.4, peak: 0.05, decay: 0.5 },
+    ].forEach(({ f, peak, decay }) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = "sine";
+      osc.frequency.value = f;
+      gain.gain.setValueAtTime(0.0001, at);
+      gain.gain.linearRampToValueAtTime(peak, at + 0.008);
+      gain.gain.exponentialRampToValueAtTime(0.0001, at + decay);
+      osc.connect(gain).connect(out);
+      osc.start(at);
+      osc.stop(at + decay + 0.05);
+    });
+  }
+
+  function chime() {
+    if (!audioCtx || audioCtx.state !== "running") return;
+    try {
+      const t = audioCtx.currentTime + 0.02;
+      bellStrike(659.25, t); // E5
+      bellStrike(523.25, t + 0.45); // C5：落下的大三度，叮——咚
+    } catch {
+      /* 声音失败不影响计时结束 */
+    }
+  }
+
   function stopTimer() {
     if (state.timerId) {
       clearInterval(state.timerId);
@@ -1258,6 +1308,7 @@
 
   function startTimer() {
     if (!state.currentTimer || state.timerId) return;
+    primeAudio(); // 在这次点击的手势里把音频上下文备好，结束时的钟才有嗓子
     state.timerLeft = state.currentTimer.sec;
     $("btnTimerStart").textContent = "进行中";
     $("btnTimerStart").disabled = true;
@@ -1279,6 +1330,7 @@
         $("timerKicker").textContent = "时间到";
         $("btnTimerStart").textContent = "再来一次";
         $("btnTimerStart").disabled = false;
+        chime();
         if (navigator.vibrate) navigator.vibrate([40, 40, 80]);
       }
     }, 1000);
@@ -1764,7 +1816,7 @@
 
     if ("serviceWorker" in navigator) {
       navigator.serviceWorker
-        .register("./sw.js?v=27", { updateViaCache: "none" })
+        .register("./sw.js?v=28", { updateViaCache: "none" })
         .catch(() => {});
     }
   }
