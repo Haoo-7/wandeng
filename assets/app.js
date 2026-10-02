@@ -97,11 +97,11 @@
   }
 
   function who() {
-    return state.names[state.turn] || (state.turn === 0 ? "他" : "她");
+    return state.names[state.turn] || "TA";
   }
 
   function other() {
-    return state.names[1 - state.turn] || (state.turn === 0 ? "她" : "他");
+    return state.names[1 - state.turn] || "TA";
   }
 
   function genderKey() {
@@ -132,8 +132,8 @@
     if (!text) return "";
     return joinWords(
       String(text)
-        .replaceAll("{男}", state.names[0] || "他")
-        .replaceAll("{女}", state.names[1] || "她")
+        .replaceAll("{男}", state.names[0] || "TA")
+        .replaceAll("{女}", state.names[1] || "TA")
         .replaceAll("{who}", who())
         .replaceAll("{other}", other())
     );
@@ -319,8 +319,8 @@
         return (
           `<div class="panel${cls}">` +
           `<div class="panel-head"><b>${esc(item.zh)}</b><span>${esc(tier)}</span></div>` +
-          bdPlayerRow("a", state.names[0] || "他", row.levels[0], item.id) +
-          bdPlayerRow("b", state.names[1] || "她", row.levels[1], item.id) +
+          bdPlayerRow("a", state.names[0] || "TA", row.levels[0], item.id) +
+          bdPlayerRow("b", state.names[1] || "TA", row.levels[1], item.id) +
           `</div>`
         );
       })
@@ -594,8 +594,8 @@
 
   function renderBoard() {
     const tiles = boardTiles();
-    const nameA = state.names[0] || "他";
-    const nameB = state.names[1] || "她";
+    const nameA = state.names[0] || "TA";
+    const nameB = state.names[1] || "TA";
     let html = "";
     for (let i = 0; i < tiles.length; i++) {
       const pos = logic.serpentine(i, BOARD_COLS);
@@ -1359,7 +1359,7 @@
     document.addEventListener("pointerdown", ripple);
 
     $("startBtn").addEventListener("click", () => {
-      state.names = [$("nameA").value.trim() || "他", $("nameB").value.trim() || "她"];
+      state.names = [$("nameA").value.trim() || "TA", $("nameB").value.trim() || "TA"];
       state.safeWord = $("safeWord").value.trim() || "暂停";
       state.turn = 0;
       save();
@@ -1537,7 +1537,7 @@
 
     if ("serviceWorker" in navigator) {
       navigator.serviceWorker
-        .register("./sw.js?v=21", { updateViaCache: "none" })
+        .register("./sw.js?v=22", { updateViaCache: "none" })
         .catch(() => {});
     }
   }

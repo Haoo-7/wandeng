@@ -21,7 +21,7 @@
       href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@500;600&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="./assets/app.css?v=21" />
+    <link rel="stylesheet" href="./assets/app.css?v=22" />
   </head>
   <body>
     <!-- 图标本地子集（Phosphor regular 风格：256 网格、stroke 16、round 端点；不走 CDN，离线可用）
@@ -60,11 +60,11 @@
           <!-- 登记单的节奏：两个人并排成一对 → 热度是屏内最大的控件 → 安全词收成一行小注脚 -->
           <div class="field-pair">
             <div class="field">
-              <label for="nameA">男的叫什么</label>
+              <label for="nameA">一位叫什么</label>
               <input id="nameA" type="text" maxlength="8" placeholder="比如：浩" autocomplete="off" />
             </div>
             <div class="field">
-              <label for="nameB">女的叫什么</label>
+              <label for="nameB">另一位叫什么</label>
               <input id="nameB" type="text" maxlength="8" placeholder="比如：晚晚" autocomplete="off" />
             </div>
           </div>
@@ -79,7 +79,7 @@
           </div>
         </div>
         <button class="btn btn-gold" id="startBtn">点亮今晚</button>
-        <p class="footnote">先从男生开始。点「换人」再把手机给她。全部留在这台手机里。</p>
+        <p class="footnote">谁先开始都行。点「换人」把手机交给对方，只留在这台手机。</p>
       </section>
 
       <section class="screen screen-home" data-screen="home" id="screen-home">
@@ -511,9 +511,9 @@
     <div id="staleBar" class="stale-bar hidden">
       手机还在用旧版，连招会打不开。请关掉这个标签，再打开一次。
     </div>
-    <script src="./assets/logic.js?v=21"></script>
-    <script src="./assets/data.js?v=21"></script>
-    <script src="./assets/app.js?v=21"></script>
+    <script src="./assets/logic.js?v=22"></script>
+    <script src="./assets/data.js?v=22"></script>
+    <script src="./assets/app.js?v=22"></script>
     <script>
       (function () {
         if (!window.WANDENG || !window.WANDENG.combo) {
