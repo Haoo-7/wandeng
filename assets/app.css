@@ -21,6 +21,7 @@
   --room: #14090D;          /* 关了大灯的房间：近黑酒红 */
   --room-sunk: #10070A;      /* 更暗一档：输入槽 / 分段控件底 / 骰子的台面 */
   --room-raised: #1B0E13;    /* 灯下的纸或漆面：卡片实底 */
+  --wheel-dark: #2B171D;     /* 轮盘深漆扇面（与象牙扇交替） */
   --mask-ink: rgba(10, 5, 7, 0.86); /* 弹层遮罩：实色压暗，不用 blur */
 
   /* —— 奶油：被灯照到的字（低于 --cream-55 的档只做描边，不做字色）—— */
@@ -1379,8 +1380,9 @@ input[type="text"]::placeholder {
 }
 
 /* ==========================================================================
-   命运轮盘：象牙与深漆交替的八扇面，辐条是房间的底色，中心一枚毂。
-   奶油指针停在正上方——扇面自己就分得清，不靠一圈细线
+   命运轮盘：象牙与深漆交替的十二扇（conic 由 JS 按发牌结果逐扇生成），
+   每扇刻它那句话的短标，辐条是房间的底色，中心一枚毂。
+   奶油指针停在正上方——停在哪扇，念哪扇的句子
    ========================================================================== */
 
 .wheel-box {
@@ -1399,26 +1401,7 @@ input[type="text"]::placeholder {
   height: var(--wheel-size);
   border-radius: 50%;
   border: 1px solid var(--line-24);
-  /* 每扇 12.5%，扇与扇之间 0.4% 的底色辐条 */
-  background: conic-gradient(
-    var(--room) 0 0.4%,
-    var(--die-face) 0 12.1%,
-    var(--room) 0 12.5%,
-    #2B171D 0 24.6%,
-    var(--room) 0 25%,
-    var(--die-face) 0 37.1%,
-    var(--room) 0 37.5%,
-    #2B171D 0 49.6%,
-    var(--room) 0 50%,
-    var(--die-face) 0 62.1%,
-    var(--room) 0 62.5%,
-    #2B171D 0 74.6%,
-    var(--room) 0 75%,
-    var(--die-face) 0 87.1%,
-    var(--room) 0 87.5%,
-    #2B171D 0 99.6%,
-    var(--room) 0 100%
-  );
+  background: var(--room); /* 扇面 conic 由 renderWheel 生成 */
   box-shadow: none;
   transition: transform 3.2s cubic-bezier(0.12, 0.7, 0.08, 1);
   position: relative;
@@ -1481,6 +1464,24 @@ input[type="text"]::placeholder {
 
 .wedge .wedge-dark {
   color: var(--cream);
+}
+
+/* 签筒行：盘上 12 支只是窗口，这一行告诉你筒里还压着多少句、下一支是什么 */
+.wheel-queue {
+  position: absolute;
+  left: 16px;
+  right: 16px;
+  bottom: 2px;
+  margin: 0;
+  text-align: center;
+  color: var(--cream-55);
+  font-size: 11px;
+  font-weight: 400;
+  letter-spacing: 0.02em;
+  line-height: 1.4;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 /* ==========================================================================
