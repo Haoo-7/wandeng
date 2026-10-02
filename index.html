@@ -21,7 +21,7 @@
       href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@500;600&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="./assets/app.css?v=20" />
+    <link rel="stylesheet" href="./assets/app.css?v=21" />
   </head>
   <body>
     <!-- 图标本地子集（Phosphor regular 风格：256 网格、stroke 16、round 端点；不走 CDN，离线可用）
@@ -57,19 +57,22 @@
           <p class="sub">只有你们能看见今晚的规则</p>
         </div>
         <div class="stack">
-          <div class="field">
-            <label for="nameA">男的叫什么</label>
-            <input id="nameA" type="text" maxlength="8" placeholder="比如：浩" autocomplete="off" />
+          <!-- 登记单的节奏：两个人并排成一对 → 热度是屏内最大的控件 → 安全词收成一行小注脚 -->
+          <div class="field-pair">
+            <div class="field">
+              <label for="nameA">男的叫什么</label>
+              <input id="nameA" type="text" maxlength="8" placeholder="比如：浩" autocomplete="off" />
+            </div>
+            <div class="field">
+              <label for="nameB">女的叫什么</label>
+              <input id="nameB" type="text" maxlength="8" placeholder="比如：晚晚" autocomplete="off" />
+            </div>
           </div>
-          <div class="field">
-            <label for="nameB">女的叫什么</label>
-            <input id="nameB" type="text" maxlength="8" placeholder="比如：晚晚" autocomplete="off" />
-          </div>
-          <div class="field">
+          <div class="field field-heat">
             <label>今晚热度</label>
             <div class="heat-grid" id="heatGrid"></div>
           </div>
-          <div class="field">
+          <div class="field field-safe">
             <label for="safeWord">安全词</label>
             <input id="safeWord" type="text" maxlength="8" value="暂停" />
             <p class="field-note">说出安全词就能跳过这题，但要付代价。</p>
@@ -81,7 +84,7 @@
 
       <section class="screen screen-home" data-screen="home" id="screen-home">
         <header class="hero-photo">
-          <img src="./assets/img/hotel.jpg" alt="" loading="eager" decoding="async" class="img-reveal" />
+          <img src="./assets/img/hotel-home.jpg" alt="" loading="eager" decoding="async" class="img-reveal" />
           <div class="hero-shade"></div>
         </header>
         <div class="hero-copy">
@@ -89,37 +92,32 @@
           <h1 class="hero" id="homeHero">今晚只属于你们</h1>
         </div>
         <div class="stack home-stack">
-          <button class="row-card" data-open="tod">
-            <img src="./assets/img/game-tod.png" alt="" loading="lazy" decoding="async" class="img-reveal" />
-            <div>
-              <h2>真心话大冒险</h2>
-              <p>轮到谁，谁就答</p>
-            </div>
+          <!-- 头牌 + 三件小静物：整宽一件主游戏，其余三件缩成一排小图；
+               服务单仍是裸清单（明文决策），只是换成「头版 + 图录 + 华文广告栏」的报纸节奏 -->
+          <button class="lead-card" data-open="tod">
+            <img src="./assets/img/game-tod.jpg" alt="" loading="lazy" decoding="async" class="img-reveal" />
+            <span class="lead-cap"><b>真心话大冒险</b><i>轮到谁，谁就答</i></span>
           </button>
-          <button class="row-card" data-open="dice">
-            <img src="./assets/img/game-dice.png" alt="" loading="lazy" decoding="async" class="img-reveal" />
-            <div>
-              <h2>情趣骰子</h2>
-              <p>掷出这一下要做什么</p>
-            </div>
-          </button>
-          <button class="row-card row-card--sm" data-open="wheel">
-            <img src="./assets/img/game-wheel.png" alt="" loading="lazy" decoding="async" class="img-reveal" />
-            <div>
-              <h2>命运轮盘</h2>
-              <p>转到哪句，就按哪句做</p>
-            </div>
-          </button>
-          <button class="row-card row-card--sm" data-open="board">
-            <img src="./assets/img/game-board.png" alt="" loading="lazy" decoding="async" class="img-reveal" />
-            <div>
-              <h2>飞行棋</h2>
-              <p>掷骰往前走，先到头的人赢</p>
-            </div>
-          </button>
+          <div class="tile-row">
+            <button class="tile" data-open="dice">
+              <img src="./assets/img/game-dice.jpg" alt="" loading="lazy" decoding="async" class="img-reveal img-focus-dice" />
+              <b>情趣骰子</b>
+              <i>掷出这一下要做什么</i>
+            </button>
+            <button class="tile" data-open="wheel">
+              <img src="./assets/img/game-wheel.jpg" alt="" loading="lazy" decoding="async" class="img-reveal img-focus-wheel" />
+              <b>命运轮盘</b>
+              <i>转到哪句，就按哪句做</i>
+            </button>
+            <button class="tile" data-open="board">
+              <img src="./assets/img/game-board.jpg" alt="" loading="lazy" decoding="async" class="img-reveal" />
+              <b>飞行棋</b>
+              <i>先到头的人赢</i>
+            </button>
+          </div>
         </div>
         <div class="slip">
-          <p class="slip-label">也可以</p>
+          <p class="slip-label">也可以玩</p>
           <button type="button" class="slip-row" data-open="combo" onclick="window.wandengOpen && window.wandengOpen('combo')">
             <b>连招</b>
             <span>答完，立刻按这个做</span>
@@ -513,9 +511,9 @@
     <div id="staleBar" class="stale-bar hidden">
       手机还在用旧版，连招会打不开。请关掉这个标签，再打开一次。
     </div>
-    <script src="./assets/logic.js?v=20"></script>
-    <script src="./assets/data.js?v=20"></script>
-    <script src="./assets/app.js?v=20"></script>
+    <script src="./assets/logic.js?v=21"></script>
+    <script src="./assets/data.js?v=21"></script>
+    <script src="./assets/app.js?v=21"></script>
     <script>
       (function () {
         if (!window.WANDENG || !window.WANDENG.combo) {

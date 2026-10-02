@@ -2,12 +2,15 @@
    晚灯 AFTER HOURS · 关灯后的酒店房间
    唯一光源是床头灯那张照片，屏幕其余部分是房间的暗部。
    底 = 近黑酒红 #14090D · 字 = 被灯照到的奶油色 #F3E6D4
-   暖金 #E4C396 表示「灯还亮着」：每屏一颗的主按钮就是它（点亮今晚 = 点亮这盏灯），
-   以及双方都 Yes 的边界行、棋子所在的格、底栏选中的灯芯。
+   暖金 #DFB489 表示「灯还亮着 / 开关拨到的位置」：每屏一颗的主按钮、
+   热度选中块（v21 起并入灯金系统，不再用奶油）、双方都 Yes 的边界行、
+   棋子所在的格、底栏选中的灯芯。
    酒红 #9C3D4A 整屏最多一次（她的棋子 / No / 时间到）。
-   被照亮的物件共用一块象牙 #F0E3D0：骰面、题面卡、结果纸、轮盘亮扇面、热度选中块。
+   被照亮的物件共用一块象牙 #F0E3D0：骰面、题面卡、结果纸、轮盘亮扇面。
    对等的选择不做主次（真心话=大冒险、A=B，同是奶油实底）。
-   首页没有盒子：照片就是物件，服务单是裸清单。
+   首页没有盒子：照片就是物件，服务单是裸清单；静物图一律不带描边（v21），
+   靠照片本身与暗部分离，缩略图与全文共用「同一晚、同一盏灯」的一套素材。
+   圆角只留两档：16（卡片与按钮）与 10（小控件）。
    禁止：满屏 mesh 渐变 / 渐变裁字 / 文字光晕 / 玻璃拟态（backdrop-filter、
    顶边内高光、柔投影）/ 999px 胶囊主按钮与选中态 / 居中金线 / 行尾 › / 斜体编号。
    全部颜色与几何走 :root token，任何屏不再单独发明材质。
@@ -28,8 +31,9 @@
   --line-24: rgba(243, 230, 212, 0.24);  /* 可操作控件外框 */
   --line-10: rgba(243, 230, 212, 0.10);  /* 行间 1px 分隔 */
 
-  /* —— 暖金：只用来表示「灯还亮着」（双方都 Yes 的边界行、棋子所在的格）—— */
-  --lamp: #E4C396;
+  /* —— 暖金：只用来表示「灯还亮着 / 开关拨到的位置」——
+     主按钮、热度选中块、双方都 Yes 的边界行、棋子所在的格、底栏灯芯 */
+  --lamp: #DFB489;
 
   /* —— 酒红：整屏最多一次（玩家她的棋子 / No / 时间到）。不用来给对等选项分主次 —— */
   --wine: #9C3D4A;
@@ -49,12 +53,9 @@
   --font-body: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB",
     "Microsoft YaHei", system-ui, "Noto Sans SC", sans-serif;
 
-  /* —— 几何：唯一的圆角系统，圆角矩形 10–16，没有胶囊 —— */
-  --radius-card: 16px;
-  --radius-tile: 14px;
-  --radius-field: 12px;
-  --radius-ico: 10px;
-  --radius-modal: 16px;
+  /* —— 几何：圆角只留两档——16 给卡片与按钮，10 给小控件；没有胶囊 —— */
+  --radius-lg: 16px;
+  --radius-sm: 10px;
   --btn-height: 56px; /* 主按钮：实心物件的高度（设置页那颗就是这个尺寸） */
   --tap-min: 44px;    /* 次级 / 文字按钮的最小可点高度 */
 
@@ -167,26 +168,28 @@ body {
    「晚灯」两字要读成一个词：字距 0.04em（≤0.06em），实色奶油，不裁渐变、不加光晕
    ========================================================================== */
 
+/* 字阶系统：字标 22 让位给巨标（34–46），铭牌 9.5——两块衬线的层级差拉开，不再打架 */
 .brand {
   margin: 0;
   text-align: center;
   font-family: var(--font-serif);
-  font-size: 30px;
+  font-size: 22px;
   font-weight: 600;
   letter-spacing: 0.04em;
   line-height: 1.3;
   color: var(--cream);
 }
 
-/* AFTER HOURS：10px 的小标签，正体，无斜体；字距拉开当「铭牌」读 */
+/* AFTER HOURS：9.5px 的小铭牌，正体，无斜体；字距 0.26em——
+   两轮评审 0.18 嫌紧、0.34 嫌宽，取中间值当「铭牌」读 */
 .brand-en {
   display: block;
-  margin-top: 7px;
+  margin-top: 6px;
   font-family: var(--font-body);
   font-style: normal;
-  font-size: 10px;
+  font-size: 9.5px;
   font-weight: 400;
-  letter-spacing: 0.34em;
+  letter-spacing: 0.26em;
   text-transform: uppercase;
   color: var(--cream-72);
 }
@@ -195,16 +198,16 @@ h1,
 .display {
   font-family: var(--font-serif);
   font-weight: 600;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.04em;
   line-height: 1.35;
   color: var(--cream);
 }
 
 .hero {
   margin: clamp(10px, 2dvh, 18px) 0 clamp(4px, 1dvh, 8px);
-  font-size: clamp(32px, 4.6dvh, 42px);
+  font-size: clamp(34px, 5dvh, 46px);
   line-height: 1.22;
-  letter-spacing: 0.03em;
+  letter-spacing: 0.02em;
   text-align: center;
   color: var(--cream);
 }
@@ -251,17 +254,15 @@ h1,
   object-position: 50% 0%; /* 灯在照片顶部：顶端对齐，把下面的暗部留给字 */
 }
 
-/* 首页与设置页共用一张照片，但不能读作「同一张 Banner」：
-   首页推进一档取景（灯的特写），设置页是全貌。
-   首页还要往下装四个游戏入口与四行服务单，照片收在 28dvh——灯还是那盏灯，只是不再占掉小半屏 */
+/* 首页不再复用设置页的照片：v21 起两张不同场景（设置=床头柜上的两杯酒，
+   首页=床上的手机与远处的灯），同一晚、同一盏灯，但不是同一张 Banner。
+   首页还要往下装头牌与三件小静物、四行服务单，照片收在 26dvh */
 .screen-home .hero-photo {
-  height: clamp(208px, 28dvh, 264px);
+  height: clamp(196px, 26dvh, 248px);
 }
 
 .screen-home .hero-photo img {
-  object-position: 62% 12%;
-  transform: scale(1.3);
-  transform-origin: 62% 12%;
+  object-position: 50% 16%; /* 灯在照片上三分之一：带子取景取到灯与一小段床 */
 }
 
 /* 照片矮一档，字就往暗部多咬进去一点，保持「标题落在灯的余光照不到的地方」 */
@@ -316,79 +317,128 @@ h1,
 }
 
 /* ==========================================================================
-   首页：今晚的主游戏是两件照片物件 + 两行矮一级的入口，其余四项合成服务单
+   首页：一张「今晚的目录页」——头版一件主游戏整宽压阵，三件小静物一排，
+   页尾四行服务单是裸清单。照片与文字共用一套「标题左 · 说明右」的版式语气
    ========================================================================== */
 
 .home-stack {
   flex: 0 0 auto;
-  gap: clamp(4px, 0.9dvh, 6px);
-  margin-top: clamp(8px, 1.4dvh, 12px);
+  gap: clamp(10px, 1.8dvh, 16px);
+  margin-top: clamp(10px, 1.8dvh, 14px);
 }
 
-/* 游戏行：没有盒子——左缘一件被灯照到的实拍物件，右缘不放箭头。
-   主游戏（真心话 / 骰子）照片大；轮盘与飞行棋明显矮一档 */
-.row-card {
-  display: grid;
-  grid-template-columns: 88px 1fr;
-  gap: 14px;
-  align-items: center;
+/* 头牌：整宽一件静物，没有壳、没有描边——照片自己就是入口 */
+.lead-card {
+  display: block;
   width: 100%;
-  padding: 2px 8px 2px 0;
+  padding: 0;
   border: 0;
-  border-radius: var(--radius-card);
+  border-radius: var(--radius-lg);
   background: none;
   box-shadow: none;
   color: inherit;
   text-align: left;
   cursor: pointer;
-  transition: var(--transition-ui);
 }
 
-.row-card img {
-  width: 88px;
-  height: 88px;
-  border-radius: var(--radius-tile);
-  overflow: hidden;
+.lead-card img {
+  width: 100%;
+  height: clamp(136px, 17dvh, 172px);
+  display: block;
   object-fit: cover;
+  object-position: 50% 62%; /* 方图裁成横带：取景对准灯下的那叠牌，上缘留一点灯晕 */
+  border-radius: var(--radius-lg);
   background: var(--room-sunk);
-  border: 1px solid var(--line-10);
-  filter: brightness(1.07);
+  filter: brightness(1.05);
 }
 
-.row-card h2 {
-  margin: 0 0 4px;
+/* 图注沿用服务单的「题左 · 注右」：目录页只有一种文字排法 */
+.lead-cap {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 9px 2px 0;
+}
+
+.lead-cap b {
   font-family: var(--font-body);
-  font-size: 16px;
+  font-style: normal;
+  font-size: 17px;
   font-weight: 500;
   letter-spacing: 0.02em;
   color: var(--cream);
 }
 
-.row-card p {
-  margin: 0;
-  color: var(--cream-55);
+.lead-cap i {
+  font-style: normal;
   font-size: 12px;
   font-weight: 400;
   letter-spacing: 0.01em;
-  line-height: 1.4;
+  color: var(--cream-55);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-/* 命运轮盘与飞行棋：矮一号，同一间房里的小物件 */
-.row-card--sm {
-  grid-template-columns: 56px 1fr;
-  gap: 12px;
-  padding: 2px 8px 2px 4px;
+/* 三件小静物：骰子 / 轮盘 / 飞行棋。等宽一排，4:3 小图 + 两行小字 */
+.tile-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
 }
 
-.row-card--sm img {
-  width: 56px;
-  height: 56px;
-  border-radius: var(--radius-tile);
+.tile {
+  display: block;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: none;
+  box-shadow: none;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
 }
 
-.row-card--sm h2 {
-  font-size: 15px;
-  margin-bottom: 2px;
+.tile img {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  display: block;
+  border-radius: var(--radius-sm);
+  background: var(--room-sunk);
+  filter: brightness(1.05);
+}
+
+.tile b {
+  display: block;
+  margin: 7px 0 2px;
+  font-family: var(--font-body);
+  font-style: normal;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  color: var(--cream);
+}
+
+.tile i {
+  display: block;
+  font-style: normal;
+  font-size: 10.5px;
+  font-weight: 400;
+  letter-spacing: 0.01em;
+  line-height: 1.45;
+  color: var(--cream-55);
+}
+
+/* 骰子在方图的右下角：窄列 4:3 裁切把取景带对准那两枚骰 */
+.tile img.img-focus-dice {
+  object-position: 50% 72%;
+}
+
+/* 轮盘格：取景带下压，把左上角灯罩的亮斑让出画面 */
+.tile img.img-focus-wheel {
+  object-position: 50% 58%;
 }
 
 /* 服务单：连招 / 今晚剧本 / 二选一 / 倒计时。四行文字，行间一条 1px 分隔，
@@ -471,7 +521,7 @@ h1,
   width: 44px;
   height: 44px;
   border: 0;
-  border-radius: var(--radius-field);
+  border-radius: var(--radius-sm);
   background: none;
   box-shadow: none;
   color: var(--cream);
@@ -509,7 +559,7 @@ h1,
   align-items: stretch;
   height: 34px;
   border: 1px solid var(--line-24);
-  border-radius: var(--radius-field);
+  border-radius: var(--radius-sm);
   background: var(--room-sunk);
   overflow: hidden;
 }
@@ -542,7 +592,7 @@ h1,
   justify-content: center;
   height: 30px;
   padding: 0 10px;
-  border-radius: var(--radius-field);
+  border-radius: var(--radius-sm);
   font-size: 11px;
   letter-spacing: 0.03em;
   color: var(--cream-72);
@@ -571,13 +621,13 @@ h1,
 
 /* ==========================================================================
    按钮体系：一件实心主操作 + 细边次操作 + 纯文字
-   圆角只有 12 / 14，没有任何 999px 胶囊
+   圆角只有 16 / 10 两档，没有任何 999px 胶囊
    ========================================================================== */
 
 .btn {
   height: var(--btn-height);
   border: 0;
-  border-radius: var(--radius-tile);
+  border-radius: var(--radius-lg);
   font-family: var(--font-body);
   font-size: 16px;
   font-weight: 500;
@@ -611,7 +661,7 @@ h1,
 .btn-outline {
   background: none;
   border: 1px solid var(--line-24);
-  border-radius: var(--radius-tile);
+  border-radius: var(--radius-lg);
   color: var(--cream);
   box-shadow: none;
 }
@@ -623,7 +673,7 @@ h1,
   justify-content: center;
   height: var(--tap-min);
   border: 0;
-  border-radius: var(--radius-field);
+  border-radius: var(--radius-sm);
   background: none;
   color: var(--cream-72);
   font-family: var(--font-body);
@@ -652,7 +702,7 @@ h1,
 .linkish {
   background: none;
   border: 0;
-  border-radius: var(--radius-field);
+  border-radius: var(--radius-sm);
   color: var(--cream-72);
   font-family: var(--font-body);
   font-size: 13.5px;
@@ -686,7 +736,8 @@ h1,
 .btn-text:focus-visible,
 .icon-btn:focus-visible,
 .step-btn:focus-visible,
-.row-card:focus-visible,
+.lead-card:focus-visible,
+.tile:focus-visible,
 .slip-row:focus-visible,
 .heat-btn:focus-visible,
 .bd-opt:focus-visible,
@@ -698,7 +749,8 @@ input[type="text"]:focus-visible {
 
 @media (hover: hover) and (pointer: fine) {
   .btn:not(:disabled):hover,
-  .row-card:hover,
+  .lead-card:hover,
+  .tile:hover,
   .slip-row:hover,
   .icon-btn:hover,
   .step-btn:not(:disabled):hover,
@@ -718,7 +770,8 @@ input[type="text"]:focus-visible {
 
 .btn:not(:disabled):active,
 .btn-text:active,
-.row-card:active,
+.lead-card:active,
+.tile:active,
 .slip-row:active,
 .heat-btn:active,
 .icon-btn:active,
@@ -730,7 +783,8 @@ input[type="text"]:focus-visible {
 /* 可点按面统一基座：position 供 ripple 定位，overflow 裁圆角 */
 .btn,
 .btn-text,
-.row-card,
+.lead-card,
+.tile,
 .slip-row,
 .heat-btn,
 .icon-btn {
@@ -772,15 +826,16 @@ span.ripple {
     filter 160ms var(--ease-out);
 }
 
-/* 热度指示滑块：垫在 .heat-btn（z-index:1）之下，left/width 由 JS 写 inline */
+/* 热度指示滑块：垫在 .heat-btn（z-index:1）之下，left/width 由 JS 写 inline。
+   选中档 = 灯拧到的位置：灯金实底，与主按钮同一个「亮」系统（v21） */
 span.heat-ind {
   position: absolute;
-  top: 4px;
-  bottom: 4px;
+  top: 5px;
+  bottom: 5px;
   left: 0;
   width: 0;
-  border-radius: var(--radius-ico);
-  background: var(--cream);
+  border-radius: var(--radius-sm);
+  background: var(--lamp);
   transition: transform 280ms var(--ease-in-out), width 280ms var(--ease-in-out);
   z-index: 0;
   pointer-events: none;
@@ -905,7 +960,7 @@ img.img-reveal.is-loaded {
   flex-direction: column;
   background: var(--die-face);
   border: 0;
-  border-radius: var(--radius-card);
+  border-radius: var(--radius-lg);
   /* 牌堆：卡下压着两张牌边，暗场里的留白就有了落点 */
   box-shadow:
     inset 0 0 0 1px rgba(60, 42, 30, 0.08),
@@ -991,36 +1046,40 @@ img.img-reveal.is-loaded {
    ========================================================================== */
 
 .screen-setup .hero-photo {
-  height: clamp(264px, 40dvh, 372px);
+  height: clamp(264px, 44dvh, 396px);
 }
 
 .screen-setup .hero-copy {
   margin-top: clamp(-190px, -22dvh, -128px);
 }
 
-/* 登记单自上而下连成一页：字段 → 主按钮 → 脚注，剩余的空间全部留在房间底部，
-   按钮不再被推到屏底、和表单断开 */
+/* 登记单与主按钮是一组（表单 → CTA → 脚注贴着落底）；
+   高屏的余量全部给「标题↔表单」一侧——那里是照片暗部的延伸，
+   黑的是房间，不是版式空洞。padding 保底：矮屏 auto 归零仍有最小呼吸 */
 .screen-setup .stack {
-  margin-top: clamp(12px, 1.8dvh, 16px);
+  margin-top: auto;
   flex: 0 0 auto;
   min-height: 0;
+  padding: clamp(12px, 1.8dvh, 16px) 0;
 }
 
 .screen-setup .btn-gold {
-  margin-top: clamp(12px, 2dvh, 16px);
+  margin-top: clamp(14px, 2.8dvh, 30px);
   flex: 0 0 auto;
-}
-
-.screen-setup::after {
-  content: "";
-  flex: 1 1 0;
 }
 
 .field {
   margin-bottom: 0;
 }
 
-/* 标签在上，输入是矮的圆角矩形（12），深色实底 */
+/* 登记单的节奏：两个人并排成一对，别再竖着排成流水线 */
+.field-pair {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+/* 标签在上，输入是矮的圆角矩形（小控件档 10），深色实底 */
 label {
   display: block;
   font-size: 11.5px;
@@ -1033,7 +1092,7 @@ label {
 input[type="text"] {
   width: 100%;
   height: 44px;
-  border-radius: var(--radius-tile);
+  border-radius: var(--radius-sm);
   border: 1px solid var(--line-24);
   background: var(--room-sunk);
   color: var(--cream);
@@ -1071,14 +1130,15 @@ input[type="text"]::placeholder {
   line-height: 1.65;
 }
 
-/* 热度三档：烛光 / 微醺 / 深夜。选中态奶油实底 + 深色字，与主按钮区分开 */
+/* 热度三档：烛光 / 微醺 / 深夜。设置页的视觉锚点——全场最大的控件，
+   选中态灯金实底 + 深色字：这是「今晚把灯拧到的档位」 */
 .heat-grid {
   position: relative; /* span.heat-ind 的定位锚 */
   display: flex;
-  gap: 4px;
-  padding: 4px;
-  border-radius: var(--radius-tile);
-  border: 1px solid var(--line-16);
+  gap: 5px;
+  padding: 5px;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--line-24);
   background: var(--room-sunk);
   box-shadow: none;
 }
@@ -1087,12 +1147,12 @@ input[type="text"]::placeholder {
   position: relative; /* 抬到 heat-ind 之上 */
   z-index: 1;
   flex: 1;
-  min-height: 44px;
+  min-height: 58px;
   text-align: center;
-  padding: 5px 4px;
-  border-radius: var(--radius-ico);
+  padding: 8px 4px;
+  border-radius: var(--radius-sm);
   border: 0;
-  background: none; /* 实底由 .heat-ind 那块奶油垫提供，避免双层奶油 */
+  background: none; /* 实底由 .heat-ind 那块灯金垫提供，避免双层金 */
   color: var(--cream);
   cursor: pointer;
   transition: var(--transition-ui);
@@ -1101,7 +1161,7 @@ input[type="text"]::placeholder {
 .heat-btn strong {
   display: block;
   font-family: var(--font-body);
-  font-size: 13px;
+  font-size: 14.5px;
   font-weight: 400;
   letter-spacing: 0.06em;
   line-height: 1.3;
@@ -1109,8 +1169,9 @@ input[type="text"]::placeholder {
 
 .heat-btn span {
   display: block;
+  margin-top: 3px;
   color: var(--cream-55);
-  font-size: 10px;
+  font-size: 10.5px;
   font-weight: 400;
   letter-spacing: 0.01em;
   line-height: 1.3;
@@ -1211,7 +1272,7 @@ input[type="text"]::placeholder {
   grid-template-rows: repeat(3, 1fr);
   place-items: center;
   background: var(--die-face);
-  border-radius: var(--radius-tile);
+  border-radius: var(--radius-lg);
   padding: 12px;
   box-shadow: inset 0 0 0 1px rgba(23, 11, 15, 0.34);
   backface-visibility: hidden;
@@ -1244,7 +1305,7 @@ input[type="text"]::placeholder {
   padding: clamp(16px, 3dvh, 24px) clamp(16px, 4vw, 24px);
   background: var(--die-face);
   border: 0;
-  border-radius: var(--radius-card);
+  border-radius: var(--radius-lg);
   /* 牌堆：卡下压着两张牌边，暗场里的留白就有了落点 */
   box-shadow:
     inset 0 0 0 1px rgba(60, 42, 30, 0.08),
@@ -1450,7 +1511,7 @@ input[type="text"]::placeholder {
   max-width: 430px;
   background: var(--room-raised);
   border: 1px solid var(--line-16);
-  border-radius: var(--radius-modal);
+  border-radius: var(--radius-lg);
   box-shadow: none;
   color: var(--cream);
   padding: 24px 20px calc(var(--tap-pad) + 16px);
@@ -1486,7 +1547,7 @@ input[type="text"]::placeholder {
   bottom: calc(var(--tap-pad) + 8px);
   z-index: 40;
   padding: 12px 14px;
-  border-radius: var(--radius-tile);
+  border-radius: var(--radius-lg);
   background: var(--room-raised);
   border: 1px solid var(--line-24);
   box-shadow: none;
@@ -1565,7 +1626,7 @@ input[type="text"]::placeholder {
   aspect-ratio: 1 / 1;
   display: grid;
   place-items: center;
-  border-radius: var(--radius-ico);
+  border-radius: var(--radius-sm);
   border: 1px solid var(--line-16);
   background: var(--room-raised);
   color: var(--cream-55);
@@ -1724,7 +1785,7 @@ input[type="text"]::placeholder {
 
 .panel {
   padding: 10px 14px;
-  border-radius: var(--radius-card);
+  border-radius: var(--radius-lg);
   border: 1px solid var(--line-16);
   background: var(--room-raised);
   box-shadow: none;
@@ -1786,7 +1847,7 @@ input[type="text"]::placeholder {
   justify-content: center;
   height: 44px;
   margin: 0;
-  border-radius: var(--radius-tile);
+  border-radius: var(--radius-lg);
   border: 1px solid var(--line-24);
   background: none;
   color: var(--cream);
@@ -1892,8 +1953,8 @@ button.boundary-entry {
   display: flex;
   gap: 3px;
   padding: 3px;
-  border-radius: var(--radius-field);
-  border: 1px solid var(--line-16);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--line-24);
   background: var(--room-sunk);
 }
 
@@ -1903,7 +1964,7 @@ button.boundary-entry {
   flex: 1;
   min-height: 28px;
   border: 0;
-  border-radius: var(--radius-ico);
+  border-radius: var(--radius-sm);
   background: none;
   color: var(--cream-55);
   font-family: var(--font-body);
@@ -1977,7 +2038,7 @@ button.boundary-entry {
   white-space: nowrap;
 }
 
-/* 选中态：字变奶油 + 顶上一小段灯芯。不放图标、不放胶囊 */
+/* 选中态：字变奶油 + 顶上一截灯芯（44×3 圆头）。不放图标、不放胶囊 */
 .tab.is-active {
   background: none;
   color: var(--cream);
@@ -1989,8 +2050,9 @@ button.boundary-entry {
   position: absolute;
   top: -1px;
   left: 50%;
-  width: 34px;
+  width: 44px;
   height: 3px;
+  border-radius: 2px;
   transform: translateX(-50%);
   background: var(--lamp);
 }
@@ -2059,7 +2121,7 @@ button.boundary-entry {
   }
 
   .screen-setup .hero-photo {
-    height: clamp(244px, 38dvh, 320px);
+    height: clamp(244px, 40dvh, 344px);
   }
 }
 
@@ -2084,37 +2146,35 @@ button.boundary-entry {
     min-height: clamp(184px, 27dvh, 250px);
   }
 
-  .row-card h2 {
-    font-size: 15px;
+  .lead-cap b {
+    font-size: 16px;
   }
 }
 
-/* 矮一档（≤820，含 iPhone X 812）：首页先收照片带，再收静物尺寸与行高 */
+/* 矮一档（≤820，含 iPhone X 812）：首页先收照片带，再收头牌与小静物 */
 @media (max-height: 820px) {
   .hero-photo {
     height: clamp(204px, 34dvh, 268px);
   }
 
-  .row-card {
-    grid-template-columns: 76px 1fr;
+  .screen-home .hero-photo {
+    height: clamp(184px, 24dvh, 228px);
   }
 
-  .row-card img {
-    width: 76px;
-    height: 76px;
+  .lead-card img {
+    height: clamp(122px, 15.5dvh, 152px);
   }
 
-  .row-card--sm {
-    grid-template-columns: 42px 1fr;
+  .tile-row {
+    gap: 8px;
   }
 
-  .row-card--sm img {
-    width: 42px;
-    height: 42px;
+  .tile i {
+    font-size: 10px;
   }
 
   .home-stack {
-    gap: 7px;
+    gap: 9px;
   }
 
   .slip-row {
@@ -2122,34 +2182,23 @@ button.boundary-entry {
   }
 }
 
-/* 再矮一档（≤760，含 740 与 667）：静物退到 54/42，服务单 32，间距同步收 */
+/* 再矮一档（≤760，含 740 与 667）：头牌再收，服务单 32，间距同步收 */
 @media (max-height: 760px) {
   .hero-photo {
     height: clamp(184px, 30dvh, 236px);
   }
 
-  .row-card {
-    grid-template-columns: 68px 1fr;
-    padding: 2px 8px 2px 0;
+  .lead-card img {
+    height: clamp(112px, 14dvh, 138px);
   }
 
-  .row-card img {
-    width: 68px;
-    height: 68px;
-  }
-
-  .row-card--sm {
-    grid-template-columns: 38px 1fr;
-  }
-
-  .row-card--sm img {
-    width: 38px;
-    height: 38px;
+  .tile b {
+    font-size: 12.5px;
   }
 
   .home-stack {
     margin-top: 10px;
-    gap: 6px;
+    gap: 8px;
   }
 
   .slip {
@@ -2249,32 +2298,21 @@ button.boundary-entry {
     height: clamp(172px, 30dvh, 208px);
   }
 
-  /* 首页在这一档要装下四张静物卡 + 四行服务单：缩略图再退一档，
-     文字列的宽度反而更宽，行高由图片决定的部分直接减掉 */
+  /* 首页在这一档要装下头牌 + 三件小静物 + 四行服务单：头牌再退一档 */
   .screen-home .hero-photo {
-    height: clamp(168px, 25dvh, 200px);
+    height: clamp(160px, 22dvh, 196px);
   }
 
   .screen-home .hero-copy {
     margin-top: clamp(-112px, -13dvh, -76px);
   }
 
-  .row-card {
-    grid-template-columns: 72px 1fr;
+  .lead-card img {
+    height: clamp(100px, 12.5dvh, 124px);
   }
 
-  .row-card img {
-    width: 72px;
-    height: 72px;
-  }
-
-  .row-card--sm {
-    grid-template-columns: 48px 1fr;
-  }
-
-  .row-card--sm img {
-    width: 48px;
-    height: 48px;
+  .tile-row {
+    gap: 7px;
   }
 
   .slip-row {
@@ -2315,7 +2353,8 @@ button.boundary-entry {
 
   .btn,
   .btn-text,
-  .row-card,
+  .lead-card,
+  .tile,
   .slip-row,
   .icon-btn,
   .step-btn,
@@ -2328,7 +2367,8 @@ button.boundary-entry {
 
   .btn:not(:disabled):active,
   .btn-text:active,
-  .row-card:active,
+  .lead-card:active,
+  .tile:active,
   .slip-row:active,
   .heat-btn:active,
   .icon-btn:active,

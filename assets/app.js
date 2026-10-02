@@ -1279,7 +1279,7 @@
     renderHeatButtons();
   }
 
-  const RIPPLE_TARGETS = ".btn, .btn-text, .row-card, .slip-row, .icon-btn, .bd-opt";
+  const RIPPLE_TARGETS = ".btn, .btn-text, .lead-card, .tile, .slip-row, .icon-btn, .bd-opt";
 
   function ripple(e) {
     if (reduceMotion.matches) return;
@@ -1537,7 +1537,7 @@
 
     if ("serviceWorker" in navigator) {
       navigator.serviceWorker
-        .register("./sw.js?v=20", { updateViaCache: "none" })
+        .register("./sw.js?v=21", { updateViaCache: "none" })
         .catch(() => {});
     }
   }
