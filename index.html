@@ -21,7 +21,7 @@
       href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@500;600&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="./assets/app.css?v=25" />
+    <link rel="stylesheet" href="./assets/app.css?v=26" />
   </head>
   <body>
     <!-- 图标本地子集（Phosphor regular 风格：256 网格、stroke 16、round 端点；不走 CDN，离线可用）
@@ -133,6 +133,14 @@
           <button type="button" class="slip-row" data-open="timer">
             <b>倒计时</b>
             <span>铃响之前不许停</span>
+          </button>
+        </div>
+        <!-- 散场是单独的一组，不进「也可以玩」：收灯不是玩法，是今晚的结束仪式 -->
+        <div class="slip">
+          <p class="slip-label">散场</p>
+          <button type="button" class="slip-row" data-open="ending">
+            <b>收灯</b>
+            <span>今晚到这里，把灯收了</span>
           </button>
         </div>
       </section>
@@ -487,9 +495,29 @@
         </div>
         <div class="actions">
           <div class="btn-row">
+            <!-- 终局才出现的第三颗：玩法切换此时没意义，让位给收灯 -->
+            <button class="btn btn-outline hidden" id="btnBoardEnd">收灯</button>
             <button class="btn btn-outline" id="btnBoardTheme">玩法：都来</button>
             <button class="btn btn-gold" id="btnBoardRoll">掷骰子</button>
           </div>
+        </div>
+      </section>
+
+      <!-- 收灯：今晚的最后一屏。没有照片、没有抽卡——三步走完，金色开关离场 -->
+      <section class="screen screen-ending" data-screen="ending" id="screen-ending">
+        <div class="topbar">
+          <button class="icon-btn" data-back><svg class="ico" aria-hidden="true"><use href="#i-arrow-left" /></svg></button>
+          <div class="who">收灯</div>
+          <span class="pill">不急</span>
+        </div>
+        <div class="ending-lead">
+          <h1 class="ending-hero">今晚到这里</h1>
+          <p class="ending-sub">接下来的时间，不用手机。</p>
+        </div>
+        <div class="ending-steps" id="endingSteps"></div>
+        <div class="actions">
+          <button class="btn btn-gold" id="btnLampOut">好了</button>
+          <button class="linkish hidden" id="endingHome">回到首页</button>
         </div>
       </section>
 
@@ -520,9 +548,9 @@
     <div id="staleBar" class="stale-bar hidden">
       手机还在用旧版，连招会打不开。请关掉这个标签，再打开一次。
     </div>
-    <script src="./assets/logic.js?v=25"></script>
-    <script src="./assets/data.js?v=25"></script>
-    <script src="./assets/app.js?v=25"></script>
+    <script src="./assets/logic.js?v=26"></script>
+    <script src="./assets/data.js?v=26"></script>
+    <script src="./assets/app.js?v=26"></script>
     <script>
       (function () {
         if (!window.WANDENG || !window.WANDENG.combo) {

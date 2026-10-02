@@ -254,3 +254,43 @@ test("boardDecks share no line with the draw pools, so no card looks doubled", (
     });
   });
 });
+
+const AFTERCARE_BUCKETS = ["soothe", "debrief", "close"];
+
+test("aftercare exposes the three ritual buckets, non-empty and free of repeats", () => {
+  assert.ok(W.aftercare && typeof W.aftercare === "object", "W.aftercare must be an object");
+
+  const seen = new Set();
+  AFTERCARE_BUCKETS.forEach((bucket) => {
+    const list = W.aftercare[bucket];
+    assert.ok(
+      Array.isArray(list) && list.length > 0,
+      `aftercare.${bucket} must be a non-empty array`
+    );
+
+    list.forEach((line, i) => {
+      assert.ok(
+        typeof line === "string" && line.trim(),
+        `aftercare.${bucket}[${i}] must be a non-empty string`
+      );
+      const key = flat(line);
+      assert.ok(
+        !seen.has(key),
+        `aftercare.${bucket}[${i}] repeats a line ${seen.has(key) ? "within aftercare" : ""}: ${line}`
+      );
+      seen.add(key);
+    });
+  });
+});
+
+// 收尾池是双方共用的：不分热度也不分性别，所以不允许出现她/他。
+test("aftercare lines stay gender-neutral, matching its both-only design", () => {
+  AFTERCARE_BUCKETS.forEach((bucket) => {
+    W.aftercare[bucket].forEach((line, i) => {
+      assert.ok(
+        !/[她他]/.test(line),
+        `aftercare.${bucket}[${i}] must not use gendered pronouns: ${line}`
+      );
+    });
+  });
+});

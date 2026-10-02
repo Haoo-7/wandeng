@@ -9,13 +9,15 @@
 3. 共享到主屏幕，房间里像一个独立 App。
 4. 一部手机就够：抽完题，点「换人」，把手机递过去。
 
-首页三张主卡是真心话大冒险、情趣骰子、命运轮盘、飞行棋；下面四个磁贴是连招、今晚剧本、二选一、倒计时；底行还能进「做什么」和「边界清单」。
+首页头牌是真心话大冒险，一排三格是情趣骰子、命运轮盘、飞行棋；下面的清单里是连招、今晚剧本、二选一、倒计时，最末单独一组「散场」进「收灯」；底栏进「设置」（边界清单在设置页里）。
 
 **开玩之前先过一遍「边界清单」**：两个人各自对同一条点 Yes / Maybe / No，顶部会实时汇总「共同 Yes / 有 Maybe / 存在 No」。今晚真正该玩的，只是双方都点了 Yes 的那些。
 
 **飞行棋**：42 格（6×7 蛇形），两人轮流掷骰，落到哪格就做哪格的事（抽题 / 一起 / 代价 / 免过 / 前进后退），先走到最后一格的人赢。右上「玩法」共 8 种：3 种按当前热度抽题，5 种各带一副 36 张的递进牌堆（甜蜜日常 → 灵肉合一）。中途刷新不会丢棋局。
 
 **做什么**：两堆活动卡（房间里 / 出门），抽到就做。带「特殊」标记的是特别卡。
+
+**收灯**：今晚的结束仪式，不是玩法。三步依次进行——安抚（喝水、抱一会儿、问一句「现在舒服吗」）→ 复盘（最喜欢的瞬间、有没有没说出口的不舒服、下次想继续的点）→ 收住（亲额头把称呼换回来、把手机扣过去、说晚安）。三步走完只剩一颗「熄灯」，按下后金色离场，只剩一行晚安。飞行棋分出胜负后，终局也会直接把「收灯」递到你手边。
 
 两部手机一起玩时，在电脑上运行：
 
@@ -49,11 +51,12 @@
   { "kind": "scenes",  "heat": 1, "gender": "both", "title": "标题", "setup": "铺垫", "do": "要做的" },
   { "kind": "choices", "heat": 0, "gender": "both", "q": "问句", "a": "A", "b": "B", "doA": "选A做的事", "doB": "选B做的事" },
   { "kind": "timers",  "heat": 1, "gender": "both", "text": "限时做的事", "sec": 30 },
-  { "kind": "combo",   "heat": 1, "gender": "both", "q": "先答的题", "dare": "答完要做的事" }
+  { "kind": "combo",   "heat": 1, "gender": "both", "q": "先答的题", "dare": "答完要做的事" },
+  { "kind": "aftercare", "heat": 0, "gender": "both", "bucket": "soothe", "text": "一句收尾要做的事" }
 ]
 ```
 
-`kind` 还支持 `wheel` 与 `penalties`（两者 payload 都是字符串）；`heat` 是 0/1/2，对应烛光/微醺/深夜；`gender` 是 `both` / `m` / `f`。`payload` 这一层可以省掉，把字段直接平铺在条目上。
+`kind` 还支持 `wheel` 与 `penalties`（两者 payload 都是字符串）；`heat` 是 0/1/2，对应烛光/微醺/深夜；`gender` 是 `both` / `m` / `f`。`payload` 这一层可以省掉，把字段直接平铺在条目上。`aftercare` 的 `bucket` 是 `soothe` / `debrief` / `close`（安抚 / 复盘 / 收住）——收尾不分池，`heat` 与 `gender` 参与校验但不影响抽取。
 
 ## 开发与验收
 
@@ -70,7 +73,7 @@ node --test tests/*.test.js
 
 界面与玩法上参考了四个开源项目，代码与文案均为本仓库重写：
 
-- [Chrisbetheking/couple-stark](https://github.com/Chrisbetheking/couple-stark) — MIT。边界清单的「两人各自标记 + 共同 Yes」结构、五档难度分层，以及部分真心话 / 大冒险 / 轮盘 / 边界条目的**选题方向**（条目文本已逐条改写为晚灯语气，非照搬原文）。
+- [Chrisbetheking/couple-stark](https://github.com/Chrisbetheking/couple-stark) — MIT。边界清单的「两人各自标记 + 共同 Yes」结构、五档难度分层、「余韵收尾」的收灯环节设计（抱抱 / 补水 / 复盘 / 夸奖，把今晚舒服地收住），以及部分真心话 / 大冒险 / 轮盘 / 边界条目的**选题方向**（条目文本已逐条改写为晚灯语气，非照搬原文）。
 - [qiaeru/couplecards](https://github.com/qiaeru/couplecards) — MIT。活动卡的卡库结构（分堆 + 稀有标记 + 标题/描述），以及导入导出的设计。
 - [michaelsboost/CoupleCards](https://github.com/michaelsboost/CoupleCards) — MIT。单张卡片翻抽的交互。
 - [woniu9524/couple-flying-chess](https://github.com/woniu9524/couple-flying-chess) — 飞行棋玩法设计，以及棋盘五档牌堆的**选题方向**（180 条已逐条改写）。⚠️ 该仓库 README 声明 MIT，但**未附 LICENSE 文件**，授权状态并不明确；已建议作者补上。若你在意这一点，删掉 `assets/data.js` 里的 `boardDecks` 与 `themes` 中 `sweet`/`love`/`burn`/`deep`/`merge` 五项即可完全移除其影响。

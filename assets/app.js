@@ -45,6 +45,7 @@
     board: { pos: [0, 0], theme: "mix", winner: -1 },
     boardRoll: 0,
     boardEvent: null,
+    ending: null,
   };
 
   const faces = [
@@ -360,9 +361,11 @@
              | "choices" -> {q, a, b, doA, doB}
              | "timers"  -> {text, sec}
              | "combo"   -> {q, dare}
+             | "aftercare" -> {bucket: "soothe" | "debrief" | "close", text}
        heat:   0 | 1 | 2
        gender: "both" | "m" | "f"
        payload: 该 kind 对应的内容（对象类也可把字段平铺在条目上，省掉 payload 这一层）
+       热度与性别参与统一校验，但 aftercare 的收尾不分池，这两个字段填什么都不影响抽取。
      }]
      字段缺失或类型不符的条目会被跳过，不会中断整次导入。 */
   const CUSTOM_SHAPES = {
@@ -375,6 +378,11 @@
     combo: (p) => hasStringFields(p, ["q", "dare"]),
     timers: (p) =>
       isPlainish(p) && typeof p.text === "string" && p.text.trim() !== "" && typeof p.sec === "number" && p.sec > 0,
+    aftercare: (p) =>
+      isPlainish(p) &&
+      typeof p.text === "string" &&
+      p.text.trim() !== "" &&
+      ["soothe", "debrief", "close"].indexOf(p.bucket) >= 0,
   };
 
   const CUSTOM_KINDS = Object.keys(CUSTOM_SHAPES);
@@ -618,6 +626,9 @@
       : `第 ${state.board.pos[state.turn] + 1} 格`;
     $("btnBoardTheme").textContent = `玩法：${currentTheme().name}`;
     $("btnBoardRoll").textContent = done ? "再来一局" : "掷骰子";
+    // 终局的三颗换两颗：玩法切换此时没意义，让位给收灯
+    $("btnBoardTheme").classList.toggle("hidden", done);
+    $("btnBoardEnd").classList.toggle("hidden", !done);
 
     const ev = state.boardEvent;
     $("boardTitle").textContent = ev ? ev.title : "掷骰子";
@@ -1273,6 +1284,88 @@
     }, 1000);
   }
 
+  /* —— 收灯：今晚的结束仪式。不是第十个玩法——三步依次点亮，走完金色开关离场。
+     状态只存内存（与「界面态刻意不持久化」同一条原则），每次进来重新抽一轮。 —— */
+  const ENDING_STEPS = [
+    { id: "soothe", head: "安抚", empty: "先缓过来，再谈别的。" },
+    { id: "debrief", head: "复盘", empty: "今晚先到这里。" },
+    { id: "close", head: "收住", empty: "晚安。" },
+  ];
+
+  // 收尾池不分热度、不分性别，不走 poolFor；自定义 aftercare 追加进对应的桶。
+  function aftercarePool(bucket) {
+    const base = data.aftercare && Array.isArray(data.aftercare[bucket]) ? data.aftercare[bucket] : [];
+    const extra = (Array.isArray(state.customPrompts) ? state.customPrompts : [])
+      .filter(
+        (p) =>
+          p &&
+          p.kind === "aftercare" &&
+          isPlainish(p.payload) &&
+          p.payload.bucket === bucket &&
+          typeof p.payload.text === "string"
+      )
+      .map((p) => p.payload.text);
+    return base.concat(extra);
+  }
+
+  function openEnding() {
+    state.ending = { step: 0, out: false, lines: {} };
+    ENDING_STEPS.forEach((step) => {
+      const pool = aftercarePool(step.id);
+      const item = pool.length ? pick(pool, "aftercare-" + step.id) : undefined;
+      state.ending.lines[step.id] = fill(item) || step.empty;
+    });
+    renderEnding();
+    show("ending");
+  }
+
+  // 面板只渲染到当前步：仪式是一步步亮起来的，没走到的步骤不存在于屏上
+  function renderEnding() {
+    const st = state.ending;
+    const section = $("screen-ending");
+    if (!st || st.out) {
+      section.classList.add("is-out");
+      $("endingSteps").innerHTML =
+        '<div class="ending-night"><p class="ending-goodnight">晚安</p>' +
+        '<p class="ending-night-sub">' +
+        esc(`${state.names[0] || "TA"} 和 ${state.names[1] || "TA"}，今晚很好。`) +
+        "</p></div>";
+      $("btnLampOut").classList.add("hidden");
+      $("endingHome").classList.remove("hidden");
+      return;
+    }
+    section.classList.remove("is-out");
+    $("endingHome").classList.add("hidden");
+    $("btnLampOut").classList.remove("hidden");
+    $("endingSteps").innerHTML = ENDING_STEPS.map((step, i) => {
+      if (i > st.step) return "";
+      const done = i < st.step;
+      const cls = "panel ending-step" + (done ? " is-done" : "") + (i === st.step ? " reveal" : "");
+      return (
+        `<div class="${cls}">` +
+        `<div class="panel-head"><b>${step.head}</b><span>${done ? "好了" : "现在"}</span></div>` +
+        `<p class="ending-line">${esc(st.lines[step.id] || step.empty)}</p>` +
+        `</div>`
+      );
+    }).join("");
+    $("btnLampOut").textContent = st.step >= ENDING_STEPS.length ? "熄灯" : "好了";
+  }
+
+  function advanceEnding() {
+    const st = state.ending;
+    if (!st || st.out) return;
+    if (st.step < ENDING_STEPS.length) {
+      st.step += 1;
+      renderEnding();
+      if (navigator.vibrate) navigator.vibrate(12);
+      return;
+    }
+    // 三步走完，这颗金色的开关自己把灯关掉
+    st.out = true;
+    renderEnding();
+    if (navigator.vibrate) navigator.vibrate([12, 30, 12]);
+  }
+
   let safeTrigger = null;
 
   function focusableSheetButtons() {
@@ -1395,6 +1488,8 @@
       state.boardEvent = null;
       renderBoard();
       show("board");
+    } else if (game === "ending") {
+      openEnding();
     }
   }
 
@@ -1526,6 +1621,12 @@
     $("btnPlanDraw").addEventListener("click", drawPlan);
     $("btnBoardRoll").addEventListener("click", boardPrimary);
     $("btnBoardTheme").addEventListener("click", cycleBoardTheme);
+    $("btnBoardEnd").addEventListener("click", openEnding);
+    $("btnLampOut").addEventListener("click", advanceEnding);
+    $("endingHome").addEventListener("click", () => {
+      renderHome();
+      show("home");
+    });
 
     $("importBackup").addEventListener("change", (e) => {
       const file = e.currentTarget.files && e.currentTarget.files[0];
@@ -1663,7 +1764,7 @@
 
     if ("serviceWorker" in navigator) {
       navigator.serviceWorker
-        .register("./sw.js?v=25", { updateViaCache: "none" })
+        .register("./sw.js?v=26", { updateViaCache: "none" })
         .catch(() => {});
     }
   }
