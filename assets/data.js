@@ -970,6 +970,10 @@ window.WANDENG = {
     { id: "roleplay", level: 2, zh: "角色扮演，入戏说台词" },
     { id: "oral-talk", level: 3, zh: "把更露骨的愿望说出口" },
     { id: "toy", level: 3, zh: "小玩具" },
+    // v27 起补入的两条约定式条目（选题方向取自 couple-stark 的边界清单）：
+    // 它们不是「玩法」，是两个人对今晚的底线与收尾达成一致。
+    { id: "aftercare", level: 1, zh: "收灯：结束后要有抱抱和复盘" },
+    { id: "protection", level: 1, zh: "该备的防护先备好" },
   ],
 
   // kind: task / forward / back / cost / skip / together / start / end，由 app.js 分派。
@@ -1299,6 +1303,7 @@ window.WANDENG = {
       "把手机屏幕朝下，扣到够不着的地方。今晚剩下的时间归你们。",
       "安静躺两分钟。谁都不许碰手机，也不许说话。",
       "一起去洗漱。回来的路上，手要牵着，不许松开。",
+      "把衣服叠回椅子，杯子续满水。把房间还给明天。",
       "最后抱一次。这次只抱，不许亲，抱到谁先笑场为止。",
       "说晚安。谁先说，谁负责明早的第一杯水。",
     ],

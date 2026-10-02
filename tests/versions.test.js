@@ -8,10 +8,10 @@ const path = require("node:path");
 const root = path.join(__dirname, "..");
 const read = (rel) => fs.readFileSync(path.join(root, rel), "utf8");
 
-// The release we are converging on. Bumped 25 -> 26 with the aftercare ending
-// ritual (收灯): a three-beat wind-down screen, a both-only aftercare pool,
-// and a lamp-out goodnight state — the board's final roll now offers it too.
-const EXPECTED = 26;
+// The release we are converging on. Bumped 26 -> 27 with the couple-stark
+// content pass on the 收灯 feature: an adapted 整理现场 closing line, plus two
+// agreement-style boundary rows (aftercare required, protection first).
+const EXPECTED = 27;
 
 const indexHtml = read("index.html");
 const appJs = read("assets/app.js");
@@ -41,7 +41,7 @@ function tokenMap(refs) {
   return map;
 }
 
-test("every ?v= token on a local asset reference in index.html equals 26", () => {
+test("every ?v= token on a local asset reference in index.html equals 27", () => {
   const refs = indexAssetRefs(indexHtml);
   assert.ok(
     refs.length > 0,
@@ -56,7 +56,7 @@ test("every ?v= token on a local asset reference in index.html equals 26", () =>
   });
 });
 
-test("index.html references a script assets/logic.js?v=26", () => {
+test("index.html references a script assets/logic.js?v=27", () => {
   const re = /(?:src)\s*=\s*["']([^"']*logic\.js[^"']*)["']/g;
   const found = [];
   let m;
@@ -81,7 +81,7 @@ test("index.html references a script assets/logic.js?v=26", () => {
   );
 });
 
-test("assets/app.js registers a service worker with ?v=26", () => {
+test("assets/app.js registers a service worker with ?v=27", () => {
   const m = appJs.match(
     /serviceWorker[\s\S]*?\.register\(\s*["']([^"']+)["']/
   );
@@ -103,7 +103,7 @@ test("assets/app.js registers a service worker with ?v=26", () => {
   );
 });
 
-test("sw.js declares a cache name whose trailing number is 26", () => {
+test("sw.js declares a cache name whose trailing number is 27", () => {
   const m = swJs.match(/CACHE\s*=\s*["']([^"']+)["']/);
   assert.ok(m, "sw.js declares no CACHE constant");
 

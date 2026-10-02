@@ -73,7 +73,7 @@ node --test tests/*.test.js
 
 界面与玩法上参考了四个开源项目，代码与文案均为本仓库重写：
 
-- [Chrisbetheking/couple-stark](https://github.com/Chrisbetheking/couple-stark) — MIT。边界清单的「两人各自标记 + 共同 Yes」结构、五档难度分层、「余韵收尾」的收灯环节设计（抱抱 / 补水 / 复盘 / 夸奖，把今晚舒服地收住），以及部分真心话 / 大冒险 / 轮盘 / 边界条目的**选题方向**（条目文本已逐条改写为晚灯语气，非照搬原文）。
+- [Chrisbetheking/couple-stark](https://github.com/Chrisbetheking/couple-stark) — MIT。边界清单的「两人各自标记 + 共同 Yes」结构与约定式条目（收灯、防护两条）、五档难度分层、「余韵收尾」的收灯环节设计与部分收尾条目的**选题方向**（抱抱 / 补水 / 复盘 / 夸奖，把今晚舒服地收住），以及部分真心话 / 大冒险 / 轮盘 / 边界条目的**选题方向**（条目文本已逐条改写为晚灯语气，非照搬原文）。
 - [qiaeru/couplecards](https://github.com/qiaeru/couplecards) — MIT。活动卡的卡库结构（分堆 + 稀有标记 + 标题/描述），以及导入导出的设计。
 - [michaelsboost/CoupleCards](https://github.com/michaelsboost/CoupleCards) — MIT。单张卡片翻抽的交互。
 - [woniu9524/couple-flying-chess](https://github.com/woniu9524/couple-flying-chess) — 飞行棋玩法设计，以及棋盘五档牌堆的**选题方向**（180 条已逐条改写）。⚠️ 该仓库 README 声明 MIT，但**未附 LICENSE 文件**，授权状态并不明确；已建议作者补上。若你在意这一点，删掉 `assets/data.js` 里的 `boardDecks` 与 `themes` 中 `sweet`/`love`/`burn`/`deep`/`merge` 五项即可完全移除其影响。
