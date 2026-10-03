@@ -21,7 +21,7 @@
       href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@500;600&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="./assets/app.css?v=29" />
+    <link rel="stylesheet" href="./assets/app.css?v=30" />
   </head>
   <body>
     <!-- 图标本地子集（Phosphor regular 风格：256 网格、stroke 16、round 端点；不走 CDN，离线可用）
@@ -526,12 +526,18 @@
       </div>
     </div>
 
+    <!-- 横屏兜底：手机横握时整屏盖住，请人竖着拿（CSS 触发：触屏 + 横向 + 矮视口） -->
+    <div id="rotateHint">
+      <p class="rh-t">请竖着拿</p>
+      <p class="rh-s">晚灯是床头的事。</p>
+    </div>
+
     <div id="staleBar" class="stale-bar hidden">
       手机还在用旧版，连招会打不开。请关掉这个标签，再打开一次。
     </div>
-    <script src="./assets/logic.js?v=29"></script>
-    <script src="./assets/data.js?v=29"></script>
-    <script src="./assets/app.js?v=29"></script>
+    <script src="./assets/logic.js?v=30"></script>
+    <script src="./assets/data.js?v=30"></script>
+    <script src="./assets/app.js?v=30"></script>
     <script>
       (function () {
         if (!window.WANDENG || !window.WANDENG.combo) {

@@ -11,3 +11,4 @@ design/samples/
 design/*.mjs
 design/*.out
 design/*.txt
+design/audit-resp/

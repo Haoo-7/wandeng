@@ -1389,6 +1389,9 @@ input[type="text"]::placeholder {
   /* 轮盘直径的唯一事实源：.wheel 与 .pointer 都从这里取半径 */
   --wheel-size: min(80vw, 320px);
   flex: 1;
+  /* 盒子下限 = 盘径 + 指针露出的一段：空间不够时宁可整屏滚，
+     也不再让盘和指针画出盒子、压上顶栏与结果纸（v30 修） */
+  min-height: calc(var(--wheel-size) + 24px);
   display: grid;
   place-items: center;
   position: relative;
@@ -1695,7 +1698,12 @@ input[type="text"]::placeholder {
 .board-grid {
   display: grid;
   grid-template-columns: repeat(6, 1fr);
-  gap: 4px;
+  /* 高度预算：42 格方格只随宽度长，视口不够高时会把题卡槽挤瘪、压上棋盘。
+     --board-fixed = 除棋盘外一屏的固定开销（顶栏+进度+题卡槽+按钮+安全区），
+     格子高度另设上限让总高永远装得下；格子允许被压成略扁的矩形 */
+  --board-gap: 4px;
+  --board-fixed: 352px;
+  gap: var(--board-gap);
   flex: 0 0 auto;
   margin-top: clamp(6px, 1.4dvh, 10px);
 }
@@ -1703,6 +1711,9 @@ input[type="text"]::placeholder {
 .board-tile {
   position: relative;
   aspect-ratio: 1 / 1;
+  /* 格高上限 =（视口高 − 固定件 − 行间 6 条缝）/ 7 行：预算内保持方格，
+     超出就让格子变扁，棋盘+题卡+按钮永远同屏 */
+  max-height: calc((100dvh - var(--board-fixed, 352px) - 6 * var(--board-gap, 4px)) / 7);
   display: grid;
   place-items: center;
   border-radius: var(--radius-sm);
@@ -1834,11 +1845,11 @@ input[type="text"]::placeholder {
 
 .board-slot {
   margin-top: clamp(10px, 2dvh, 14px);
-  flex: 1;
-  min-height: 0;
+  /* 题卡槽按内容占位、绝不被压缩：曾经 flex:1 + min-height:0，
+     内容一超高它先被压瘪，题文从上下两侧溢出压盖棋盘和按钮（v30 修） */
+  flex: 0 0 auto;
   display: flex;
   flex-direction: column;
-  justify-content: center;
 }
 
 .board-line {
@@ -2425,9 +2436,11 @@ button.boundary-entry {
     font-size: 19px;
   }
 
-  /* 42 格棋盘在矮屏格子更小：角标与序号同步缩小，棋子保持可辨 */
+  /* 42 格棋盘在矮屏格子更小：角标与序号同步缩小，棋子保持可辨。
+     预算同步收：按钮矮一号（52）、间距档也换了，固定开销比默认档小 */
   .board-grid {
-    gap: 3px;
+    --board-gap: 3px;
+    --board-fixed: 336px;
   }
 
   .board-tile {
@@ -2516,7 +2529,8 @@ button.boundary-entry {
   }
 }
 
-/* 骰子同步缩小，骰面 translateZ 跟着骰宽走 */
+/* 骰子同步缩小，骰面 translateZ 跟着骰宽走；轮盘再收一档，
+   让「本轮选项」的页眉在 667 以下也能在首屏露头（转完对单的闭环） */
 @media (max-height: 667px) {
   :root {
     --die-size: 96px;
@@ -2526,6 +2540,83 @@ button.boundary-entry {
   .pip {
     width: 13px;
     height: 13px;
+  }
+
+  .wheel-box {
+    --wheel-size: min(64vw, 26dvh, 190px);
+  }
+}
+
+/* 极矮屏（SE 一类）：棋盘格已压到 ~30px 高，格内元素同步缩小；
+   题卡行文字降一号，行数变少也给预算松绑 */
+@media (max-height: 600px) {
+  .board-tile {
+    font-size: 8px;
+  }
+
+  .board-tile::before {
+    font-size: 7px;
+    top: 2px;
+    right: 3px;
+  }
+
+  .tok-svg {
+    width: 16px;
+    height: 16px;
+    bottom: 1px;
+  }
+
+  .tok-svg .tok-word {
+    font-size: 8px;
+  }
+
+  .board-tile .tile-num {
+    transform: translateY(-5px);
+  }
+
+  .board-line {
+    font-size: 13.5px;
+  }
+}
+
+/* ==========================================================================
+   横屏兜底：晚灯是床头的事。触屏 + 横向 + 矮视口（手机横握）时整屏盖住，
+   请人竖着拿；桌面窗口（pointer: fine）与 iPad（高 > 500）不触发
+   ========================================================================== */
+
+#rotateHint {
+  display: none;
+}
+
+@media (pointer: coarse) and (orientation: landscape) and (max-height: 500px) {
+  #rotateHint {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    position: fixed;
+    inset: 0;
+    z-index: 60;
+    background: var(--room);
+    text-align: center;
+  }
+
+  #rotateHint .rh-t {
+    margin: 0;
+    font-family: var(--font-serif);
+    font-size: 24px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    color: var(--cream);
+  }
+
+  #rotateHint .rh-s {
+    margin: 0;
+    font-size: 13px;
+    font-weight: 400;
+    letter-spacing: 0.02em;
+    color: var(--cream-55);
   }
 }
 

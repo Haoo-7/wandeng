@@ -11,7 +11,7 @@ const read = (rel) => fs.readFileSync(path.join(root, rel), "utf8");
 // The release we are converging on. Bumped 28 -> 29 with the cleanup sweep:
 // dropped the four unreferenced tile images from the precache, removed the
 // hidden "今晚做什么" screen, and unhooked the combo row's inline onclick.
-const EXPECTED = 29;
+const EXPECTED = 30;
 
 const indexHtml = read("index.html");
 const appJs = read("assets/app.js");
