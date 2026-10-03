@@ -1,11 +1,11 @@
-const CACHE = "wandeng-v28";
+const CACHE = "wandeng-v29";
 const FILES = [
   "./",
   "./index.html",
-  "./assets/app.css?v=28",
-  "./assets/logic.js?v=28",
-  "./assets/data.js?v=28",
-  "./assets/app.js?v=28",
+  "./assets/app.css?v=29",
+  "./assets/logic.js?v=29",
+  "./assets/data.js?v=29",
+  "./assets/app.js?v=29",
   "./assets/favicon.svg",
   "./assets/apple-touch.png",
   "./assets/img/hotel.jpg",
@@ -14,10 +14,6 @@ const FILES = [
   "./assets/img/game-dice.jpg",
   "./assets/img/game-wheel.jpg",
   "./assets/img/game-board.jpg",
-  "./assets/img/tile-combo.png",
-  "./assets/img/tile-scene.png",
-  "./assets/img/tile-choice.png",
-  "./assets/img/tile-timer.png",
   "./manifest.webmanifest",
 ];
 

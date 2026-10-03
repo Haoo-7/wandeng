@@ -16,7 +16,6 @@
     boundary: {},
     customPrompts: [],
     board: { pos: [0, 0], theme: "mix", winner: -1 },
-    planPile: "room",
   };
 
   const state = {
@@ -40,8 +39,6 @@
     timerLeft: 0,
     currentChoice: null,
     currentTimer: null,
-    planPile: "room",
-    planCard: null,
     board: { pos: [0, 0], theme: "mix", winner: -1 },
     boardRoll: 0,
     boardEvent: null,
@@ -167,7 +164,6 @@
 
   function openTab(tab) {
     if (tab === "home") {
-      renderHome();
       show("home");
     } else if (tab === "settings") {
       setSettingsStatus("");
@@ -221,11 +217,6 @@
     moveHeatInd(grid.querySelector(".heat-btn.active"));
   }
 
-  function renderHome() {
-    if ($("heatPill")) $("heatPill").textContent = `热度  ${heat().name}`;
-    $("homeHero").textContent = "今晚只属于你们";
-  }
-
   function renderSafeHints() {
     const text = `安全词：${state.safeWord || "暂停"}`;
     document.querySelectorAll("[data-safe-hint]").forEach((el) => {
@@ -263,7 +254,6 @@
   }
 
   function refreshScreen() {
-    renderHome();
     syncHeatSteps();
     syncTopbars();
     const screen = state.screen;
@@ -467,7 +457,6 @@
       setSettingsStatus("已导入备份");
       renderSafeHints();
       fillSetup();
-      renderHome();
       show("home");
     };
     reader.onerror = () => setSettingsStatus("这个文件读不了，什么都没改");
@@ -501,54 +490,10 @@
     reader.readAsText(file);
   }
 
-  const PILE_LABELS = { room: "房间里", out: "出门" };
-
-  function currentPile() {
-    return state.planPile === "out" ? "out" : "room";
-  }
-
   function pileCards(pile) {
     const plans = data && data.plans;
     const list = plans && plans[pile];
     return Array.isArray(list) ? list : [];
-  }
-
-  function renderPileButtons() {
-    document.querySelectorAll("[data-plan-pile]").forEach((btn) => {
-      btn.className = btn.dataset.planPile === currentPile() ? "btn btn-honey" : "btn btn-outline";
-    });
-  }
-
-  function resetPlan() {
-    state.planCard = null;
-    $("planPill").textContent = PILE_LABELS[currentPile()];
-    $("planTitle").textContent = "还没抽";
-    $("planMark").textContent = "";
-    $("planDesc").textContent = "两堆卡：在房间里做的，和要出门做的。抽到就做，不换。";
-    $("planCard").classList.remove("is-foil");
-    renderPileButtons();
-  }
-
-  function drawPlan() {
-    const pile = currentPile();
-    const card = pick(pileCards(pile), `plan-${pile}`);
-    if (!card) return;
-    state.planCard = card;
-    $("planPill").textContent = PILE_LABELS[pile];
-    $("planTitle").textContent = card.title;
-    $("planMark").textContent = card.foil ? "特殊" : PILE_LABELS[pile];
-    $("planDesc").textContent = card.desc;
-    $("planCard").classList.toggle("is-foil", !!card.foil);
-    repopBox($("planTitle"), ".plan-card");
-    if (navigator.vibrate) navigator.vibrate(18);
-  }
-
-  function setPile(pile) {
-    if (pile !== "room" && pile !== "out") return;
-    if (pile === currentPile()) return;
-    state.planPile = pile;
-    save();
-    resetPlan();
   }
 
   const BOARD_COLS = 6;
@@ -623,7 +568,7 @@
     const done = state.board.winner >= 0;
     $("boardPill").textContent = done
       ? `${state.names[state.board.winner] || "TA"} 胜`
-      : `第 ${state.board.pos[state.turn] + 1} 格`;
+      : `${who()} · 第 ${state.board.pos[state.turn] + 1} 格`;
     $("btnBoardTheme").textContent = `玩法：${currentTheme().name}`;
     $("btnBoardRoll").textContent = done ? "再来一局" : "掷骰子";
     // 终局的三颗换两颗：玩法切换此时没意义，让位给收灯
@@ -1611,7 +1556,6 @@
     renderSafeHints();
     revealImages();
     if (state.names[0] && state.names[1]) {
-      renderHome();
       show("home");
     }
 
@@ -1637,11 +1581,9 @@
       state.turn = 0;
       save();
       renderSafeHints();
-      renderHome();
       show("home");
     });
 
-    window.wandengOpen = openGame;
     document.querySelectorAll("[data-open]").forEach((btn) => {
       btn.addEventListener("click", () => openGame(btn.dataset.open));
     });
@@ -1667,16 +1609,11 @@
 
     $("btnExport").addEventListener("click", exportBackup);
 
-    document.querySelectorAll("[data-plan-pile]").forEach((btn) => {
-      btn.addEventListener("click", () => setPile(btn.dataset.planPile));
-    });
-    $("btnPlanDraw").addEventListener("click", drawPlan);
     $("btnBoardRoll").addEventListener("click", boardPrimary);
     $("btnBoardTheme").addEventListener("click", cycleBoardTheme);
     $("btnBoardEnd").addEventListener("click", openEnding);
     $("btnLampOut").addEventListener("click", advanceEnding);
     $("endingHome").addEventListener("click", () => {
-      renderHome();
       show("home");
     });
 
@@ -1704,7 +1641,6 @@
           openTab("settings");
           return;
         }
-        renderHome();
         show("home");
       });
     });
@@ -1740,13 +1676,7 @@
       passTo("choice");
     });
 
-    $("btnTimerStart").addEventListener("click", () => {
-      if ($("btnTimerStart").textContent === "再来一次" && state.currentTimer) {
-        startTimer();
-        return;
-      }
-      startTimer();
-    });
+    $("btnTimerStart").addEventListener("click", startTimer);
     $("btnTimerDraw").addEventListener("click", drawTimer);
     $("btnTimerNext").addEventListener("click", () => passTo("timer"));
 
@@ -1816,7 +1746,7 @@
 
     if ("serviceWorker" in navigator) {
       navigator.serviceWorker
-        .register("./sw.js?v=28", { updateViaCache: "none" })
+        .register("./sw.js?v=29", { updateViaCache: "none" })
         .catch(() => {});
     }
   }

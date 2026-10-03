@@ -8,10 +8,10 @@ const path = require("node:path");
 const root = path.join(__dirname, "..");
 const read = (rel) => fs.readFileSync(path.join(root, rel), "utf8");
 
-// The release we are converging on. Bumped 27 -> 28 with the timer-end bell:
-// a soft E5->C5 chime synthesized via Web Audio — no audio file, and the
-// AudioContext is primed inside the start tap to satisfy autoplay policies.
-const EXPECTED = 28;
+// The release we are converging on. Bumped 28 -> 29 with the cleanup sweep:
+// dropped the four unreferenced tile images from the precache, removed the
+// hidden "今晚做什么" screen, and unhooked the combo row's inline onclick.
+const EXPECTED = 29;
 
 const indexHtml = read("index.html");
 const appJs = read("assets/app.js");
@@ -41,7 +41,7 @@ function tokenMap(refs) {
   return map;
 }
 
-test("every ?v= token on a local asset reference in index.html equals 28", () => {
+test("every ?v= token on a local asset reference in index.html equals the expected version", () => {
   const refs = indexAssetRefs(indexHtml);
   assert.ok(
     refs.length > 0,
@@ -56,7 +56,7 @@ test("every ?v= token on a local asset reference in index.html equals 28", () =>
   });
 });
 
-test("index.html references a script assets/logic.js?v=28", () => {
+test("index.html references a script assets/logic.js with the expected ?v= token", () => {
   const re = /(?:src)\s*=\s*["']([^"']*logic\.js[^"']*)["']/g;
   const found = [];
   let m;
@@ -81,7 +81,7 @@ test("index.html references a script assets/logic.js?v=28", () => {
   );
 });
 
-test("assets/app.js registers a service worker with ?v=28", () => {
+test("assets/app.js registers a service worker with the expected ?v= token", () => {
   const m = appJs.match(
     /serviceWorker[\s\S]*?\.register\(\s*["']([^"']+)["']/
   );
@@ -103,7 +103,7 @@ test("assets/app.js registers a service worker with ?v=28", () => {
   );
 });
 
-test("sw.js declares a cache name whose trailing number is 28", () => {
+test("sw.js declares a cache name whose trailing number is the expected version", () => {
   const m = swJs.match(/CACHE\s*=\s*["']([^"']+)["']/);
   assert.ok(m, "sw.js declares no CACHE constant");
 

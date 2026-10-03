@@ -1683,54 +1683,8 @@ input[type="text"]::placeholder {
 }
 
 /* ==========================================================================
-   今晚做什么（两堆活动卡）与飞行棋棋盘
+   飞行棋棋盘
    ========================================================================== */
-
-/* 卡片吸收剩余高度，否则内容会挤在上半屏、下半屏空着 */
-.plan-card {
-  margin-top: clamp(10px, 2dvh, 14px);
-  flex: 1;
-  min-height: 0;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-}
-
-.plan-card .panel-head b {
-  font-size: 16px;
-}
-
-/* 特殊牌：暖金描边 = 这一张还亮着 */
-.plan-card.is-foil {
-  border-color: rgba(228, 195, 150, 0.55);
-}
-
-.plan-desc {
-  margin: 0;
-  color: var(--cream-72);
-  font-size: 14px;
-  font-weight: 400;
-  line-height: 1.7;
-}
-
-/* 两堆选择做成一行文字标签（下划线表示选中），主按钮仍是唯一那颗奶油 */
-#screen-plan .btn-row [data-plan-pile] {
-  height: 40px;
-  border: 0;
-  border-radius: 0;
-  border-bottom: 1px solid var(--line-16);
-  background: none;
-  color: var(--cream-55);
-  font-size: 14px;
-  font-weight: 400;
-  transition: var(--transition-ui);
-}
-
-#screen-plan .btn-row [data-plan-pile].btn-honey {
-  color: var(--cream);
-  border-bottom-color: var(--cream);
-  font-weight: 500;
-}
 
 /* 棋盘进度行：顶栏只留轮到谁，进度另起一行 */
 .board-progress {

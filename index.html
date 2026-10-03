@@ -21,7 +21,7 @@
       href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@500;600&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="./assets/app.css?v=28" />
+    <link rel="stylesheet" href="./assets/app.css?v=29" />
   </head>
   <body>
     <!-- 图标本地子集（Phosphor regular 风格：256 网格、stroke 16、round 端点；不走 CDN，离线可用）
@@ -118,7 +118,7 @@
         </div>
         <div class="slip">
           <p class="slip-label">也可以玩</p>
-          <button type="button" class="slip-row" data-open="combo" onclick="window.wandengOpen && window.wandengOpen('combo')">
+          <button type="button" class="slip-row" data-open="combo">
             <b>连招</b>
             <span>答完，立刻按这个做</span>
           </button>
@@ -454,25 +454,6 @@
         <p class="set-status" id="settingsStatus"></p>
       </section>
 
-      <section class="screen" data-screen="plan" id="screen-plan">
-        <div class="topbar">
-          <button class="icon-btn" data-back><svg class="ico" aria-hidden="true"><use href="#i-arrow-left" /></svg></button>
-          <div class="who">今晚做什么</div>
-          <span class="pill" id="planPill">房间里</span>
-        </div>
-        <div class="btn-row">
-          <button class="btn btn-honey" data-plan-pile="room">房间里</button>
-          <button class="btn btn-outline" data-plan-pile="out">出门</button>
-        </div>
-        <article class="panel plan-card" id="planCard">
-          <div class="panel-head"><b id="planTitle">还没抽</b><span id="planMark"></span></div>
-          <p class="plan-desc" id="planDesc">两堆卡：在房间里做的，和要出门做的。抽到就做，不换。</p>
-        </article>
-        <div class="actions">
-          <button class="btn btn-gold" id="btnPlanDraw">抽一张</button>
-        </div>
-      </section>
-
       <section class="screen" data-screen="board" id="screen-board">
         <div class="topbar">
           <button class="icon-btn" data-back><svg class="ico" aria-hidden="true"><use href="#i-arrow-left" /></svg></button>
@@ -548,9 +529,9 @@
     <div id="staleBar" class="stale-bar hidden">
       手机还在用旧版，连招会打不开。请关掉这个标签，再打开一次。
     </div>
-    <script src="./assets/logic.js?v=28"></script>
-    <script src="./assets/data.js?v=28"></script>
-    <script src="./assets/app.js?v=28"></script>
+    <script src="./assets/logic.js?v=29"></script>
+    <script src="./assets/data.js?v=29"></script>
+    <script src="./assets/app.js?v=29"></script>
     <script>
       (function () {
         if (!window.WANDENG || !window.WANDENG.combo) {
