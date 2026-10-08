@@ -7,7 +7,7 @@
   "background_color": "#14090D",
   "theme_color": "#14090D",
   "lang": "zh-CN",
-  "orientation": "portrait-primary",
+  "orientation": "any",
   "icons": [
     {
       "src": "./assets/favicon.svg",

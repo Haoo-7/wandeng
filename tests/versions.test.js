@@ -8,10 +8,10 @@ const path = require("node:path");
 const root = path.join(__dirname, "..");
 const read = (rel) => fs.readFileSync(path.join(root, rel), "utf8");
 
-// The release we are converging on. Bumped 28 -> 29 with the cleanup sweep:
-// dropped the four unreferenced tile images from the precache, removed the
-// hidden "今晚做什么" screen, and unhooked the combo row's inline onclick.
-const EXPECTED = 30;
+// The release we are converging on. Bumped 30 -> 31 with the landscape work:
+// opt-in 横屏模式 (board left / question right on tablets), the fullscreen entry
+// in settings, and the two new sprite symbols that ride along in index.html.
+const EXPECTED = 31;
 
 const indexHtml = read("index.html");
 const appJs = read("assets/app.js");

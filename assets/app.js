@@ -16,6 +16,7 @@
     boundary: {},
     customPrompts: [],
     board: { pos: [0, 0], theme: "mix", winner: -1 },
+    landscape: false,
   };
 
   const state = {
@@ -43,6 +44,7 @@
     boardRoll: 0,
     boardEvent: null,
     ending: null,
+    landscape: false,
   };
 
   const faces = [
@@ -168,6 +170,9 @@
     } else if (tab === "settings") {
       setSettingsStatus("");
       renderBoundaryPill();
+      // 离开设置页期间可能转了屏、或被系统退出全屏：进来了就重读一遍真状态
+      renderFullscreenRow();
+      renderLandscapeRow();
       show("settings");
     }
   }
@@ -215,6 +220,147 @@
     const grid = $("heatGrid");
     if (!grid) return;
     moveHeatInd(grid.querySelector(".heat-btn.active"));
+  }
+
+  /* —— 横屏（opt-in）：类写在 html 上，真正的门是 CSS 里的 (orientation: landscape)。
+      所以这个设置开着、手机仍竖着拿的时候，版式一点变化都不该有。 —— */
+  function applyLandscape() {
+    document.documentElement.classList.toggle("landscape-ok", state.landscape === true);
+  }
+
+  function renderLandscapeRow() {
+    document.querySelectorAll("#landscapeRow [data-landscape]").forEach((btn) => {
+      const want = btn.dataset.landscape === "1";
+      btn.setAttribute("aria-pressed", String(want === (state.landscape === true)));
+    });
+  }
+
+  function setLandscape(on) {
+    if (Boolean(on) === (state.landscape === true)) return;
+    state.landscape = Boolean(on);
+    save();
+    applyLandscape();
+    renderLandscapeRow();
+    // --gutter 跟着横屏版式变了 → .heat-grid 变宽 → 滑垫的 inline width/transform 作废
+    positionHeatInd();
+  }
+
+  /* —— 全屏：只做能力检测与执行，刻意不持久化。
+      系统全屏要 transient user activation，加载时根本进不去；iPhone 的 Safari 对非
+      <video> 元素不实现这个 API（常常连 reject 都不给）；主屏幕模式下已经没有地址栏可藏。
+      记一个做不到的偏好，等于对着用户的界面撒谎。 —— */
+  const fsStandaloneMq = window.matchMedia("(display-mode: standalone)");
+
+  function fsElement() {
+    return (
+      document.fullscreenElement ||
+      document.webkitFullscreenElement ||
+      document.webkitCurrentFullScreenElement ||
+      null
+    );
+  }
+
+  function fsRequest() {
+    const el = document.documentElement;
+    return (
+      el.requestFullscreen ||
+      el.webkitRequestFullscreen ||
+      el.webkitRequestFullScreen ||
+      null
+    );
+  }
+
+  // 方法存在 ≠ 能用：iPhone Safari 上 enabled 是 false，这一级检测正是我们要的
+  function fsEnabled() {
+    return document.fullscreenEnabled === true || document.webkitFullscreenEnabled === true;
+  }
+
+  function fsApi() {
+    const req = fsRequest();
+    return req && fsEnabled() ? req : null;
+  }
+
+  function isStandalone() {
+    return navigator.standalone === true || fsStandaloneMq.matches;
+  }
+
+  function setFsNote(text) {
+    const el = $("fsNote");
+    if (el) el.textContent = text || "";
+  }
+
+  function renderFullscreenRow() {
+    const btn = $("btnFullscreen");
+    const pill = $("fsState");
+    if (!btn || !pill) return;
+    const req = fsApi();
+    const on = Boolean(fsElement());
+    if (!req) {
+      // 不挂假按钮：这一档只有一句实话
+      btn.classList.add("hidden");
+      if (isStandalone()) {
+        pill.textContent = "主屏幕模式";
+        setFsNote("全屏：已经在主屏幕模式里，这一屏本来就没有地址栏。");
+      } else {
+        pill.textContent = "不支持";
+        setFsNote("全屏：iPhone 的 Safari 不允许网页全屏。想要没有地址栏：分享 → 添加到主屏幕，再从这里打开。");
+      }
+    } else {
+      btn.classList.remove("hidden");
+      btn.textContent = on ? "退出全屏" : "进入全屏";
+      pill.textContent = on ? "已全屏" : "可全屏";
+      setFsNote(on ? "全屏：退出可以用系统手势，或点游戏屏右上角那颗收起的图标。" : "");
+    }
+    document.querySelectorAll(".fs-btn").forEach((b) => {
+      const use = b.querySelector("use");
+      if (use) use.setAttribute("href", on ? "#i-compress" : "#i-expand");
+      b.setAttribute("aria-label", on ? "退出全屏" : "进入全屏");
+    });
+  }
+
+  let fsWatchId = 0;
+
+  function fsFailed() {
+    window.clearTimeout(fsWatchId);
+    if (fsElement()) return;
+    setFsNote("全屏：这个浏览器不让网页全屏。iPhone 请改用「分享 → 添加到主屏幕」。");
+  }
+
+  function toggleFullscreen() {
+    const req = fsApi();
+    if (!req) {
+      renderFullscreenRow();
+      return;
+    }
+    if (fsElement()) {
+      const exit =
+        document.exitFullscreen ||
+        document.webkitExitFullscreen ||
+        document.webkitCancelFullScreen;
+      if (exit) exit.call(document);
+      return;
+    }
+    // 不 reject、也不发 fullscreenchange 的静默失败是真实行为，400ms 后自己去验一次
+    window.clearTimeout(fsWatchId);
+    fsWatchId = window.setTimeout(fsFailed, 400);
+    const result = req.call(document.documentElement, { navigationUI: "hide" });
+    if (result && result.catch) result.catch(fsFailed);
+  }
+
+  // 只在 API 真的可用的设备上挂顶栏那颗：320–375px 的 .who 经不起再少 52px
+  function mountFsButtons() {
+    if (!fsApi()) return;
+    document.querySelectorAll(".screen .topbar").forEach((bar) => {
+      if (bar.closest("#screen-settings") || bar.querySelector(".fs-btn")) return;
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "icon-btn fs-btn";
+      btn.setAttribute("aria-label", "进入全屏");
+      btn.innerHTML = '<svg class="ico" aria-hidden="true"><use href="#i-expand" /></svg>';
+      btn.addEventListener("click", toggleFullscreen);
+      bar.classList.add("has-fs");
+      bar.appendChild(btn);
+    });
   }
 
   function renderSafeHints() {
@@ -443,6 +589,9 @@
       state[field] = migrated.state[field];
     });
     save();
+    // 导入的备份也带横屏设置，别让 <html> 的类和 state 失步
+    applyLandscape();
+    renderLandscapeRow();
   }
 
   function importBackup(file) {
@@ -1480,6 +1629,8 @@
     } else if (game === "settings") {
       setSettingsStatus("");
       renderBoundaryPill();
+      renderFullscreenRow();
+      renderLandscapeRow();
       show("settings");
     } else if (game === "board") {
       state.boardEvent = null;
@@ -1497,7 +1648,7 @@
     renderHeatButtons();
   }
 
-  const RIPPLE_TARGETS = ".btn, .btn-text, .lead-card, .tile, .slip-row, .icon-btn, .bd-opt";
+  const RIPPLE_TARGETS = ".btn, .btn-text, .lead-card, .tile, .slip-row, .icon-btn, .bd-opt, .switch-opt";
 
   function ripple(e) {
     if (reduceMotion.matches) return;
@@ -1551,10 +1702,14 @@
 
   function boot() {
     load();
+    applyLandscape();
     clampBoardToTiles();
     fillSetup();
     renderSafeHints();
     revealImages();
+    mountFsButtons();
+    renderFullscreenRow();
+    renderLandscapeRow();
     if (state.names[0] && state.names[1]) {
       show("home");
     }
@@ -1566,6 +1721,21 @@
       save();
       renderHeatButtons();
     });
+
+    $("landscapeRow").addEventListener("click", (e) => {
+      const btn = e.target.closest("[data-landscape]");
+      if (btn) setLandscape(btn.dataset.landscape === "1");
+    });
+
+    $("btnFullscreen").addEventListener("click", toggleFullscreen);
+
+    // 全屏状态由系统说话：手势退出、OS 收回，都只认这些事件，不自己猜
+    ["fullscreenchange", "webkitfullscreenchange", "fullscreenerror", "webkitfullscreenerror"].forEach(
+      (ev) => document.addEventListener(ev, renderFullscreenRow)
+    );
+    if (fsStandaloneMq.addEventListener) {
+      fsStandaloneMq.addEventListener("change", renderFullscreenRow);
+    }
 
     let heatResizeId = null;
     window.addEventListener("resize", () => {
@@ -1746,7 +1916,7 @@
 
     if ("serviceWorker" in navigator) {
       navigator.serviceWorker
-        .register("./sw.js?v=30", { updateViaCache: "none" })
+        .register("./sw.js?v=31", { updateViaCache: "none" })
         .catch(() => {});
     }
   }

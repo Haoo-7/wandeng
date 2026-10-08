@@ -4,7 +4,7 @@
    底 = 近黑酒红 #14090D · 字 = 被灯照到的奶油色 #F3E6D4
    暖金 #DFB489 表示「灯还亮着 / 开关拨到的位置」：每屏一颗的主按钮、
    热度选中块（v21 起并入灯金系统，不再用奶油）、双方都 Yes 的边界行、
-   棋子所在的格、底栏选中的灯芯。
+   棋子所在的格、底栏选中的灯芯、设置里横屏开关拨到的那一档。
    酒红 #9C3D4A 整屏最多一次（她的棋子 / No / 时间到）。
    被照亮的物件共用一块象牙 #F0E3D0：骰面、题面卡、结果纸、轮盘亮扇面。
    对等的选择不做主次（真心话=大冒险、A=B，同是奶油实底）。
@@ -23,6 +23,9 @@
   --room-raised: #1B0E13;    /* 灯下的纸或漆面：卡片实底 */
   --wheel-dark: #2B171D;     /* 轮盘深漆扇面（与象牙扇交替） */
   --mask-ink: rgba(10, 5, 7, 0.86); /* 弹层遮罩：实色压暗，不用 blur */
+  --board-flat: #170C11;     /* 棋盘最平的一档：免过格 */
+  --board-mid: #1E1016;      /* 棋盘中间档：抽题 / 前进后退 */
+  --board-warm: #22131A;     /* 棋盘暖档：一起 / 代价——灯下稍亮的一点 */
 
   /* —— 奶油：被灯照到的字（低于 --cream-55 的档只做描边，不做字色）—— */
   --cream: #F3E6D4;            /* 15.9:1 on --room */
@@ -35,6 +38,12 @@
   /* —— 暖金：只用来表示「灯还亮着 / 开关拨到的位置」——
      主按钮、热度选中块、双方都 Yes 的边界行、棋子所在的格、底栏灯芯 */
   --lamp: #DFB489;
+  --lamp-16: rgba(223, 180, 137, 0.16); /* 暖金的受光档：灯光落在的那一格 */
+
+  /* —— 灯洒下来的一层：试过，撤了。 ——
+     玩法屏确实空，但加一层顶光会把 #14090D 糊成一片棕雾，
+     「关了大灯的房间」这个身份就没了；本屏的规矩是实底、不叠色罩。
+     暗房间里唯一亮的东西就是灯下那张纸——空档由纸的尺寸和位置解决，不由光解决 */
 
   /* —— 酒红：整屏最多一次（玩家她的棋子 / No / 时间到）。不用来给对等选项分主次 —— */
   --wine: #9C3D4A;
@@ -257,18 +266,20 @@ h1,
 
 /* 首页不再复用设置页的照片：v21 起两张不同场景（设置=床头柜上的两杯酒，
    首页=床上的手机与远处的灯），同一晚、同一盏灯，但不是同一张 Banner。
-   首页还要往下装头牌与三件小静物、四行服务单，照片收在 26dvh */
+   首页还要往下装头牌与三件小静物、四行服务单、末尾的散场组，
+   照片收在 23dvh：气口让给内容，末组才不必藏在底栏后面 */
 .screen-home .hero-photo {
-  height: clamp(196px, 26dvh, 248px);
+  height: clamp(176px, 23dvh, 224px);
 }
 
 .screen-home .hero-photo img {
   object-position: 50% 16%; /* 灯在照片上三分之一：带子取景取到灯与一小段床 */
 }
 
-/* 照片矮一档，字就往暗部多咬进去一点，保持「标题落在灯的余光照不到的地方」 */
+/* 照片矮一档，字就往暗部多咬进去一点，保持「标题落在灯的余光照不到的地方」。
+   负 margin 与 .hero-photo 同比例收，否则巨标会咬进还亮着的带子里 */
 .screen-home .hero-copy {
-  margin-top: clamp(-124px, -14dvh, -84px);
+  margin-top: clamp(-112px, -12.4dvh, -76px);
 }
 
 /* 整段溶进房间：顶部先轻轻压住，中段开始衰减，下沿完全化进 --room。
@@ -324,7 +335,7 @@ h1,
 
 .home-stack {
   flex: 0 0 auto;
-  gap: clamp(10px, 1.8dvh, 16px);
+  gap: clamp(10px, 1.5dvh, 14px);
   margin-top: clamp(10px, 1.8dvh, 14px);
 }
 
@@ -355,7 +366,7 @@ h1,
 
 .lead-card .media img {
   width: 100%;
-  height: clamp(136px, 17dvh, 172px);
+  height: clamp(126px, 15.5dvh, 160px);
   display: block;
   object-fit: cover;
   object-position: 50% 62%; /* 方图裁成横带：取景对准灯下的那叠牌，上缘留一点灯晕 */
@@ -417,7 +428,7 @@ h1,
 
 .tile .media img {
   width: 100%;
-  aspect-ratio: 4 / 3;
+  aspect-ratio: 3 / 2; /* 三件小静物收成横带：4:3 那一档让首页末尾的散场组整组沉到折线下面 */
   object-fit: cover;
   display: block;
   background: var(--room-sunk);
@@ -484,8 +495,8 @@ h1,
   align-items: baseline;
   gap: 12px;
   width: 100%;
-  min-height: 40px;
-  padding: 7px 0;
+  min-height: 38px;
+  padding: 6px 0;
   border: 0;
   border-radius: 0;
   background: none;
@@ -529,6 +540,12 @@ h1,
   flex: 0 0 auto;
 }
 
+/* 全屏那颗只在 API 真的可用的设备上由 JS 挂进来（iPhone 的 Safari 挂上去是假按钮），
+   挂了才多一列——不挂时 320–375px 的 .who 不必为一颗不存在的图标让出 52px */
+.topbar.has-fs {
+  grid-template-columns: 44px 1fr auto auto;
+}
+
 .icon-btn {
   display: grid;
   place-items: center;
@@ -538,7 +555,7 @@ h1,
   border-radius: var(--radius-sm);
   background: none;
   box-shadow: none;
-  color: var(--cream);
+  color: var(--cream-72); /* 顶栏的通道：返回与全屏退一档，让位给「轮到谁」 */
   cursor: pointer;
   transition: var(--transition-ui);
 }
@@ -546,8 +563,8 @@ h1,
 .topbar .who {
   text-align: center;
   font-family: var(--font-body);
-  font-size: 15px;
-  font-weight: 500;
+  font-size: 16px;
+  font-weight: 600; /* 顶栏只有一件事需要读：这一轮是谁 */
   letter-spacing: 0.03em;
   color: var(--cream);
   overflow: hidden;
@@ -588,7 +605,7 @@ h1,
   border-radius: 0;
   background: none;
   box-shadow: none;
-  color: var(--cream);
+  color: var(--cream-72); /* 步进是随时可用的通道，不是顶栏的主角 */
   cursor: pointer;
   transition: var(--transition-ui);
 }
@@ -680,15 +697,16 @@ h1,
   box-shadow: none;
 }
 
-/* 文字操作：过 / 换人。放在主按钮下面，8.4:1，不和背景融在一起 */
+/* 次级操作：过 / 换人 / 再抽一个。放在主按钮下面，比细边再轻一档——
+   但仍是一颗有边界的按钮：裸文字的两颗并排读起来像图注，不像能点的东西 */
 .btn-text {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   height: var(--tap-min);
-  border: 0;
+  border: 1px solid var(--line-10);
   border-radius: var(--radius-sm);
-  background: none;
+  background: var(--room-raised);
   color: var(--cream-72);
   font-family: var(--font-body);
   font-size: 14px;
@@ -755,6 +773,7 @@ h1,
 .slip-row:focus-visible,
 .heat-btn:focus-visible,
 .bd-opt:focus-visible,
+.switch-opt:focus-visible,
 .linkish:focus-visible,
 input[type="text"]:focus-visible {
   outline: var(--focus-ring);
@@ -769,6 +788,7 @@ input[type="text"]:focus-visible {
   .icon-btn:hover,
   .step-btn:not(:disabled):hover,
   .file-btn:hover,
+  .switch-opt:hover,
   .linkish:hover,
   .btn-text:hover {
     filter: brightness(1.1);
@@ -789,6 +809,7 @@ input[type="text"]:focus-visible {
 .slip-row:active,
 .heat-btn:active,
 .icon-btn:active,
+.switch-opt:active,
 .linkish:active {
   transform: scale(0.98);
   filter: brightness(0.94);
@@ -801,6 +822,7 @@ input[type="text"]:focus-visible {
 .btn-text,
 .slip-row,
 .heat-btn,
+.switch-opt,
 .icon-btn {
   position: relative;
   overflow: hidden;
@@ -962,25 +984,34 @@ img.img-reveal.is-loaded {
    不再让 flex:1 把纸拉成一整块只放三行字的空白墙
    ========================================================================== */
 
+/* 牌堆：卡下压着三层牌边，暗场里的留白就有了落点。
+   全部是零模糊的实色偏移——是牌边，不是投影（禁「柔投影」）。
+   最外一层带 3px 横向错位：一叠牌不会码得完全齐，齐了反而像个阴影 */
 .play-card {
-  flex: 0 1 auto;
-  margin-top: auto; /* 与 .actions 的 margin-top:auto 平摊空档：纸落在垂直中心 */
-  /* 高屏也只让纸占到三成画布：纸是承字的那张，字少时不撑成空白墙；
-     28dvh 与 ≤800 档的 27dvh 相接，812 与 800 之间不再跳一级 */
-  min-height: clamp(212px, 28dvh, 320px);
-  max-height: 52dvh;
+  flex: 0 0 auto;
+  margin-top: auto; /* 与 .actions 的 margin-top:auto 平摊：纸是暗房间里唯一亮的东西，放正中 */
+  /* 抽中之后的纸要够承字：33dvh 与 ≤800 档的 32dvh 相接，801 与 800 之间不跳级 */
+  min-height: clamp(248px, 33dvh, 380px);
+  max-height: none;
+  /* 未抽 → 抽中，纸从牌堆那一档长到题面那一档：与翻面同一个 520ms，读作「牌摊开了」 */
+  transition: min-height 520ms var(--ease-out);
   padding: clamp(20px, 3.4dvh, 28px) clamp(20px, 5.4vw, 30px);
   display: flex;
   flex-direction: column;
   background: var(--die-face);
   border: 0;
   border-radius: var(--radius-lg);
-  /* 牌堆：卡下压着两张牌边，暗场里的留白就有了落点 */
   box-shadow:
     inset 0 0 0 1px rgba(60, 42, 30, 0.08),
-    0 9px 0 -3px rgba(244, 236, 221, 0.12),
-    0 18px 0 -7px rgba(244, 236, 221, 0.06);
+    0 7px 0 -2px rgba(244, 236, 221, 0.2),
+    0 15px 0 -5px rgba(244, 236, 221, 0.11),
+    -3px 23px 0 -8px rgba(244, 236, 221, 0.05);
   text-align: left;
+}
+
+/* 未抽：这一屏是一叠扣着的牌，不是空墙。纸按内容长，牌堆那三层边负责说明「还有牌」 */
+.flip-card:not(.is-flipped) {
+  min-height: clamp(168px, 22dvh, 220px);
 }
 
 .play-card > .flip-inner {
@@ -1067,18 +1098,18 @@ img.img-reveal.is-loaded {
   margin-top: clamp(-190px, -22dvh, -128px);
 }
 
-/* 登记单与主按钮是一组（表单 → CTA → 脚注贴着落底）；
-   高屏的余量全部给「标题↔表单」一侧——那里是照片暗部的延伸，
-   黑的是房间，不是版式空洞。padding 保底：矮屏 auto 归零仍有最小呼吸 */
+/* 登记单贴在副标题下面，余量全部让给「表单→主按钮」这一段：
+   主按钮本来就靠下停（拇指够得着），它和表单之间的空档读作停靠，不读作空洞。
+   反过来把整块表单沉到底、上方留一整屏黑，那块黑再宽也还是空洞 */
 .screen-setup .stack {
-  margin-top: auto;
+  margin-top: clamp(18px, 4dvh, 40px);
   flex: 0 0 auto;
   min-height: 0;
   padding: clamp(12px, 1.8dvh, 16px) 0;
 }
 
 .screen-setup .btn-gold {
-  margin-top: clamp(14px, 2.8dvh, 30px);
+  margin-top: auto;
   flex: 0 0 auto;
 }
 
@@ -1719,23 +1750,24 @@ input[type="text"]::placeholder {
   border-radius: var(--radius-sm);
   border: 1px solid var(--line-16);
   background: var(--room-raised);
-  color: var(--cream-55);
+  color: var(--cream-72); /* 格号是这一格的身份，不是注脚：10px/55 要猜着读 */
   font-family: var(--font-body);
   font-style: normal;
   font-variant-numeric: tabular-nums;
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 400;
   letter-spacing: 0;
   transition: var(--transition-ui);
 }
 
-/* 格子类型只用暗档深浅差，类别靠角标符号，不引入第二种颜色 */
-.board-tile.kind-task { background: #1E1016; }
-.board-tile.kind-together { background: #22131A; }
-.board-tile.kind-cost { background: #22131A; }
-.board-tile.kind-forward { background: #1E1016; }
-.board-tile.kind-back { background: #1E1016; }
-.board-tile.kind-skip { background: #170C11; }
+/* 格子类型只用暗档深浅差，类别靠角标符号，不引入第二种颜色。
+   三档深浅归进 :root——屏里不再单独发明 hex */
+.board-tile.kind-task { background: var(--board-mid); }
+.board-tile.kind-together { background: var(--board-warm); }
+.board-tile.kind-cost { background: var(--board-warm); }
+.board-tile.kind-forward { background: var(--board-mid); }
+.board-tile.kind-back { background: var(--board-mid); }
+.board-tile.kind-skip { background: var(--board-flat); }
 
 .board-tile::before {
   position: absolute;
@@ -1743,10 +1775,10 @@ input[type="text"]::placeholder {
   right: 5px;
   font-family: var(--font-body);
   font-style: normal;
-  font-size: 9px;
+  font-size: 11px;
   font-weight: 500;
   line-height: 1;
-  color: var(--cream-55);
+  color: var(--cream-72);
 }
 
 .board-tile.kind-task::before { content: "?"; }
@@ -1756,16 +1788,29 @@ input[type="text"]::placeholder {
 .board-tile.kind-together::before { content: "♥"; }
 .board-tile.kind-skip::before { content: "⊘"; }
 
-/* 起点 / 终点：奶油描边 */
-.board-tile.kind-start,
-.board-tile.kind-end {
+/* 起点：奶油描边的一格，告诉你是从哪儿出发的 */
+.board-tile.kind-start {
   border-color: var(--line-24);
   color: var(--cream);
 }
 
-/* 当前格 = 灯光落下的那一格（整屏唯一一次暖金） */
+/* 终点：整块象牙。这一屏没有照片，42 格又全是暗档，
+   「关灯后唯一光源」在这里就靠终点那一格站着——它是这盘棋要走去的那盏灯 */
+.board-tile.kind-end {
+  border-color: var(--die-face);
+  background: var(--die-face);
+  color: var(--die-ink);
+}
+
+.board-tile.kind-end::before {
+  color: var(--paper-ink-72);
+}
+
+/* 当前格 = 灯光落下的那一格（整屏唯一一次暖金）：不只描边，给一格受光的面 */
 .board-tile.here {
   border-color: var(--lamp);
+  background: var(--lamp-16);
+  color: var(--cream);
 }
 
 /* SVG 棋子：他=奶油、她=酒红，深色描边把棋子从格子里剥出来 */
@@ -1824,10 +1869,21 @@ input[type="text"]::placeholder {
   letter-spacing: 0;
   line-height: 1.2;
   color: var(--cream);
-  min-width: 24px;
+  min-width: 24px; /* 首掷之前是空的：留着位子，掷出那一下不推挤标题 */
   flex: 0 0 auto;
   text-align: center;
   display: inline-block;
+}
+
+/* 骰点紧跟在标题后面，不再孤悬在行中间：中间那颗会被读成一颗来路不明的图标，
+   而不是「上一次掷出的点数」。右半边留给玩法名 */
+#screen-board .panel-head {
+  justify-content: flex-start;
+}
+
+#screen-board .panel-head .board-die {
+  margin-left: 8px;
+  margin-right: auto;
 }
 
 .board-die.tumbling {
@@ -1888,8 +1944,26 @@ input[type="text"]::placeholder {
 
 /* 面板里的次级按钮：细边、矮一号，不和主按钮抢高度 */
 .settings-list .btn {
-  height: 48px;
+  height: 44px;
   font-size: 15px;
+}
+
+/* 六张一模一样的卡读起来像后台。分组只留一处页眉（与首页服务单同一套字），
+   数据类面板去掉实底、只留一条最浅的线：这一屏真正要看的两块——
+   「屏幕」这块活设置和末尾的「边界清单」——才有地方站出来 */
+.settings-label {
+  margin: clamp(14px, 2.6dvh, 22px) 0 0;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--line-10);
+  color: var(--cream-55);
+  font-size: 10.5px;
+  font-weight: 400;
+  letter-spacing: 0.16em;
+}
+
+.panel-quiet {
+  border-color: var(--line-10);
+  background: none;
 }
 
 .panel-head {
@@ -2087,6 +2161,46 @@ button.boundary-entry {
 }
 
 /* ==========================================================================
+   设置里的两态开关：材质沿用 .heat-grid 那框（同一间房里的同一块凹槽），
+   但故意不带滑垫——滑垫的定位 JS 只认 #heatGrid，第二处拿不到它，
+   而选中态一旦只改字色就是墨字压近黑底、看不见。所以选中的那一档直接给灯金实底。
+   ========================================================================== */
+
+.switch-row {
+  display: flex;
+  gap: 5px;
+  padding: 5px;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--line-24);
+  background: var(--room-sunk);
+  box-shadow: none;
+}
+
+.switch-opt {
+  flex: 1;
+  min-height: var(--tap-min); /* 设置页的开关不能是边界清单那种 28px 的小条 */
+  padding: 8px 4px;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: none;
+  color: var(--cream-72);
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 400;
+  letter-spacing: 0.04em;
+  text-align: center;
+  cursor: pointer;
+  transition: var(--transition-ui);
+}
+
+/* aria-pressed 是唯一真源：状态由 JS 写这一个属性，不再另发明一个类去同步 */
+.switch-opt[aria-pressed="true"] {
+  background: var(--lamp);
+  color: var(--ink);
+  font-weight: 500;
+}
+
+/* ==========================================================================
    收灯：今晚的最后一屏。没有照片、没有抽卡，三块面板一步步亮起来；
    走完之后金色开关自己离场（is-out），只剩暗下去的房间和一行晚安。
    ========================================================================== */
@@ -2113,7 +2227,9 @@ button.boundary-entry {
 
 .ending-lead {
   flex: 0 0 auto;
-  margin-top: clamp(6px, 1.6dvh, 14px);
+  /* 标题与仪式块是一个整体，一起落在顶栏和动作区正中：
+     各自 auto 会把「今晚到这里」钉在顶上、把步骤推到底下，中间一整屏是空的 */
+  margin-top: auto;
 }
 
 .ending-hero {
@@ -2138,8 +2254,9 @@ button.boundary-entry {
   display: flex;
   flex-direction: column;
   gap: 10px;
-  /* 与 .actions 的 margin-top:auto 平摊空档：仪式块落在垂直中心（同 .play-card 的做法） */
-  margin-top: auto;
+  /* 与题面卡同一处理：仪式块紧跟在标题下面、落在灯里，
+     空档只留下方一处（同 .play-card 的改法，不再与 .actions 对平摊） */
+  margin-top: clamp(20px, 4dvh, 40px);
   padding-top: clamp(12px, 2.6dvh, 20px);
   flex: 0 1 auto;
 }
@@ -2191,7 +2308,13 @@ button.boundary-entry {
 
 /* 首页散场组：单独一张小单，与玩法清单之间多空一拍 */
 .slip + .slip {
-  margin-top: clamp(16px, 3dvh, 26px);
+  margin-top: clamp(12px, 2.2dvh, 20px);
+}
+
+/* 只有一行的一组：页眉不带那条横线，免得折线切在它身上读成断掉的表 */
+.slip-final .slip-label {
+  padding-bottom: 4px;
+  border-bottom: 0;
 }
 
 /* ==========================================================================
@@ -2341,7 +2464,7 @@ button.boundary-entry {
   }
 
   .play-card {
-    min-height: clamp(184px, 27dvh, 250px);
+    min-height: clamp(224px, 32dvh, 290px);
   }
 
   .lead-cap b {
@@ -2488,10 +2611,11 @@ button.boundary-entry {
 @media (max-height: 700px) {
   /* 矮屏：纸只承字，不铺满中段。之前 flex:1 把三行字拉成一整面空白墙；
      空档交给屏幕 —— .play-card 与 .actions 的 margin-top:auto 平摊，纸贴住字。
-     flex / margin-top 这里刻意不写，好让上面那条基线规则透上来 */
+     flex / margin-top 这里刻意不写，好让上面那条基线规则透上来。
+     这里原来还有一条 max-height: 58dvh：那是把长题目裁掉的元凶
+     （667 一档 58dvh=245，而一句长题要 368），删掉——纸可以超出，屏来滚 */
   .play-card {
     min-height: clamp(168px, 25dvh, 216px);
-    max-height: 58dvh;
   }
 
   .hero-photo {
@@ -2621,6 +2745,172 @@ button.boundary-entry {
 }
 
 /* ==========================================================================
+   横屏模式（opt-in）：html.landscape-ok 由「设置 → 横屏模式」写入，
+   真正的门是 (orientation: landscape)——竖着拿时这个类存在也不改任何版式，
+   手机上「请竖着拿」仍是默认。主要服务对象是平板。
+
+   刻意不动上面那九档 (max-height) 阶梯：它们同时是 iPad 横屏、桌面横向窗口、
+   折叠屏此刻的既有事实。给它们加 and (orientation: portrait) 会让 390 高的横屏
+   掉回基线 --board-fixed: 352 —— max-height 算出 2px，棋盘直接没了。
+   这里每条都带 .landscape-ok（比档内单类选择器高一级特异性）且源码在末，
+   所以覆盖是确定的，竖屏与不解锁的横屏一个字节都不变。
+   ========================================================================== */
+
+@media (orientation: landscape) {
+  /* 棋盘小的真因是这一列：竖屏的 460px 上限，在 1024 宽的 iPad 横屏上等于两侧
+     各留 282px 空白。放开到 640，并让刘海那一侧至少顶开 16px。 */
+  html.landscape-ok {
+    --gutter: max(
+      20px,
+      calc((100vw - 640px) / 2),
+      calc(env(safe-area-inset-left, 0px) + 16px),
+      calc(env(safe-area-inset-right, 0px) + 16px)
+    );
+  }
+
+  /* 解锁写在这里，不是删掉那道门：1-1-1 压过档内 #rotateHint 的 1-0-0 */
+  html.landscape-ok #rotateHint {
+    display: none;
+  }
+
+  /* 题面纸与结果纸：横屏 vw 很大而 dvh 很小，只按 vw 取字会顶到上限、纸先塌。
+     规则是「地板 = 今天的值，天花板只给平板抬高」：手机横屏一个像素都不许变小。
+     max-height 不写——基线已改成 max-height: none（纸按内容长、屏来滚），这里跟着透上来。 */
+  html.landscape-ok .play-card {
+    min-height: clamp(168px, 38dvh, 300px);
+  }
+
+  html.landscape-ok .play-card .q {
+    font-size: clamp(26px, 3vw, 34px);
+  }
+
+  html.landscape-ok .result b {
+    font-size: clamp(24px, 3vw, 30px);
+  }
+
+  html.landscape-ok .wheel-box {
+    --wheel-size: min(66dvh, 300px);
+  }
+
+  /* —— 飞行棋：棋盘在左，题目与按钮在右 ——
+     选择器必须带 .active：不带就压过 .screen{display:none}，棋盘屏会永久显示、
+     叠在每一屏底下。全 auto 行 + align-content:start：stretch 会把多余高度灌进
+     行里，隐式行跟着被拉长，格子贴顶——留白看起来像棋盘裂开。 */
+  html.landscape-ok #screen-board.active {
+    --gutter: max(
+      20px,
+      calc((100vw - 1080px) / 2),
+      calc(env(safe-area-inset-left, 0px) + 16px),
+      calc(env(safe-area-inset-right, 0px) + 16px)
+    );
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) clamp(280px, 34vw, 400px);
+    grid-template-rows: auto auto auto auto;
+    grid-template-areas:
+      "top   top"
+      "prog  q"
+      "board q"
+      "board act";
+    column-gap: clamp(16px, 2.4vw, 32px);
+    align-content: start;
+  }
+
+  html.landscape-ok #screen-board > .topbar {
+    grid-area: top;
+  }
+
+  html.landscape-ok #screen-board > .board-progress {
+    grid-area: prog;
+  }
+
+  html.landscape-ok #screen-board > .board-grid {
+    grid-area: board;
+    align-self: start;
+  }
+
+  /* 题卡贴着一列的顶、按钮锚在底，中间会空出一大段房间暗部：让它在自己那两行里
+     居中，读起来才像和棋盘成对，而不是掉在右上角 */
+  html.landscape-ok #screen-board > .board-slot {
+    grid-area: q;
+    align-self: center;
+    margin-top: 0;
+  }
+
+  html.landscape-ok #screen-board > .actions {
+    grid-area: act;
+    margin-top: 0;
+  }
+
+  /* 棋盘高度预算（横屏唯一需要算的一行）：顶 padding 26 · 顶栏 44+12 · 进度 30+6
+     · grid margin-top 10 · 底 padding 12+env(bottom) ≈ 140 + env(bottom)。
+     题卡与按钮出了竖栈，352/336 里那两笔「题卡开销」不再存在。
+     1024×768 → 实测 86×86（不解锁时是 73×56）；1366×1024 → 105×105。 */
+  html.landscape-ok .board-grid {
+    --board-gap: 4px;
+    --board-fixed: calc(140px + env(safe-area-inset-bottom, 0px));
+    align-content: start;
+  }
+
+  html.landscape-ok .board-tile {
+    font-size: 12px;
+  }
+
+  html.landscape-ok .board-tile::before {
+    font-size: 11px;
+    top: 5px;
+    right: 6px;
+  }
+
+  html.landscape-ok .tok-svg {
+    width: 26px;
+    height: 26px;
+  }
+
+  html.landscape-ok .tok-svg .tok-word {
+    font-size: 12px;
+  }
+
+  html.landscape-ok .board-line {
+    font-size: 16px;
+  }
+}
+
+/* 手机横握不是设计目标，只求不塌：12px 的格子字在 30px 行高里会顶到角标，
+   轮盘收到能连同按钮一屏看见。字号一律不低于不解锁时的今天值
+   （骰子沿用 ≤667 档的 96px、题面字沿用上面 26px 的地板，这里都不往下压）。
+   这也是「请竖着拿」继续当默认的原因。 */
+@media (orientation: landscape) and (max-height: 520px) {
+  html.landscape-ok .board-grid {
+    --board-gap: 3px;
+  }
+
+  html.landscape-ok .board-tile {
+    font-size: 9px;
+  }
+
+  html.landscape-ok .board-tile::before {
+    font-size: 8px;
+    top: 3px;
+    right: 4px;
+  }
+
+  html.landscape-ok .tok-svg {
+    width: 18px;
+    height: 18px;
+    bottom: 1px;
+  }
+
+  html.landscape-ok .board-line {
+    font-size: 14px;
+  }
+
+  /* 今天 ≤667 档就是这把尺（390 高时 101px）：横屏手机上照抄它，「转动」才不会离开屏幕 */
+  html.landscape-ok .wheel-box {
+    --wheel-size: min(26dvh, 190px);
+  }
+}
+
+/* ==========================================================================
    减少动态：关掉非必要过渡/动画（保留骰子、轮盘的机制性变换）
    ========================================================================== */
 
@@ -2639,6 +2929,7 @@ button.boundary-entry {
   .linkish,
   .heat-btn,
   .bd-opt,
+  .switch-opt,
   input[type="text"] {
     transition: none;
   }
@@ -2650,6 +2941,7 @@ button.boundary-entry {
   .slip-row:active,
   .heat-btn:active,
   .icon-btn:active,
+  .switch-opt:active,
   .linkish:active {
     transform: scale(0.99);
   }

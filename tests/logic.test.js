@@ -247,6 +247,23 @@ test("migrateState: field-specific shapes are validated and warned about", () =>
   assert.deepEqual(out.state.customPrompts, []);
 });
 
+// 新增的 boolean 设置（横屏模式）靠 shapeMatches 兜底，不需要在 applyKnownField 里加 case。
+// 这条测试就是钉住这一点：只有真 boolean 能活下来，其余一律回落 false。
+test("migrateState: a boolean field with no specific rule keeps booleans and resets the rest", () => {
+  const defaults = { landscape: false };
+  assert.equal(migrateState({ landscape: true }, defaults).state.landscape, true);
+  assert.equal(migrateState({ landscape: false }, defaults).state.landscape, false);
+  assert.equal(migrateState({}, defaults).state.landscape, false);
+  for (const bad of [0, 1, "true", "false", "", null, {}, [], undefined]) {
+    const out = migrateState({ landscape: bad }, defaults);
+    assert.equal(out.state.landscape, false, `${String(bad)} 必须回落到 false`);
+    assert.ok(
+      out.warnings.some((w) => /landscape/.test(w)),
+      `${String(bad)} 被重置时要有警告`
+    );
+  }
+});
+
 test("migrateState: used flows through migrateUsed", () => {
   const defaults = { names: ["他", "她"], heat: 0, safeWord: "暂停", turn: 0, used: {}, boundary: {}, customPrompts: [] };
   const out = migrateState({ used: { "truth-m": ["a", 1, "a"] } }, defaults);

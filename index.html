@@ -21,11 +21,11 @@
       href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@500;600&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="./assets/app.css?v=30" />
+    <link rel="stylesheet" href="./assets/app.css?v=31" />
   </head>
   <body>
     <!-- 图标本地子集（Phosphor regular 风格：256 网格、stroke 16、round 端点；不走 CDN，离线可用）
-         只留真正在用的三枚：返回箭头、热度减、热度加。底栏不放图标。 -->
+         只留真正在用的五枚：返回箭头、热度减、热度加、全屏展开、全屏收起。底栏不放图标。 -->
     <svg width="0" height="0" style="position:absolute" aria-hidden="true">
       <defs>
         <symbol id="i-arrow-left" viewBox="0 0 256 256">
@@ -41,6 +41,23 @@
           <g stroke="currentColor" stroke-width="16" stroke-linecap="round">
             <line x1="128" y1="40" x2="128" y2="216" />
             <line x1="40" y1="128" x2="216" y2="128" />
+          </g>
+        </symbol>
+        <!-- 全屏一对：四角括号（撑开 / 收拢），不用对角箭头——斜向箭头在这套线规里读起来像「跳转外链」 -->
+        <symbol id="i-expand" viewBox="0 0 256 256">
+          <g fill="none" stroke="currentColor" stroke-width="16" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="40 104 40 40 104 40" />
+            <polyline points="152 40 216 40 216 104" />
+            <polyline points="216 152 216 216 152 216" />
+            <polyline points="104 216 40 216 40 152" />
+          </g>
+        </symbol>
+        <symbol id="i-compress" viewBox="0 0 256 256">
+          <g fill="none" stroke="currentColor" stroke-width="16" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="104 40 104 104 40 104" />
+            <polyline points="216 104 152 104 152 40" />
+            <polyline points="152 216 152 152 216 152" />
+            <polyline points="40 152 104 152 104 216" />
           </g>
         </symbol>
       </defs>
@@ -135,8 +152,11 @@
             <span>铃响之前不许停</span>
           </button>
         </div>
-        <!-- 散场是单独的一组，不进「也可以玩」：收灯不是玩法，是今晚的结束仪式 -->
-        <div class="slip">
+        <!-- 散场是单独的一组，不进「也可以玩」：收灯不是玩法，是今晚的结束仪式。
+             这一组只有一行，页眉不带那条横线：首页在带安全区的真机上必然要滚，
+             折线落在哪里控制不住——「散场」下面挂一条 1px 会被读成断掉的表，
+             不挂线就只是下一组的过线 -->
+        <div class="slip slip-final">
           <p class="slip-label">散场</p>
           <button type="button" class="slip-row" data-open="ending">
             <b>收灯</b>
@@ -267,7 +287,6 @@
             <div class="flip-face flip-front">
               <div class="kicker">连招</div>
               <div class="q">点下面抽题，答完翻面出招。</div>
-              <p class="hint">答完点下面，答案会变成要做的事。</p>
             </div>
             <div class="flip-face flip-back">
               <div class="kicker" id="comboKicker">先答</div>
@@ -420,12 +439,26 @@
           <span class="pill">只在本机</span>
         </div>
         <div class="settings-list">
+          <!-- 屏幕这一组排在最前：它是活的设置，导出/导入是数据操作。
+               全屏那颗按钮与说明全部由 JS 按真能力改写——iPhone 的 Safari 不允许普通
+               网页全屏，那一档按钮直接不出现，只留「添加到主屏幕」这句实话。 -->
           <div class="panel">
+            <div class="panel-head"><b>屏幕</b><span id="fsState">检测中</span></div>
+            <div class="switch-row" id="landscapeRow">
+              <button type="button" class="switch-opt" data-landscape="0" aria-pressed="true">竖屏</button>
+              <button type="button" class="switch-opt" data-landscape="1" aria-pressed="false">横屏</button>
+            </div>
+            <p class="field-note">默认竖屏。横屏给平板用：飞行棋棋盘在左、题目在右。</p>
+            <button class="btn btn-outline" id="btnFullscreen">进入全屏</button>
+            <p class="field-note" id="fsNote"></p>
+          </div>
+          <p class="settings-label">数据与恢复</p>
+          <div class="panel panel-quiet">
             <div class="panel-head"><b>导出备份</b><span>JSON</span></div>
             <p class="field-note">称呼、热度、用过的题、边界清单都会一起导出。</p>
             <button class="btn btn-outline" id="btnExport">导出到文件</button>
           </div>
-          <div class="panel">
+          <div class="panel panel-quiet">
             <div class="panel-head"><b>导入备份</b><span>JSON</span></div>
             <p class="field-note">会用文件里的内容覆盖这台手机上的记录。读不了就什么都不改。</p>
             <label class="file-btn">
@@ -433,7 +466,7 @@
               <input type="file" accept="application/json,.json" id="importBackup" />
             </label>
           </div>
-          <div class="panel">
+          <div class="panel panel-quiet">
             <div class="panel-head"><b>导入自定义题</b><span>JSON</span></div>
             <p class="field-note">一串对象，每个含 kind、heat、gender 与该项对应字段，追加进抽题池。</p>
             <label class="file-btn">
@@ -441,7 +474,7 @@
               <input type="file" accept="application/json,.json" id="importCustom" />
             </label>
           </div>
-          <div class="panel">
+          <div class="panel panel-quiet">
             <div class="panel-head"><b>重新设置</b><span>称呼 · 热度</span></div>
             <p class="field-note">回到最开始那一屏，重新填称呼、选今晚的热度。记录不会清掉。</p>
             <button class="btn btn-outline" id="resetBtn">回到设置</button>
@@ -467,7 +500,7 @@
         <p class="board-progress pill" id="boardPill">起点</p>
         <div class="board-grid" id="boardGrid"></div>
         <article class="panel board-slot">
-          <div class="panel-head"><b id="boardTitle">掷骰子</b><span class="board-die" id="boardDie" aria-hidden="true">⚄</span><span id="boardMark">第 1 格</span></div>
+          <div class="panel-head"><b id="boardTitle">掷骰子</b><span class="board-die" id="boardDie" aria-hidden="true"></span><span id="boardMark">第 1 格</span></div>
           <p class="board-line" id="boardLine">两个人轮流。先走到最后一格的人赢。</p>
         </article>
         <!-- 掷骰浮层：真正的骰子滚完这一把，棋子才走 -->
@@ -526,7 +559,7 @@
       </div>
     </div>
 
-    <!-- 横屏兜底：手机横握时整屏盖住，请人竖着拿（CSS 触发：触屏 + 横向 + 矮视口） -->
+    <!-- 横屏兜底：手机横握时整屏盖住，请人竖着拿（CSS 触发：触屏 + 横向 + 矮视口）；设置里开了横屏模式则不再遮挡 -->
     <div id="rotateHint">
       <p class="rh-t">请竖着拿</p>
       <p class="rh-s">晚灯是床头的事。</p>
@@ -535,9 +568,9 @@
     <div id="staleBar" class="stale-bar hidden">
       手机还在用旧版，连招会打不开。请关掉这个标签，再打开一次。
     </div>
-    <script src="./assets/logic.js?v=30"></script>
-    <script src="./assets/data.js?v=30"></script>
-    <script src="./assets/app.js?v=30"></script>
+    <script src="./assets/logic.js?v=31"></script>
+    <script src="./assets/data.js?v=31"></script>
+    <script src="./assets/app.js?v=31"></script>
     <script>
       (function () {
         if (!window.WANDENG || !window.WANDENG.combo) {
