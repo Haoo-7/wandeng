@@ -83,6 +83,12 @@ node --test tests/*.test.js
 
 字体来自 Google Fonts（Fraunces、Noto Sans SC、Noto Serif SC），各自遵循其原始许可。
 
+## 许可
+
+[Apache License 2.0](LICENSE) — 可自由商用、修改、闭源再分发，需保留版权与许可声明、标注改动；含显式专利授权，不授予商标使用权。
+
+上游 MIT 项目的版权行与许可原文，集中在 [`NOTICE`](NOTICE)。
+
 ## 附注
 
 改版前的遗留素材（`dice-hero.jpg` 与 `thumb-*.png|jpg`）确认零引用后已删除。

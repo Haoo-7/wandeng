@@ -5,9 +5,14 @@ __pycache__/
 .playwright-mcp/
 .commandcode/
 .workbuddy/
+.qoder/
+.zcode/
+.zcodeignore
+skills-lock.json
 design/critique/
 design/output/
 design/samples/
+design/oil-ui-2026/
 design/*.mjs
 design/*.out
 design/*.txt

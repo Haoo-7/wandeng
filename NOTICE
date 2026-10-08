@@ -1,0 +1,71 @@
+晚灯 (wandeng)
+Copyright 2026 Haoo
+
+This product includes material derived from third-party open source
+projects. The required copyright notices and license terms are
+reproduced below.
+
+========================================================================
+Third-party copyright notices
+========================================================================
+
+couple-stark
+  https://github.com/Chrisbetheking/couple-stark
+  Copyright (c) 2026 Couple Spark Contributors
+  Licensed under the MIT License.
+
+couplecards
+  https://github.com/qiaeru/couplecards
+  Copyright (c) 2026 Qiaeru
+  Licensed under the MIT License.
+
+CoupleCards
+  https://github.com/michaelsboost/CoupleCards
+  Copyright (c) 2025 Michael Schwartz
+  Licensed under the MIT License.
+
+========================================================================
+MIT License (applies to all three projects listed above)
+========================================================================
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+========================================================================
+Note: couple-flying-chess
+========================================================================
+
+https://github.com/woniu9524/couple-flying-chess
+
+That repository states "MIT" in its README but ships no LICENSE file, so its
+licensing status is not established. No code was copied from it. Material in
+this project associated with it is limited to gameplay design and the subject
+matter of 180 board-deck prompts, every one of which was rewritten in this
+project's own words.
+
+To remove its influence entirely, delete the `boardDecks` array and the
+`sweet` / `love` / `burn` / `deep` / `merge` entries in `assets/data.js`.
+See the "致谢" section of README.md for details.
+
+========================================================================
+Fonts
+========================================================================
+
+Fraunces, Noto Sans SC and Noto Serif SC are loaded at runtime from Google
+Fonts and follow their own licenses (SIL Open Font License 1.1). No font
+files are redistributed with this project.
